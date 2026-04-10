@@ -1,12 +1,31 @@
-import { MongoClient } from "mongodb";
+import mongoose from "mongoose";
 
-const uri = process.env.MONGODB_URI;
+const MONGODB_URI = process.env.MONGODB_URI;
 
-if (!uri) {
+if (!MONGODB_URI) {
   throw new Error("MONGODB_URI is missing");
 }
 
-const client = new MongoClient(uri);
-const clientPromise = client.connect();
+let cached = global.mongoose;
 
-export default clientPromise;
+if (!cached) {
+  cached = global.mongoose = {
+    conn: null,
+    promise: null,
+  };
+}
+
+export async function connectToDatabase() {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI, {
+      dbName: process.env.MONGODB_DB || "zootopia",
+    });
+  }
+
+  cached.conn = await cached.promise;
+  return cached.conn;
+}
