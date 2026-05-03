@@ -22,6 +22,41 @@ const userSchema = new mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+
+    firstName: {
+      type: String,
+      default: "",
+    },
+
+    lastName: {
+      type: String,
+      default: "",
+    },
+
+    country: {
+      type: String,
+      default: "Polska",
+    },
+
+    street: {
+      type: String,
+      default: "",
+    },
+
+    city: {
+      type: String,
+      default: "",
+    },
+
+    postalCode: {
+      type: String,
+      default: "",
+    },
+
+    phone: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
