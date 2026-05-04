@@ -1,0 +1,20 @@
+.kategorie {
+  	width: 100%;
+  	position: relative;
+  	overflow: hidden;
+  	display: flex;
+  	align-items: center;
+  	padding: 40px 40px 24px;
+  	box-sizing: border-box;
+  	text-align: left;
+  	font-size: 45px;
+  	color: #000;
+  	font-family: Poppins;
+}
+.promocje {
+  	position: relative;
+  	letter-spacing: -0.05em;
+  	line-height: 90%;
+  	font-weight: 600;
+}
+

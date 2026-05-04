@@ -1,0 +1,142 @@
+.stopka {
+  	width: 100%;
+  	position: relative;
+  	background-color: #366f14;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 0px 0px 40px;
+  	box-sizing: border-box;
+  	text-align: left;
+  	font-size: 19px;
+  	color: #f5fcf1;
+  	font-family: Poppins;
+}
+.logoParent {
+  	width: 100%;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	justify-content: center;
+  	max-width: 100%;
+}
+.logo {
+  	align-self: stretch;
+  	overflow: hidden;
+  	display: flex;
+  	align-items: center;
+  	padding: 40px 64px;
+}
+.zootopiaWrapper {
+  	width: 169.1px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 6.7px 0px;
+  	box-sizing: border-box;
+}
+.zootopiaIcon {
+  	width: 100%;
+  	height: 26.7px;
+  	position: relative;
+}
+.frameParent {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: flex-start;
+  	flex-wrap: wrap;
+  	align-content: flex-start;
+  	padding: 0px 64px;
+  	gap: 16px 64px;
+}
+.kontaktParent {
+  	width: 200px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 16px;
+}
+.kontakt {
+  	align-self: stretch;
+  	position: relative;
+  	line-height: 150%;
+  	flex-shrink: 0;
+}
+.frameGroup {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 8px;
+  	flex-shrink: 0;
+  	font-size: 14px;
+  	color: #91be77;
+}
+.frameContainer {
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	gap: 8px;
+}
+.frameIcon {
+  	height: 24px;
+  	width: 24px;
+  	position: relative;
+}
+.ulRadosnejMerdy {
+  	width: 180px;
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+  	display: inline-block;
+  	flex-shrink: 0;
+}
+.section3 {
+  	width: 200px;
+  	overflow: hidden;
+  	flex-shrink: 0;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 16px;
+}
+.obsugaKlienta {
+  	align-self: stretch;
+  	position: relative;
+  	line-height: 150%;
+}
+.statusZamwieniaParent {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 8px;
+  	font-size: 14px;
+  	color: #91be77;
+}
+.statusZamwienia {
+  	width: 180px;
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+  	display: inline-block;
+}
+.kosztyICzas {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+}
+.schroniskaPartnerskie {
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+}
+.sekcjaSocialMedia {
+  	width: 212px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 16px;
+}
+
