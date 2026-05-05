@@ -1,0 +1,28 @@
+.property1img1 {
+  	position: relative;
+  	width: 100%;
+  	overflow: hidden;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	justify-content: center;
+  	gap: 10px;
+}
+.property1img1Child {
+  	width: 500px;
+  	height: 500px;
+  	border-radius: 20px;
+  	object-fit: cover;
+}
+.frameParent {
+  	display: flex;
+  	align-items: center;
+  	gap: 10px;
+}
+.frameChild {
+  	height: 100px;
+  	width: 100px;
+  	border-radius: 4px;
+  	object-fit: cover;
+}
+
