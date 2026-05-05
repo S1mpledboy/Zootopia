@@ -29,12 +29,12 @@ const Nawigacja: NextPage = () => {
         				</div>
         				<div className={styles.tablerIconHeartParent}>
 							<Link href="/Auth">
-          					<Image src={bagicon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
+          					<Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
           					</Link>
 							<div className={styles.ulubione}>Moje konto</div>
         				</div>
         				<div className={styles.tablerIconHeartParent}>
-          					<Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
+          					<Image src={bagicon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
           					<div className={styles.ulubione}>Koszyk</div>
         				</div>
       			</div>

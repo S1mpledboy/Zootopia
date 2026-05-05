@@ -4,7 +4,7 @@ import type { NextPage } from "next";
 import { useCallback, useState } from "react";
 import styles from "./shoppingcart.module.css";
 import { AuthInput } from "./AuthInput";
-import Category from "@/app/category";
+import Category from "@/Components/category";
 
 const ProduktyWKoszyku: NextPage = () => {
   const [loginEmail, setLoginEmail] = useState("");
