@@ -3,7 +3,7 @@ import type { NextPage } from 'next';
 import { useCallback } from 'react';
 import styles from './shoppingcart.module.css';
 import { AuthInput } from './AuthInput';
-import Category from "@/app/category";
+import Category from "@/Components/category";
 const ProduktyWKoszyku: NextPage = () => {
   const onLoginSubmit = useCallback(() => {
     console.log("Logowanie...");

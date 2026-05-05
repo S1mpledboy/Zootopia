@@ -9,8 +9,8 @@ const poppins = Poppins({
 });
 
 import "./globals.css";
-import Nawigacja from "./navBar";
-import Stopka from "./footer";
+import Nawigacja from "../Components/navBar";
+import Stopka from "../Components/footer";
 
 export const metadata: Metadata = {
   title: "Zootopia",
