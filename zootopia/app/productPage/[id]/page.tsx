@@ -20,7 +20,8 @@ export default async function ProductPage({
 }) {
   // 🔥 1. zawsze łącz z DB
   await connectToDatabase();
-
+  const products = await Product.find();
+  console.log(products);
   // 🔥 2. walidacja ID
   if (!params?.id || !Types.ObjectId.isValid(params.id)) {
     return <div>Nieprawidłowe ID produktu</div>;
