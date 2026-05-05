@@ -1,0 +1,360 @@
+.mainContainer {
+    width: 100%;
+    border-radius: 12px;
+    background-color: #fff;
+    border: 1px solid #e7f3f8;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start; /* Wyrównuje wszystko do lewej */
+    padding: 24px;
+    gap: 24px;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}
+
+/* STAN ZWINIĘTY */
+.property1opinieZwinite {
+    height: 83px;
+}
+
+/* STAN ROZWINIĘTY */
+.property1opinieRozwinite {
+    height: auto;
+}
+
+
+/* NAGŁÓWEK I TYTUŁ */
+.frameParent {
+    width: 100%;             /* Musi zajmować całą szerokość paska */
+    display: flex;
+    align-items: center;
+    justify-content: space-between; /* To zadziała tylko jeśli dzieci nie mają sztywnego width */
+}
+
+.opinieParent {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    /* USUNĘLIŚMY justify-content: center */
+    flex: 1;                /* ZMIANA: To sprawi, że tekst "zajmie" całą wolną przestrzeń, spychając strzałkę */
+}
+
+.opinie {
+    position: relative;
+    letter-spacing: -0.02em;
+    line-height: 140%;
+    font-size: 25px;
+}
+
+.frameGroup {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+}
+
+.hidden {
+    display: none !important;
+}
+
+/* GWIAZDKI I IKONY */
+.tablerIconStarParent {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.tablerIconStar {
+    height: 24px;
+    width: 24px;
+    position: relative;
+}
+
+.tablerIconChevronCompactRi {
+    height: 24px;
+    width: 24px;
+    position: relative;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.rotate {
+    transform: rotate(180deg);
+}
+
+/* SEKACJA STATYSTYK (ŚRODEK) */
+.property1opinieZwiniteInner {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 64px 0px;
+    flex-shrink: 0;
+    font-size: 52px;
+}
+
+.frameContainer {
+    display: flex;
+    align-items: center;
+    gap: 64px;
+}
+
+.frameDiv {
+    width: 366px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+}
+
+.tablerIconStarGroup {
+    display: flex;
+    align-items: center;
+    gap: 5.3px;
+}
+
+.tablerIconStar6 {
+    height: 32px;
+    width: 32px;
+    position: relative;
+}
+
+.wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.div2 {
+    position: relative;
+    letter-spacing: -0.05em;
+    line-height: 90%;
+    font-weight: 600;
+}
+
+/* PODSUMOWANIE OPINII */
+.frameParent2 {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 14px;
+}
+
+.naPodstawieParent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.naPodstawie {
+    position: relative;
+    letter-spacing: 0.02em;
+    line-height: 130%;
+}
+
+.wszystkieOpinieSZweryfikowWrapper {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+}
+
+/* SŁUPKI PROCENTOWE */
+.frameWrapper {
+    width: 366px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    font-size: 16px;
+}
+
+.frameParent3 {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.frameParent4 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 5px;
+    box-sizing: border-box;
+    min-width: 20px;
+}
+
+.div3 {
+    flex: 1;
+    position: relative;
+    letter-spacing: 0.02em;
+    line-height: 140%;
+}
+
+.rectangleParent {
+    height: 10px;
+    width: 200px;
+    position: relative;
+}
+
+.frameChild {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    border-radius: 25px;
+    background-color: #c4c8cb;
+    width: 200px;
+    height: 10px;
+}
+
+.frameItem {
+    position: absolute;
+    top: 0px;
+    left: -0.5px;
+    border-radius: 25px;
+    background-color: #fc5773;
+    height: 10px;
+}
+
+.frame {
+    width: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 5px;
+    box-sizing: border-box;
+    min-width: 60px;
+}
+
+/* SORTOWANIE */
+.produktyWKoszyku {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 24px;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.opcjaSortowaniaParent {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.opcjaSortowania {
+    border-radius: 12px;
+    background-color: #fedde3;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    cursor: pointer;
+}
+
+/* POJEDYNCZA OPINIA */
+.property1opinieZwiniteChild {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex-shrink: 0;
+    padding: 20px 0;
+}
+
+.frameParent9 {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    gap: 64px;
+}
+
+.kasiaIRikoWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
+}
+
+.kasiaIRiko {
+    flex: 1;
+    position: relative;
+    letter-spacing: -0.02em;
+    line-height: 140%;
+    font-weight: 600;
+}
+
+.frameParent10 {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 16px;
+}
+
+.frameParent11 {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.frameParent12 {
+    display: flex;
+    flex-direction: row;      /* Wymusza układ poziomy */
+    align-items: center;      /* Centruje gwiazdki i tekst w pionie */
+    justify-content: flex-start;
+    gap: 12px;                /* Tworzy odstęp między gwiazdkami a tekstem */
+    width: auto;              /* Pozwala kontenerowi rosnąć w bok */
+    min-width: fit-content;   /* Zapobiega zwężaniu kontenera */
+}
+
+.wrapper10 {
+    display: flex;
+    align-items: center;
+    color: #899197;
+}
+
+.mjCockerSpaniel {
+    align-self: stretch;
+    position: relative;
+    letter-spacing: 0.02em;
+    line-height: 140%;
+}
+
+.property1opinieZwiniteItem {
+    align-self: stretch;
+    height: 1px;
+    position: relative;
+    max-width: 100%;
+    background-color: #e7f3f8;
+    margin: 10px 0;
+}
+
+.div {
+    white-space: nowrap;      /* Kluczowe: zabrania tekstowi przeskakiwania do nowej linii */
+    position: relative;
+    letter-spacing: 0.02em;
+    line-height: 140%;
+}
+.tablerIconStar, 
+.tablerIconStar6, 
+.tablerIconChevronCompactRi {
+    filter: invert(47%) sepia(88%) saturate(1435%) hue-rotate(325deg) brightness(101%) contrast(98%);
+}
