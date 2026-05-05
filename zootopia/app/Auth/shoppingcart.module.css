@@ -1,0 +1,214 @@
+.produktyWKoszyku {
+  	width: 100%;
+  	position: relative;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 64px 40px;
+  	box-sizing: border-box;
+  	text-align: center;
+  	font-size: 29px;
+  	color: #000;
+  	font-family: Poppins;
+}
+.frameParent {
+    align-self: stretch;
+    display: flex;
+    align-items: stretch; /* Zmieniono z 'center' na 'stretch' */
+    justify-content: space-between;
+    gap: 20px;
+}
+.frameWrapper {
+  	height: 500px;
+  	width: 500px;
+  	box-shadow: 0px 13px 4px rgba(0, 0, 0, 0), 0px 8px 3px rgba(0, 0, 0, 0.02), 0px 5px 3px rgba(0, 0, 0, 0.08), 0px 2px 2px rgba(0, 0, 0, 0.13), 0px 1px 1px rgba(0, 0, 0, 0.15);
+  	background-color: #ebfae3;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 78px 50px 90px;
+  	box-sizing: border-box;
+}
+.zalogujSiParent {
+  	width: 400px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	justify-content: center;
+  	gap: 40px;
+}
+.zalogujSi {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: -0.04em;
+  	line-height: 120%;
+  	font-weight: 600;
+  	text-align: left;
+}
+.frameGroup {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 12px;
+  	font-size: 19px;
+  	color: #565e64;
+}
+.frameContainer {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 16px;
+}
+.eMailWrapper {
+  	align-self: stretch;
+  	height: 58px;
+  	border-radius: 20px;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+  	display: flex;
+  	align-items: center;
+  	padding: 10px 20px;
+}
+.eMail {
+  	position: relative;
+  	line-height: 150%;
+}
+.frameDiv {
+  	align-self: stretch;
+  	height: 58px;
+  	border-radius: 20px;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	justify-content: center;
+  	padding: 10px 20px;
+}
+.tablerIconEyeOff {
+  	height: 24px;
+  	width: 24px;
+  	position: relative;
+}
+.frameParent2 {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+  	font-size: 14px;
+  	color: #000;
+}
+.rectangleParent {
+  	display: flex;
+  	align-items: center;
+  	gap: 10px;
+}
+.frameChild {
+  	height: 16px;
+  	width: 16px;
+  	position: relative;
+  	border: 0.8px solid #000;
+  	box-sizing: border-box;
+}
+.zapamitajMnie {
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+}
+.doKasy {
+  	align-self: stretch;
+  	height: 55px;
+  	border-radius: 20px;
+  	background-color: #91be77;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 10px 20px;
+  	box-sizing: border-box;
+  	cursor: pointer;
+  	font-size: 16px;
+}
+.zalogujSi2 {
+  	position: relative;
+  	letter-spacing: -0.01em;
+  	font-weight: 500;
+}
+.lineParent {
+    align-self: stretch; /* To sprawi, że kontener linii będzie tak wysoki jak formularze obok */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 0px 20px;
+    gap: 20px; /* Zmniejszyłem gap z 48px, żeby kreski miały więcej miejsca */
+    font-size: 16px;
+}
+.frameItem {
+    width: 0px; /* Szerokość 0, bo używamy border-right */
+    flex: 1;    /* To najważniejsza zmiana - kreski zajmą tyle miejsca, ile się da */
+    position: relative;
+    border-right: 1px solid #000;
+    box-sizing: border-box;
+}
+.lub {
+  	position: relative;
+  	letter-spacing: 0.2em;
+  	text-transform: uppercase;
+}
+.frameWrapper2 {
+  	height: 500px;
+  	width: 500px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 78px 50px 90px;
+  	box-sizing: border-box;
+}
+.frameWrapper3 {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	font-size: 19px;
+  	color: #565e64;
+}
+.eMailContainer {
+  	align-self: stretch;
+  	height: 58px;
+  	border-radius: 20px;
+  	background-color: #fff;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+  	display: flex;
+  	align-items: center;
+  	padding: 10px 20px;
+}
+.frameWrapper4 {
+  	align-self: stretch;
+  	height: 58px;
+  	border-radius: 20px;
+  	background-color: #fff;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	justify-content: center;
+  	padding: 10px 20px;
+}
+.doKasy2 {
+  	align-self: stretch;
+  	height: 55px;
+  	border-radius: 20px;
+  	background-color: #91be77;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 10px 20px;
+  	box-sizing: border-box;
+  	font-size: 16px;
+}
+
