@@ -10,25 +10,27 @@ import { Types } from "mongoose";
 
 import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
-import plusIcon from "@/app/Public/Images/tabler-icon-plus.png";
-import minusIcon from "@/app/Public/Images/tabler-icon-minus.png";
-
+import "@/models/Category";
 export default async function ProductPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  // 🔥 1. zawsze łącz z DB
+  // 🔥 Next 15+: params to Promise
+  const { id } = await params;
+
+
+
+  // 🔥 DB connection
   await connectToDatabase();
-  const products = await Product.find();
-  console.log(products);
-  // 🔥 2. walidacja ID
-  if (!params?.id || !Types.ObjectId.isValid(params.id)) {
+
+  // 🔥 walidacja ID
+  if (!id || !Types.ObjectId.isValid(id)) {
     return <div>Nieprawidłowe ID produktu</div>;
   }
 
-  // 🔥 3. pobranie produktu
-  const product = await Product.findById(params.id)
+  // 🔥 pobranie produktu
+  const product = await Product.findById(id)
     .populate("category")
     .lean();
 
@@ -52,12 +54,14 @@ export default async function ProductPage({
               <div className={styles.alphawolf}>
                 {product.category?.name || "Kategoria"}
               </div>
+
               <Image
                 className={styles.ulubioneIcon}
                 src={heartIcon}
                 alt="Ulubione"
               />
             </div>
+
             <div className={styles.divider} />
           </div>
 
@@ -92,7 +96,7 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* CLIENT UI (na przyszłość koszyk) */}
+          {/* AKCJA */}
           <div className={styles.frameWrapper}>
             <div className={styles.frameParent3}>
               <button className={styles.dodajDoKoszykaWrapper}>
