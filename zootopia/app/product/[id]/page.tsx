@@ -122,7 +122,7 @@ export default async function ProductPage({
           content={`Stan magazynowy: ${product.stock}`}
         />
 
-         <ReviewsSection productId={Number(id)} />
+         <ReviewsSection productId={id} />
       </div>
     </div>
   );

@@ -20,7 +20,7 @@ const reviewsData = [
 ];
 
 interface ReviewsProps {
-  productId: number;
+  productId: string;
 }
 
 // FUNKCJA POMOCNICZA DO GWIAZDEK
