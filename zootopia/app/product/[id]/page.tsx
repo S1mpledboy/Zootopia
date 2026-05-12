@@ -4,7 +4,7 @@ import styles from "./product.module.css";
 import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
-import QuantityitySelector from "./QuantitySelectorProps";
+import QuantitySelector from "./QuantitySelectorProps";
 
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
@@ -16,29 +16,32 @@ import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
 import "@/models/Category";
 
 type ProductPageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default async function ProductPage({
   params,
 }: ProductPageProps) {
-  const { id } = params;
 
-  // Połączenie z bazą danych
+  // NEXT 15/16
+  const { id } = await params;
+
+  // DB CONNECTION
   await connectToDatabase();
 
-  // Walid ID validation
+  // VALIDATE OBJECT ID
   if (!Types.ObjectId.isValid(id)) {
     return <div>Nieprawidłowe ID produktu</div>;
   }
 
-  // Pobranie produktu
+  // GET PRODUCT
   const product = await Product.findById(id)
     .populate("category")
     .lean();
 
+  // PRODUCT NOT FOUND
   if (!product) {
     return <div>Produkt nie istnieje</div>;
   }
@@ -46,16 +49,16 @@ export default async function ProductPage({
   return (
     <div className={styles.kategorie}>
       <div className={styles.produktKaruzelaParent}>
-        
-        {/* LEWA KOLUMNA*/}
+
+        {/* LEWA KOLUMNA */}
         <div className={styles.produktKaruzela}>
           <Carousel />
         </div>
 
-        {/*PRAWA KOLUMNA*/}
+        {/* PRAWA KOLUMNA */}
         <div className={styles.frameGroup}>
 
-          {/* Kategoria + Serce*/}
+          {/* KATEGORIA + SERCE */}
           <div className={styles.frameContainer}>
             <div className={styles.alphawolfParent}>
 
@@ -73,7 +76,7 @@ export default async function ProductPage({
             <div className={styles.divider} />
           </div>
 
-          {/*NOWA*/}
+          {/* NAZWA PRODUKTU */}
           <div className={styles.alphawolf400gBezzboMokrWrapper}>
             <h1 className={styles.alphawolf400gBezzbo}>
               {product.name}
@@ -82,7 +85,7 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/*Gwiadki*/}
+          {/* GWIAZDKI */}
           <div className={styles.frameDiv}>
             <div className={styles.tablerIconStarParent}>
               {[...Array(5)].map((_, i) => (
@@ -95,10 +98,12 @@ export default async function ProductPage({
               ))}
             </div>
 
-            <div className={styles.div}>(76)</div>
+            <div className={styles.div}>
+              (76)
+            </div>
           </div>
 
-          {/*CENA + STAN*/}
+          {/* CENA + STAN */}
           <div className={styles.frameParent2}>
             <div className={styles.alphawolfParent}>
 
@@ -107,12 +112,13 @@ export default async function ProductPage({
               </div>
 
               <div className={styles.zkg}>
-                Stan: {product.stockock}
+                Stan: {product.stock}
               </div>
+
             </div>
 
-            <div className={styles.najiszaCenanaZ30DniPrzedParent}>
-              <div className={styles.najnizsCena}>
+            <div className={styles.najiszaCenaZ30DniPrzedParent}>
+              <div className={styles.najniszaCenaZ}>
                 Dostępny w magazynie
               </div>
             </div>
@@ -126,23 +132,24 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/*KZYK + ILOŚĆ*/}
+          {/* ILOŚĆ + KOSZYK */}
           <div className={styles.frameWrapper}>
             <div className={styles.frameParent3}>
 
-              <QuantityitySelector />
+              <QuantitySelector />
 
               <button className={styles.dodajDoKoszykaWrapper}>
                 <div className={styles.dodajDoKoszyka}>
                   Dodaj do koszyka
                 </div>
               </button>
+
             </div>
           </div>
         </div>
       </div>
 
-      {/*DOŁ*/}
+      {/* DÓŁ */}
       <div className={styles.vectorParent}>
         <div className={styles.dividerFull} />
 
@@ -155,7 +162,7 @@ export default async function ProductPage({
           title="Dodatkowe informacje"
           content={
             <ul>
-              <li>Stan magazynowy: {product.stockock}</li>
+              <li>Stan magazynowy: {product.stock}</li>
               <li>
                 Kategoria: {product.category?.name || "Brak"}
               </li>
