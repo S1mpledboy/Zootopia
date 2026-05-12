@@ -4,14 +4,14 @@ import styles from '@/app/modulesCSS/promotionList.module.css';
 import categoryNameStyle from '@/app/modulesCSS/categoryName.module.css';
 
 import PromotionItem from '../ItemBlocks/promotionItem';
-import {items} from "@/app/Public/Data/bestsellerItems";
+import {BestsellersItems} from "@/app/Public/Data/bestsellerItems";
 
 
 
 const Kategorie: NextPage = () => {
   	return (
     		<div className={styles.kategorie}>
-                {items.map((item) => (
+                {BestsellersItems.map((item) => (
                     <PromotionItem
                         key={item.id}
                         id={item.id}
