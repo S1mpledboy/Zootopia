@@ -1,11 +1,11 @@
-
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import validator from "validator";
+import crypto from "crypto";
 
+import { sendVerificationEmail } from "@/lib/mail";
 import User from "@/models/User";
 import { connectToDatabase } from "@/lib/mongodb.js";
-
 
 function generateToken(user) {
   return jwt.sign(
@@ -57,23 +57,22 @@ export async function register(data) {
 
   const hashedPassword = await bcrypt.hash(password, 12);
 
+  const verificationToken = crypto.randomBytes(32).toString("hex");
+
   const user = await User.create({
     email,
     password: hashedPassword,
     role: "user",
+    isEmailVerified: false,
+    emailVerificationToken: verificationToken,
+    emailVerificationTokenExpires: new Date(Date.now() + 60 * 60 * 1000),
   });
 
-  const token = generateToken(user);
+  await sendVerificationEmail(user.email, verificationToken);
 
   return Response.json(
     {
-      message: "User created",
-      token,
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-      },
+      message: "User registered successfully. Please verify your email.",
     },
     { status: 201 }
   );
@@ -109,6 +108,13 @@ export async function login(data) {
     );
   }
 
+  if (!user.isEmailVerified) {
+    return Response.json(
+      { message: "Please verify your email before login" },
+      { status: 403 }
+    );
+  }
+
   const token = generateToken(user);
 
   return Response.json({
@@ -139,6 +145,7 @@ export async function getMe(userId) {
       id: user._id,
       email: user.email,
       role: user.role,
+      isEmailVerified: user.isEmailVerified,
     },
   });
 }
