@@ -21,7 +21,7 @@ const PromotionItem = ({
     }: PromotionItemProps) => {
   	return (	
         <div className={styles.produktPromocjaPies}>
-            <Link key={id} href={`/ProdPage/${id}`}>
+            <Link key={id} href={`/product/${id}`}>
                 <Image src={image} className={styles.produktPromocjaPiesChild} width={240} height={240} sizes="100vw" alt="" />
             </Link>
                 <div className={styles.nazwaMarkiParent}>
