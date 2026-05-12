@@ -85,7 +85,6 @@ export default async function ProductPage({
             </div>
             <div className={styles.div}>(76)</div>
           </div>
-
           <div className={styles.frameParent2}>
             <div className={styles.alphawolfParent}>
               <div className={styles.z}>{product.price} zł</div>
@@ -95,20 +94,13 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          <div style={{ marginBottom: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
             <QuantitySelector />
+            <button className={styles.dodajDoKoszykaWrapper}>
+              <div className={styles.dodajDoKoszyka}>Dodaj do koszyka</div>
+            </button>
           </div>
 
-          {/* AKCJA */}
-          <div className={styles.frameWrapper}>
-            <div className={styles.frameParent3}>
-              <button className={styles.dodajDoKoszykaWrapper}>
-                <div className={styles.dodajDoKoszyka}>
-                  Dodaj do koszyka
-                </div>
-              </button>
-            </div>
-          </div>
         </div>
       </div>
 
