@@ -3,7 +3,7 @@ import styles from "./product.module.css";
 import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
-
+import QuantitySelector from "./QuantitySelectorProps";
 import { connectToDatabase } from "@/lib/mongodb.js";
 import Product from "@/models/Product";
 import { Types } from "mongoose";
@@ -94,6 +94,10 @@ export default async function ProductPage({
           </div>
 
           <div className={styles.divider} />
+
+          <div style={{ marginBottom: 16 }}>
+            <QuantitySelector />
+          </div>
 
           {/* AKCJA */}
           <div className={styles.frameWrapper}>

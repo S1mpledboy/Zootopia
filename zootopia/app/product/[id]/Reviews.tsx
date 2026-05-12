@@ -98,7 +98,7 @@ const Reviews = ({ productId }: ReviewsProps) => {
       {/* NAGŁÓWEK */}
       <div className={styles.frameParent} onClick={() => setIsOpen(!isOpen)} style={{ cursor: 'pointer' }}>
         <div className={styles.opinieParent}>
-          <div className={styles.opinie}>Opinie (ID: {productId})</div>
+          <div className={styles.opinie}>Opinie</div>
           <div className={`${styles.frameGroup} ${isOpen ? styles.hidden : ''}`}>
             <div className={styles.tablerIconStarParent}>
               {renderStars(stats.average, styles.tablerIconStar)}
