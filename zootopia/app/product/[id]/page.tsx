@@ -1,40 +1,40 @@
-'use client';
-
 import Image from "next/image";
 import styles from "./product.module.css";
+
 import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
-import QuantitySelector from "./QuantitySelectorProps";
+import QuantityitySelector from "./QuantitySelectorProps";
 
-import { connectToDatabase } from "@/lib/mongodb.js";
+import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import { Types } from "mongoose";
 
 import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
-import plusIcon from "@/app/Public/Images/tabler-icon-plus.png";
-import minusIcon from "@/app/Public/Images/tabler-icon-minus.png";
 
 import "@/models/Category";
 
+type ProductPageProps = {
+  params: {
+    id: string;
+  };
+};
+
 export default async function ProductPage({
   params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  // Next 15+
-  const { id } = await params;
+}: ProductPageProps) {
+  const { id } = params;
 
-  // DB
+  // Połączenie z bazą danych
   await connectToDatabase();
 
-  // walidacja ID
-  if (!id || !Types.ObjectId.isValid(id)) {
+  // Walid ID validation
+  if (!Types.ObjectId.isValid(id)) {
     return <div>Nieprawidłowe ID produktu</div>;
   }
 
-  // Produkt
+  // Pobranie produktu
   const product = await Product.findById(id)
     .populate("category")
     .lean();
@@ -46,16 +46,16 @@ export default async function ProductPage({
   return (
     <div className={styles.kategorie}>
       <div className={styles.produktKaruzelaParent}>
-
-        {/* LEWA KOLUMNAA */}
+        
+        {/* LEWA KOLUMNA*/}
         <div className={styles.produktKaruzela}>
           <Carousel />
         </div>
 
-        {/* PRAWAA KOLUMNA */}
+        {/*PRAWA KOLUMNA*/}
         <div className={styles.frameGroup}>
 
-          {/* Kategoria + Serce */}
+          {/* Kategoria + Serce*/}
           <div className={styles.frameContainer}>
             <div className={styles.alphawolfParent}>
 
@@ -73,7 +73,7 @@ export default async function ProductPage({
             <div className={styles.divider} />
           </div>
 
-          {/* Nazwa produktu */}
+          {/*NOWA*/}
           <div className={styles.alphawolf400gBezzboMokrWrapper}>
             <h1 className={styles.alphawolf400gBezzbo}>
               {product.name}
@@ -82,7 +82,7 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* Gwzdki */}
+          {/*Gwiadki*/}
           <div className={styles.frameDiv}>
             <div className={styles.tablerIconStarParent}>
               {[...Array(5)].map((_, i) => (
@@ -98,7 +98,7 @@ export default async function ProductPage({
             <div className={styles.div}>(76)</div>
           </div>
 
-          {/* Cena + stan */}
+          {/*CENA + STAN*/}
           <div className={styles.frameParent2}>
             <div className={styles.alphawolfParent}>
 
@@ -107,45 +107,42 @@ export default async function ProductPage({
               </div>
 
               <div className={styles.zkg}>
-                stan: {product.stock}
+                Stan: {product.stockock}
               </div>
-
             </div>
 
-            <div className={styles.najiszaCenaZ30DniPrzedParent}>
-              <div className={styles.najniszaCenaZ}>
-                Dostępny w magazyn
+            <div className={styles.najiszaCenanaZ30DniPrzedParent}>
+              <div className={styles.najnizsCena}>
+                Dostępny w magazynie
               </div>
             </div>
 
             <div className={styles.cenaObowiazujeDo10052026Wrapper}>
               <div className={styles.div}>
-                Wysyzyka w ciągu 24h.
+                Wysyłka w ciągu 24h
               </div>
             </div>
           </div>
 
           <div className={styles.divider} />
 
-          {/* KOSZYK + ILOŚĆ */}
+          {/*KZYK + ILOŚĆ*/}
           <div className={styles.frameWrapper}>
             <div className={styles.frameParent3}>
 
-              {/* Zachowujemy funkcjonalność QuantitySelector */}
-              <QuantitySelector />
+              <QuantityitySelector />
 
               <button className={styles.dodajDoKoszykaWrapper}>
                 <div className={styles.dodajDoKoszyka}>
                   Dodaj do koszyka
                 </div>
               </button>
-
             </div>
           </div>
         </div>
       </div>
 
-      {/*DÓŁ*/}
+      {/*DOŁ*/}
       <div className={styles.vectorParent}>
         <div className={styles.dividerFull} />
 
@@ -158,8 +155,10 @@ export default async function ProductPage({
           title="Dodatkowe informacje"
           content={
             <ul>
-              <li>Stan magazynowy: {product.stock}</li>
-              <li>Kategoria: {product.category?.name || "Brak"}</li>
+              <li>Stan magazynowy: {product.stockock}</li>
+              <li>
+                Kategoria: {product.category?.name || "Brak"}
+              </li>
             </ul>
           }
         />
