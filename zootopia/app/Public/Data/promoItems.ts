@@ -23,6 +23,7 @@ export const items = [
     brandName: "Karma kurczak 10kg",
     productName: "Lepsza karma",
     price: 199,
+    promoPrice: 100,
     image: item1,
   },
 ];

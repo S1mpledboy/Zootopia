@@ -1,4 +1,6 @@
 import type { NextPage } from 'next';
+import Link from 'next/link';
+
 import Image from "next/image";
 import styles from '@/app/modulesCSS/navBar.module.css';
 import logo from "@/app/Public/Images/ZOOTOPIA.svg";
@@ -12,8 +14,10 @@ const Nawigacja: NextPage = () => {
   	return (
     		<div className={styles.nawigacja}>
       			<div className={styles.zootopiaWrapper}>
-        				<Image src={logo} className={styles.zootopiaIcon} width={253.6} height={40} sizes="100vw" alt="" />
-      			</div>
+        				<Link href="/">
+						<Image src={logo} className={styles.zootopiaIcon} width={253.6} height={40} sizes="100vw" alt="" />
+						</Link>
+				</div>
       			<div className={styles.szukajParent}>
         				<div className={styles.szukaj}>Szukaj...</div>
         				<Image src={searchicon} className={styles.tablerIconSearch} width={24} height={24} sizes="100vw" alt="" />
@@ -24,11 +28,13 @@ const Nawigacja: NextPage = () => {
           					<div className={styles.ulubione}>Ulubione</div>
         				</div>
         				<div className={styles.tablerIconHeartParent}>
-          					<Image src={bagicon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
-          					<div className={styles.ulubione}>Moje konto</div>
+							<Link href="/Auth">
+          					<Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
+          					</Link>
+							<div className={styles.ulubione}>Moje konto</div>
         				</div>
         				<div className={styles.tablerIconHeartParent}>
-          					<Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
+          					<Image src={bagicon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
           					<div className={styles.ulubione}>Koszyk</div>
         				</div>
       			</div>
