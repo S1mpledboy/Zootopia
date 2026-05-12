@@ -11,6 +11,7 @@ import { Types } from "mongoose";
 import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
 import "@/models/Category";
+
 export default async function ProductPage({
   params,
 }: {
@@ -18,8 +19,6 @@ export default async function ProductPage({
 }) {
   // 🔥 Next 15+: params to Promise
   const { id } = await params;
-
-
 
   // 🔥 DB connection
   await connectToDatabase();
@@ -123,7 +122,7 @@ export default async function ProductPage({
           content={`Stan magazynowy: ${product.stock}`}
         />
 
-        <ReviewsSection />
+         <ReviewsSection productId={Number(id)} />
       </div>
     </div>
   );

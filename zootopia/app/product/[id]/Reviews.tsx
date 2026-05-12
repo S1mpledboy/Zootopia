@@ -19,6 +19,10 @@ const reviewsData = [
   { name: "DogMom88", date: "13.04.2026", rating: 3.5, text: "Karma ok, ale mojemu psu średnio smakuje." },
 ];
 
+interface ReviewsProps {
+  productId: number;
+}
+
 // FUNKCJA POMOCNICZA DO GWIAZDEK
 const renderStars = (rating: number, className: string) => {
   const stars = [];
@@ -26,7 +30,6 @@ const renderStars = (rating: number, className: string) => {
     let currentIcon = starFull;
     
     if (i > rating) {
-      // Jeśli różnica jest mniejsza niż 1 (np. 0.5), dajemy połówkę
       currentIcon = (i - rating <= 0.5) ? starHalf : starEmpty;
     }
 
@@ -69,7 +72,7 @@ const ReviewItem = ({ name, date, rating, text }: any) => (
   </>
 );
 
-const Reviews = () => {
+const Reviews = ({ productId }: ReviewsProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const stats = useMemo(() => {
@@ -78,7 +81,6 @@ const Reviews = () => {
       ? (reviewsData.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1) 
       : "0.0";
     
-    // Słupki (liczymy zaokrąglone w dół oceny do odpowiednich kategorii)
     const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     reviewsData.forEach(r => counts[Math.floor(r.rating) as keyof typeof counts]++);
 
@@ -96,7 +98,7 @@ const Reviews = () => {
       {/* NAGŁÓWEK */}
       <div className={styles.frameParent} onClick={() => setIsOpen(!isOpen)} style={{ cursor: 'pointer' }}>
         <div className={styles.opinieParent}>
-          <div className={styles.opinie}>Opinie</div>
+          <div className={styles.opinie}>Opinie (ID: {productId})</div>
           <div className={`${styles.frameGroup} ${isOpen ? styles.hidden : ''}`}>
             <div className={styles.tablerIconStarParent}>
               {renderStars(stats.average, styles.tablerIconStar)}
