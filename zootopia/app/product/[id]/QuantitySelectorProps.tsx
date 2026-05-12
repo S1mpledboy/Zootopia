@@ -34,7 +34,7 @@ const QuantitySelector = ({ onChange }: QuantitySelectorProps) => {
       >
         -
       </button>
-      <div style={{ minWidth: 32, textAlign: 'center', fontSize: 16 }}>
+      <div style={{ minWidth: 32, textAlign: 'center', fontSize: 16,width: 40, height: 40, borderRadius: 16,border: '1px solid #d0d0d0',background: '#f3f6fb', }}>
         {quantity}
       </div>
       <button
