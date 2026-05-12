@@ -1,3 +1,4 @@
+
 import Image from "next/image";
 import styles from "./product.module.css";
 
@@ -28,15 +29,15 @@ export default async function ProductPage({
   // NEXT 15/16
   const { id } = await params;
 
-  // DB CONNECTION
+  // DATABASE
   await connectToDatabase();
 
-  // VALIDATE OBJECT ID
+  // VALIDATION
   if (!Types.ObjectId.isValid(id)) {
     return <div>Nieprawidłowe ID produktu</div>;
   }
 
-  // GET PRODUCT
+  // PRODUCT
   const product = await Product.findById(id)
     .populate("category")
     .lean();
@@ -77,8 +78,8 @@ export default async function ProductPage({
           </div>
 
           {/* NAZWA PRODUKTU */}
-          <div className={styles.alphawolf400gBezzboMokrWrapper}>
-            <h1 className={styles.alphawolf400gBezzbo}>
+          <div className={styles.alphawolf400gBezzboowaMokrWrapper}>
+            <h1 className={styles.alphawolf400gBezzboowa}>
               {product.name}
             </h1>
           </div>
@@ -103,7 +104,7 @@ export default async function ProductPage({
             </div>
           </div>
 
-          {/* CENA + STAN */}
+          {/* CENA */}
           <div className={styles.frameParent2}>
             <div className={styles.alphawolfParent}>
 
@@ -117,13 +118,13 @@ export default async function ProductPage({
 
             </div>
 
-            <div className={styles.najiszaCenaZ30DniPrzedParent}>
+            <div className={styles.najniszaCenaZ30DniPrzedParent}>
               <div className={styles.najniszaCenaZ}>
                 Dostępny w magazynie
               </div>
             </div>
 
-            <div className={styles.cenaObowiazujeDo10052026Wrapper}>
+            <div className={styles.cenaObowizujeDo10052026Wrapper}>
               <div className={styles.div}>
                 Wysyłka w ciągu 24h
               </div>
@@ -136,6 +137,7 @@ export default async function ProductPage({
           <div className={styles.frameWrapper}>
             <div className={styles.frameParent3}>
 
+              {/* TWOJA KOMPONENTOWA FUNKCJONALNOŚĆ */}
               <QuantitySelector />
 
               <button className={styles.dodajDoKoszykaWrapper}>
@@ -153,25 +155,65 @@ export default async function ProductPage({
       <div className={styles.vectorParent}>
         <div className={styles.dividerFull} />
 
+        {/* OPIS */}
         <Accordion
           title="Opis"
-          content={product.description || "Brak opisu"}
+          content={
+            product.description ||
+            "Brak opisu produktu"
+          }
         />
 
+        {/* SKŁADNIKI */}
+        <Accordion
+          title="Składniki"
+          content={
+            <>
+              <p>
+                W Zootopii nie mamy nic do ukrycia.
+              </p>
+
+              <ul>
+                <li>
+                  Kategoria:{" "}
+                  {product.category?.name || "Brak"}
+                </li>
+
+                <li>
+                  Stan magazynowy: {product.stock}
+                </li>
+
+                <li>
+                  ID produktu: {product._id.toString()}
+                </li>
+              </ul>
+            </>
+          }
+        />
+
+        {/* DODATKOWE INFO */}
         <Accordion
           title="Dodatkowe informacje"
           content={
             <ul>
-              <li>Stan magazynowy: {product.stock}</li>
               <li>
-                Kategoria: {product.category?.name || "Brak"}
+                Dostępność: Produkt dostępny
+              </li>
+
+              <li>
+                Wysyłka: 24h
+              </li>
+
+              <li>
+                Cena: {product.price} zł
               </li>
             </ul>
           }
         />
 
+        {/* REVIEWS */}
         <ReviewsSection productId={id} />
       </div>
     </div>
   );
-}
+};
