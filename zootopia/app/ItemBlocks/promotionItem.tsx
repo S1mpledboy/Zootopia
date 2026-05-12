@@ -4,6 +4,7 @@ import styles from '@/app/modulesCSS/promotionList.module.css';
 
 import item1 from "@/app/Public/Images/item1.png";
 import hearth from "@/app/Public/Images/tabler-icon-heart.svg";
+import Link from 'next/link';
 
 type PromotionItemProps = {
     id: number;
@@ -20,7 +21,9 @@ const PromotionItem = ({
     }: PromotionItemProps) => {
   	return (	
         <div className={styles.produktPromocjaPies}>
+            <Link key={id} href={`/product/${id}`}>
                 <Image src={image} className={styles.produktPromocjaPiesChild} width={240} height={240} sizes="100vw" alt="" />
+            </Link>
                 <div className={styles.nazwaMarkiParent}>
                     <b className={styles.nazwaMarki}>{brandName}</b>
                     <Image src={hearth} className={styles.ulubioneIcon} width={21.8} height={21.8} sizes="100vw" alt="" />
