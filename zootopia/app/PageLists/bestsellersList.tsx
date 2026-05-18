@@ -14,7 +14,7 @@ type Product = {
 
 export default async function Kategorie() {
   const { client } = await connectToDatabase();
-  const db = client.db("yourDatabaseName");
+  const db = client.db("mydb");
 
   const products = (await db
     .collection("products")
