@@ -39,7 +39,7 @@ export default async function ProductPage({
 
   // PRODUCT
   const product = await Product.findById(id)
-    .populate("category")
+    .populate("company")
     .lean();
 
   // PRODUCT NOT FOUND
@@ -64,7 +64,7 @@ export default async function ProductPage({
             <div className={styles.alphawolfParent}>
 
               <div className={styles.alphawolf}>
-                {product.category?.name || "Kategoria"}
+                {product.company?.name || "Zootopia"}
               </div>
 
               <Image
