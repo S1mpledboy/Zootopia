@@ -14,8 +14,8 @@ import { Types } from "mongoose";
 import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
 
+import "@/models/Company";
 import "@/models/Category";
-
 type ProductPageProps = {
   params: Promise<{
     id: string;
@@ -40,6 +40,7 @@ export default async function ProductPage({
   // PRODUCT
   const product = await Product.findById(id)
     .populate("category")
+    .populate("company")
     .lean();
 
   // PRODUCT NOT FOUND
