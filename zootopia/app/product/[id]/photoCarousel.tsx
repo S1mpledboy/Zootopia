@@ -16,19 +16,18 @@ const Carousel: NextPage<CarouselProps> = ({ images = [] }) => {
     return <div>Brak zdjęć produktu</div>;
   }
 
-  const activeImage = images[activeIndex];
-
   return (
     <div className={styles.property1img1}>
 
       {/* GŁÓWNE ZDJĘCIE */}
       <div className={styles.property1img1Child}>
         <Image
-          src={activeImage}
-          alt={`Zdjęcie produktu ${activeIndex + 1}`}
-          priority
+          src={images[activeIndex]}
+          alt={`product-${activeIndex}`}
           width={500}
           height={500}
+          unoptimized
+          priority
           style={{ objectFit: "cover" }}
         />
       </div>
@@ -36,8 +35,9 @@ const Carousel: NextPage<CarouselProps> = ({ images = [] }) => {
       {/* MINIATURKI */}
       <div className={styles.frameParent}>
         {images.map((photo, index) => (
-          <div
+          <button
             key={index}
+            type="button"
             onClick={() => setActiveIndex(index)}
             className={
               index === activeIndex
@@ -50,9 +50,10 @@ const Carousel: NextPage<CarouselProps> = ({ images = [] }) => {
               width={100}
               height={100}
               alt={`Miniaturka ${index + 1}`}
+              unoptimized
               style={{ objectFit: "cover" }}
             />
-          </div>
+          </button>
         ))}
       </div>
     </div>
