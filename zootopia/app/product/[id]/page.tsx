@@ -6,6 +6,8 @@ import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
 import QuantitySelector from "./QuantitySelectorProps";
+import "@/models/Company";
+import "@/models/Category";
 
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
@@ -14,8 +16,7 @@ import { Types } from "mongoose";
 import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
 
-import "@/models/Company";
-import "@/models/Category";
+
 type ProductPageProps = {
   params: Promise<{
     id: string;
