@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import styles from "./product.module.css";
 
@@ -16,7 +15,6 @@ import { Types } from "mongoose";
 import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
 
-
 type ProductPageProps = {
   params: Promise<{
     id: string;
@@ -27,45 +25,19 @@ export default async function ProductPage({
   params,
 }: ProductPageProps) {
 
-  // NEXT 15/16
   const { id } = await params;
 
-  // DATABASE
   await connectToDatabase();
 
-  // VALIDATION
   if (!Types.ObjectId.isValid(id)) {
     return <div>Nieprawidłowe ID produktu</div>;
   }
 
-  // PRODUCT
-  // PRODUCT
-const product = await Product.findById(id)
-  .populate("category")
-  .populate("company")
-  .lean();
+  const product = await Product.findById(id)
+    .populate("category")
+    .populate("company")
+    .lean();
 
-// 🔥 DEBUG START
-console.log("=== PRODUCT RAW ===");
-console.log(product);
-
-console.log("=== COMPANY FIELD ===");
-console.log("product.company:", product?.company);
-
-console.log("=== CATEGORY FIELD ===");
-console.log("product.category:", product?.category);
-
-console.log("=== COMPANY TYPE ===");
-console.log(typeof product?.company);
-
-console.log("=== IS COMPANY POPULATED ===");
-console.log(
-  product?.company && typeof product.company === "object"
-    ? "YES (POPULATED)"
-    : "NO (ONLY OBJECTID / NULL)"
-);
-// 🔥 DEBUG END
-  // PRODUCT NOT FOUND
   if (!product) {
     return <div>Produkt nie istnieje</div>;
   }
@@ -74,9 +46,9 @@ console.log(
     <div className={styles.kategorie}>
       <div className={styles.produktKaruzelaParent}>
 
-        {/* LEWA KOLUMNA */}
+        {/* LEWA KOLUMNA - CAROUSEL */}
         <div className={styles.produktKaruzela}>
-          <Carousel />
+          <Carousel images={product.images || []} />
         </div>
 
         {/* PRAWA KOLUMNA */}
@@ -100,7 +72,7 @@ console.log(
             <div className={styles.divider} />
           </div>
 
-          {/* NAZWA PRODUKTU */}
+          {/* NAZWA */}
           <div className={styles.alphawolf400gBezzboowaMokrWrapper}>
             <h1 className={styles.alphawolf400gBezzboowa}>
               {product.name}
@@ -122,9 +94,7 @@ console.log(
               ))}
             </div>
 
-            <div className={styles.div}>
-              (76)
-            </div>
+            <div className={styles.div}>(76)</div>
           </div>
 
           {/* CENA */}
@@ -160,7 +130,6 @@ console.log(
           <div className={styles.frameWrapper}>
             <div className={styles.frameParent3}>
 
-              {/* TWOJA KOMPONENTOWA FUNKCJONALNOŚĆ */}
               <QuantitySelector />
 
               <button className={styles.dodajDoKoszykaWrapper}>
@@ -178,65 +147,39 @@ console.log(
       <div className={styles.vectorParent}>
         <div className={styles.dividerFull} />
 
-        {/* OPIS */}
         <Accordion
           title="Opis"
-          content={
-            product.description ||
-            "Brak opisu produktu"
-          }
+          content={product.description || "Brak opisu produktu"}
         />
 
-        {/* SKŁADNIKI */}
         <Accordion
           title="Składniki"
           content={
             <>
-              <p>
-                W Zootopii nie mamy nic do ukrycia.
-              </p>
+              <p>W Zootopii nie mamy nic do ukrycia.</p>
 
               <ul>
-                <li>
-                  Kategoria:{" "}
-                  {product.category?.name || "Brak"}
-                </li>
-
-                <li>
-                  Stan magazynowy: {product.stock}
-                </li>
-
-                <li>
-                  ID produktu: {product._id.toString()}
-                </li>
+                <li>Kategoria: {product.category?.name || "Brak"}</li>
+                <li>Stan magazynowy: {product.stock}</li>
+                <li>ID produktu: {product._id.toString()}</li>
               </ul>
             </>
           }
         />
 
-        {/* DODATKOWE INFO */}
         <Accordion
           title="Dodatkowe informacje"
           content={
             <ul>
-              <li>
-                Dostępność: Produkt dostępny
-              </li>
-
-              <li>
-                Wysyłka: 24h
-              </li>
-
-              <li>
-                Cena: {product.price} zł
-              </li>
+              <li>Dostępność: Produkt dostępny</li>
+              <li>Wysyłka: 24h</li>
+              <li>Cena: {product.price} zł</li>
             </ul>
           }
         />
 
-        {/* REVIEWS */}
         <ReviewsSection productId={id} />
       </div>
     </div>
   );
-};
+}

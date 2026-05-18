@@ -2,45 +2,61 @@
 
 import type { NextPage } from 'next';
 import Image from "next/image";
+import { useState } from "react";
 import styles from './Carousel.module.css';
 
 interface CarouselProps {
-  mainImage?: string;
   images?: string[];
 }
 
-const Carousel: NextPage<CarouselProps> = ({ mainImage = "", images = [] }) => {
-    return (
-        <div className={styles.property1img1}>
-            {/* Główne zdjęcie */}
-            <div className={styles.property1img1Child}>
-                {mainImage && (
-                    <Image 
-                        src={mainImage} 
-                        alt="Główne zdjęcie produktu"
-                        priority
-                        placeholder="blur"
-                        width={500}
-                        height={500}
-                    />
-                )}
-            </div>
+const Carousel: NextPage<CarouselProps> = ({ images = [] }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
 
-            {/* Miniaturki */}
-            <div className={styles.frameParent}>
-                {images.map((photo, index) => (
-                    <Image 
-                        key={index}
-                        src={photo} 
-                        className={styles.frameChild} 
-                        width={100} 
-                        height={100} 
-                        alt={`Miniaturka ${index + 1}`} 
-                    />
-                ))}
-            </div>
-        </div>
-    );
+  if (!images.length) {
+    return <div>Brak zdjęć produktu</div>;
+  }
+
+  const activeImage = images[activeIndex];
+
+  return (
+    <div className={styles.property1img1}>
+
+      {/* GŁÓWNE ZDJĘCIE */}
+      <div className={styles.property1img1Child}>
+        <Image
+          src={activeImage}
+          alt={`Zdjęcie produktu ${activeIndex + 1}`}
+          priority
+          width={500}
+          height={500}
+          style={{ objectFit: "cover" }}
+        />
+      </div>
+
+      {/* MINIATURKI */}
+      <div className={styles.frameParent}>
+        {images.map((photo, index) => (
+          <div
+            key={index}
+            onClick={() => setActiveIndex(index)}
+            className={
+              index === activeIndex
+                ? styles.frameChildActive
+                : styles.frameChild
+            }
+          >
+            <Image
+              src={photo}
+              width={100}
+              height={100}
+              alt={`Miniaturka ${index + 1}`}
+              style={{ objectFit: "cover" }}
+            />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default Carousel;
