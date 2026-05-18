@@ -14,9 +14,9 @@ type Product = {
 
 export default async function Kategorie() {
   const { client } = await connectToDatabase();
-  const db = client.db("mydb");
 
-  const products = (await db
+
+  const products = (await client
     .collection("products")
     .find({})
     .sort({ stock: 1 })
