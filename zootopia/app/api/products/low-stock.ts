@@ -4,8 +4,9 @@ import { connectToDatabase } from "@/lib/mongodb";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { client } = await connectToDatabase();
+    const db = client.db(process.env.MONGODB_DB);
 
-    const products = await client
+    const products = await db
       .collection("products")
       .find({})
       .sort({ stock: 1 })

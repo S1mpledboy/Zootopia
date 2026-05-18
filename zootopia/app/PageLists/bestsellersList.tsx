@@ -1,7 +1,6 @@
 import styles from '@/app/modulesCSS/promotionList.module.css';
 import PromotionItem from '../ItemBlocks/promotionItem';
 import { connectToDatabase } from "@/lib/mongodb";
-import { ObjectId } from "mongodb";
 
 type Product = {
   _id: number;
@@ -14,9 +13,9 @@ type Product = {
 
 export default async function Kategorie() {
   const { client } = await connectToDatabase();
+  const db = client.db(process.env.MONGODB_DB)
 
-
-  const products = (await client
+  const products = (await db
     .collection("products")
     .find({})
     .sort({ stock: 1 })
