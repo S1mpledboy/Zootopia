@@ -39,12 +39,32 @@ export default async function ProductPage({
   }
 
   // PRODUCT
-  const product = await Product.findById(id)
-    .populate("category")
-    .populate("company")
-    .lean();
-    console.log(product.company);
+  // PRODUCT
+const product = await Product.findById(id)
+  .populate("category")
+  .populate("company")
+  .lean();
 
+// 🔥 DEBUG START
+console.log("=== PRODUCT RAW ===");
+console.log(product);
+
+console.log("=== COMPANY FIELD ===");
+console.log("product.company:", product?.company);
+
+console.log("=== CATEGORY FIELD ===");
+console.log("product.category:", product?.category);
+
+console.log("=== COMPANY TYPE ===");
+console.log(typeof product?.company);
+
+console.log("=== IS COMPANY POPULATED ===");
+console.log(
+  product?.company && typeof product.company === "object"
+    ? "YES (POPULATED)"
+    : "NO (ONLY OBJECTID / NULL)"
+);
+// 🔥 DEBUG END
   // PRODUCT NOT FOUND
   if (!product) {
     return <div>Produkt nie istnieje</div>;
