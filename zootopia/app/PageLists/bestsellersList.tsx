@@ -1,27 +1,39 @@
-import type { NextPage } from 'next';
-import Image from "next/image";
 import styles from '@/app/modulesCSS/promotionList.module.css';
-import categoryNameStyle from '@/app/modulesCSS/categoryName.module.css';
-
 import PromotionItem from '../ItemBlocks/promotionItem';
-import {BestsellersItems} from "@/app/Public/Data/bestsellerItems";
+import { connectToDatabase } from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
-
-
-const Kategorie: NextPage = () => {
-  	return (
-    		<div className={styles.kategorie}>
-                {BestsellersItems.map((item) => (
-                    <PromotionItem
-                        key={item.id}
-                        id={item.id}
-                        brandName={item.brandName}
-                        productName={item.productName}
-                        price={item.price}
-                        image={item.image}
-                    />
-                ))}
-    		</div>);
+type Product = {
+  _id: number;
+  brandName: string;
+  productName: string;
+  price: number;
+  image: string;
+  stock: number;
 };
 
-export default Kategorie ;
+export default async function Kategorie() {
+  const { client } = await connectToDatabase();
+  const db = client.db("yourDatabaseName");
+
+  const products = (await db
+    .collection("products")
+    .find({})
+    .sort({ stock: 1 })
+    .toArray()) as Product[];
+
+  return (
+    <div className={styles.kategorie}>
+      {products.map((item) => (
+        <PromotionItem
+          key={item._id.toString()}
+          id={item._id}
+          brandName={item.brandName}
+          productName={item.productName}
+          price={item.price}
+          image={item.image}
+        />
+      ))}
+    </div>
+  );
+}
