@@ -17,7 +17,6 @@ import Newsletter from '../Components/newsletter';
 const Home = () =>{
     return(
         <main>
-            <Category />
             <Hero />
             <CategoryName name="Promocje"/>
             <PromotionList />
