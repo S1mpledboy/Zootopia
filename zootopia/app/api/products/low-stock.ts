@@ -4,7 +4,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
     const { client } = await connectToDatabase();
-    const db = client.db("yourDatabaseName");
+    const db = client.db("mydb");
 
     const products = await db
       .collection("products")
