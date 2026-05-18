@@ -43,6 +43,7 @@ export default async function ProductPage({
     .populate("category")
     .populate("company")
     .lean();
+    console.log(product.company);
 
   // PRODUCT NOT FOUND
   if (!product) {
