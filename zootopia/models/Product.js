@@ -29,10 +29,20 @@ const ProductSchema = new mongoose.Schema(
       ref: "Category",
       required: [true, "Category is required"],
     },
+    company: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Company",
+      required: [true, "Company is required"],
+    },
     isActive: {
       type: Boolean,
       default: true,
     },
+      images: [
+      {
+        type: [String],
+      } 
+    ],  
   },
   {
     timestamps: true,

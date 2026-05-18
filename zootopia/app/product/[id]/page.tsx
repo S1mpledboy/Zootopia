@@ -1,4 +1,3 @@
-
 import Image from "next/image";
 import styles from "./product.module.css";
 
@@ -6,6 +5,8 @@ import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
 import QuantitySelector from "./QuantitySelectorProps";
+import "@/models/Company";
+import "@/models/Category";
 
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
@@ -13,8 +14,6 @@ import { Types } from "mongoose";
 
 import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
-
-import "@/models/Category";
 
 type ProductPageProps = {
   params: Promise<{
@@ -26,23 +25,19 @@ export default async function ProductPage({
   params,
 }: ProductPageProps) {
 
-  // NEXT 15/16
   const { id } = await params;
 
-  // DATABASE
   await connectToDatabase();
 
-  // VALIDATION
   if (!Types.ObjectId.isValid(id)) {
     return <div>Nieprawidłowe ID produktu</div>;
   }
 
-  // PRODUCT
   const product = await Product.findById(id)
     .populate("category")
+    .populate("company")
     .lean();
 
-  // PRODUCT NOT FOUND
   if (!product) {
     return <div>Produkt nie istnieje</div>;
   }
@@ -51,9 +46,9 @@ export default async function ProductPage({
     <div className={styles.kategorie}>
       <div className={styles.produktKaruzelaParent}>
 
-        {/* LEWA KOLUMNA */}
+        {/* LEWA KOLUMNA - CAROUSEL */}
         <div className={styles.produktKaruzela}>
-          <Carousel />
+          <Carousel images={product.images || []} />
         </div>
 
         {/* PRAWA KOLUMNA */}
@@ -64,7 +59,7 @@ export default async function ProductPage({
             <div className={styles.alphawolfParent}>
 
               <div className={styles.alphawolf}>
-                {product.category?.name || "Kategoria"}
+                {product.company?.name || "Zootopia"}
               </div>
 
               <Image
@@ -77,7 +72,7 @@ export default async function ProductPage({
             <div className={styles.divider} />
           </div>
 
-          {/* NAZWA PRODUKTU */}
+          {/* NAZWA */}
           <div className={styles.alphawolf400gBezzboowaMokrWrapper}>
             <h1 className={styles.alphawolf400gBezzboowa}>
               {product.name}
@@ -99,9 +94,7 @@ export default async function ProductPage({
               ))}
             </div>
 
-            <div className={styles.div}>
-              (76)
-            </div>
+            <div className={styles.div}>(76)</div>
           </div>
 
           {/* CENA */}
@@ -137,7 +130,6 @@ export default async function ProductPage({
           <div className={styles.frameWrapper}>
             <div className={styles.frameParent3}>
 
-              {/* TWOJA KOMPONENTOWA FUNKCJONALNOŚĆ */}
               <QuantitySelector />
 
               <button className={styles.dodajDoKoszykaWrapper}>
@@ -155,65 +147,39 @@ export default async function ProductPage({
       <div className={styles.vectorParent}>
         <div className={styles.dividerFull} />
 
-        {/* OPIS */}
         <Accordion
           title="Opis"
-          content={
-            product.description ||
-            "Brak opisu produktu"
-          }
+          content={product.description || "Brak opisu produktu"}
         />
 
-        {/* SKŁADNIKI */}
         <Accordion
           title="Składniki"
           content={
             <>
-              <p>
-                W Zootopii nie mamy nic do ukrycia.
-              </p>
+              <p>W Zootopii nie mamy nic do ukrycia.</p>
 
               <ul>
-                <li>
-                  Kategoria:{" "}
-                  {product.category?.name || "Brak"}
-                </li>
-
-                <li>
-                  Stan magazynowy: {product.stock}
-                </li>
-
-                <li>
-                  ID produktu: {product._id.toString()}
-                </li>
+                <li>Kategoria: {product.category?.name || "Brak"}</li>
+                <li>Stan magazynowy: {product.stock}</li>
+                <li>ID produktu: {product._id.toString()}</li>
               </ul>
             </>
           }
         />
 
-        {/* DODATKOWE INFO */}
         <Accordion
           title="Dodatkowe informacje"
           content={
             <ul>
-              <li>
-                Dostępność: Produkt dostępny
-              </li>
-
-              <li>
-                Wysyłka: 24h
-              </li>
-
-              <li>
-                Cena: {product.price} zł
-              </li>
+              <li>Dostępność: Produkt dostępny</li>
+              <li>Wysyłka: 24h</li>
+              <li>Cena: {product.price} zł</li>
             </ul>
           }
         />
 
-        {/* REVIEWS */}
         <ReviewsSection productId={id} />
       </div>
     </div>
   );
-};
+}
