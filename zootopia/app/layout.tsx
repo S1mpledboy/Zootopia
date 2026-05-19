@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-
 import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
@@ -11,6 +10,7 @@ const poppins = Poppins({
 import "./globals.css";
 import Nawigacja from "../Components/navBar";
 import Stopka from "../Components/footer";
+import { AuthProvider } from "@/app/context/AuthContext";
 
 export const metadata: Metadata = {
   title: "Zootopia",
@@ -27,9 +27,11 @@ export default function RootLayout({
       <body
         className={`${poppins.variable} ${poppins.variable} antialiased`}
       >
-        <Nawigacja />
-        {children}
-        <Stopka />
+        <AuthProvider>
+          <Nawigacja />
+          {children}
+          <Stopka />
+        </AuthProvider>
       </body>
     </html>
   );
