@@ -21,19 +21,17 @@ export async function GET(req) {
 
   if (!user) {
     return Response.json(
-      { message: "Invalid or expired verification token" },
+      { message: "Invalid or expired token" },
       { status: 400 }
     );
   }
 
- user.isEmailVerified = true;
+  user.isEmailVerified = true;
+  user.emailVerificationToken = undefined;
+  user.emailVerificationTokenExpires = undefined;
+  user.deleteUnverifiedAt = undefined;
 
-user.emailVerificationToken = undefined;
-user.emailVerificationTokenExpires = undefined;
+  await user.save();
 
-user.deleteUnverifiedAt = undefined;
-
-await user.save();
-
-  return Response.redirect(`${process.env.APP_URL}/Auth?verified=true`);
+  return Response.redirect(`${process.env.APP_URL}/profile`, 302);
 }

@@ -13,7 +13,6 @@ export async function sendVerificationEmail(email, token) {
       <h2>Potwierdzenie rejestracji</h2>
       <p>Kliknij link, aby potwierdzić adres e-mail:</p>
       <a href="${verificationUrl}">${verificationUrl}</a>
-      <p>Link jest ważny przez 1 godzinę.</p>
     `,
   });
 }
@@ -29,7 +28,6 @@ export async function sendEmailChangeVerificationEmail(email, token) {
       <h2>Potwierdzenie zmiany adresu e-mail</h2>
       <p>Kliknij link, aby potwierdzić nowy adres e-mail:</p>
       <a href="${verificationUrl}">${verificationUrl}</a>
-      <p>Link jest ważny przez 1 godzinę.</p>
     `,
   });
 }
