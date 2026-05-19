@@ -8,10 +8,12 @@ import searchicon from "@/app/Public/Images/tabler-icon-search.svg";
 import hearticon from "@/app/Public/Images/tabler-icon-heart.svg";
 import bagicon from "@/app/Public/Images/tabler-icon-shopping-bag.svg";
 import usericon from "@/app/Public/Images/tabler-icon-user-circle.svg";
+import Category from '@/Components/category';
 
 
 const Nawigacja: NextPage = () => {
   	return (
+		<main>
     		<div className={styles.nawigacja}>
       			<div className={styles.zootopiaWrapper}>
         				<Link href="/">
@@ -23,10 +25,12 @@ const Nawigacja: NextPage = () => {
         				<Image src={searchicon} className={styles.tablerIconSearch} width={24} height={24} sizes="100vw" alt="" />
       			</div>
       			<div className={styles.frameParent}>
+							<Link href="/MojeKonto">
         				<div className={styles.tablerIconHeartParent}>
           					<Image src={hearticon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
           					<div className={styles.ulubione}>Ulubione</div>
         				</div>
+							</Link>
         				<div className={styles.tablerIconHeartParent}>
 							<Link href="/Auth">
           					<Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
@@ -38,7 +42,10 @@ const Nawigacja: NextPage = () => {
           					<div className={styles.ulubione}>Koszyk</div>
         				</div>
       			</div>
-    		</div>);
+    		</div>
+			<Category/>
+		</main>
+		);
 };
 
 export default Nawigacja ;
