@@ -1,13 +1,10 @@
-
 import type { NextPage } from 'next';
 import Image from "next/image";
 import styles from '@/app/modulesCSS/promotionList.module.css';
-import categoryNameStyle from '@/app/modulesCSS/categoryName.module.css';
-
 import PromotionItem from '../ItemBlocks/promotionItem';
 
 interface Product {
-  id: string;  // Zmień na string
+  id: string;
   brandName: string;
   productName: string;
   price: number;
@@ -16,27 +13,39 @@ interface Product {
 }
 
 async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
+  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
+  console.log('🌐 URL endpointu:', apiUrl);
+  
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
+    const response = await fetch(apiUrl, {
       method: 'GET',
-      cache: 'no-store',
+      next: { revalidate: 60 },
     });
     
     if (!response.ok) {
-      throw new Error('Błąd pobierania produktów');
+      console.error('❌ HTTP Error:', response.status, response.statusText);
+      return [];
     }
     
     const products = await response.json();
+    console.log('✅ Pobrano:', products.length, 'produktów');
     
-    // Konwertuj id na string przy pobieraniu
+    if (!Array.isArray(products)) {
+      console.error('❌ Odpowiedź nie jest tablicą:', products);
+      return [];
+    }
+    
     const productsWithStringId = products.map((item: any) => ({
       ...item,
-      id: String(item.id),  // Konwertuj liczebę na string
+      id: String(item.id),
     }));
     
-    return productsWithStringId.sort(((a: Product, b: Product) => a.quantity - b.quantity));
+    const sorted = productsWithStringId.sort((a: Product, b: Product) => a.quantity - b.quantity);
+    console.log('🔽 Posortowano:', sorted.length, 'produktów');
+    
+    return sorted;
   } catch (error) {
-    console.error('Błąd:', error);
+    console.error('❌ Błąd:', error);
     return [];
   }
 }
@@ -46,16 +55,27 @@ const Kategorie: NextPage = async () => {
   
   return (
     <div className={styles.kategorie}>
-      {products.map((item) => (
-        <PromotionItem
-          key={item.id}
-          id={item.id}
-          brandName={item.brandName}
-          productName={item.productName}
-          price={item.price}
-          image={item.image}
-        />
-      ))}
+      {products.length === 0 ? (
+        <div style={{
+          padding: '3rem 2rem',
+          textAlign: 'center',
+          color: '#999',
+          fontSize: '16px'
+        }}>
+          ⚠️ Brak produktów
+        </div>
+      ) : (
+        products.map((item) => (
+          <PromotionItem
+            key={item.id}
+            id={item.id}
+            brandName={item.brandName}
+            productName={item.productName}
+            price={item.price}
+            image={item.image}
+          />
+        ))
+      )}
     </div>
   );
 };
