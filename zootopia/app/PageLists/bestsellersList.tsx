@@ -1,13 +1,13 @@
-'use client';
 
 import type { NextPage } from 'next';
-import { useState, useEffect } from 'react';
+import Image from "next/image";
 import styles from '@/app/modulesCSS/promotionList.module.css';
+import categoryNameStyle from '@/app/modulesCSS/categoryName.module.css';
 
 import PromotionItem from '../ItemBlocks/promotionItem';
 
 interface Product {
-  id: string;
+  id: number;
   brandName: string;
   productName: string;
   price: number;
@@ -15,46 +15,35 @@ interface Product {
   quantity: number;
 }
 
-const Kategorie: NextPage = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
+  try {
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
+      method: 'GET',
+      cache: 'no-store',
+    });
+    
+    if (!response.ok) {
+      throw new Error('Błąd pobierania produktów');
+    }
+    
+    const products = await response.json();
+    const sortedProducts: Product[] = products.sort((a: Product, b: Product) => a.quantity - b.quantity);
+    return sortedProducts;
+  } catch (error) {
+    console.error('Błąd:', error);
+    return [];
+  }
+}
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await fetch(`/api/products`);
-        
-        if (!response.ok) {
-          throw new Error(`Błąd HTTP: ${response.status}`);
-        }
-        
-        const data: Product[] = await response.json();
-        
-        // Sortowanie po najniższej ilości
-        const sorted = [...data].sort((a, b) => a.quantity - b.quantity);
-        setProducts(sorted);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Nieznany błąd');
-        console.error('Błąd:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  if (loading) return <div className={styles.kategorie}>Ładowanie produktów...</div>;
-  if (error) return <div className={styles.kategorie}>Błąd: {error}</div>;
-  if (products.length === 0) return <div className={styles.kategorie}>Brak produktów</div>;
-
+const Kategorie: NextPage = async () => {
+  const products: Product[] = await getProductsSortedByLowestQuantity();
+  
   return (
     <div className={styles.kategorie}>
-      {products.map((item) => (
+      {products.map((item: Product) => (
         <PromotionItem
           key={item.id}
-          id={item.id}
+          id={String(item.id)}
           brandName={item.brandName}
           productName={item.productName}
           price={item.price}
