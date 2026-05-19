@@ -15,7 +15,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import { Types } from "mongoose";
 
-import heartIcon from "@/app/Public/Images/heart-icon.svg"; // dopasuj do swojej ścieżki serca jeśli trzeba
+import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starFull from "@/app/Public/Images/tabler-icon-star.svg";
 import starHalf from "@/app/Public/Images/star-half.svg";
 import starEmpty from "@/app/Public/Images/empty-star.svg";
