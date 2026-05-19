@@ -3,7 +3,8 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Cart from "@/models/Cart";
 import Product from "@/models/Product";
 import { getAuthUser } from "@/middleware/auth";
-
+import "@/models/Company";
+import "@/models/Category";
 // 1. POBIERANIE ZAWARTOŚCI KOSZYKA
 export async function GET(req: Request) {
   try {
