@@ -7,7 +7,7 @@ import categoryNameStyle from '@/app/modulesCSS/categoryName.module.css';
 import PromotionItem from '../ItemBlocks/promotionItem';
 
 interface Product {
-  id: number;
+  id: string;  // Zmień na string
   brandName: string;
   productName: string;
   price: number;
@@ -27,8 +27,14 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
     }
     
     const products = await response.json();
-    const sortedProducts: Product[] = products.sort((a: Product, b: Product) => a.quantity - b.quantity);
-    return sortedProducts;
+    
+    // Konwertuj id na string przy pobieraniu
+    const productsWithStringId = products.map((item: any) => ({
+      ...item,
+      id: String(item.id),  // Konwertuj liczebę na string
+    }));
+    
+    return productsWithStringId.sort(((a: Product, b: Product) => a.quantity - b.quantity));
   } catch (error) {
     console.error('Błąd:', error);
     return [];
@@ -36,14 +42,14 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
 }
 
 const Kategorie: NextPage = async () => {
-  const products: Product[] = await getProductsSortedByLowestQuantity();
+  const products = await getProductsSortedByLowestQuantity();
   
   return (
     <div className={styles.kategorie}>
-      {products.map((item: Product) => (
+      {products.map((item) => (
         <PromotionItem
           key={item.id}
-          id={String(item.id)}
+          id={item.id}
           brandName={item.brandName}
           productName={item.productName}
           price={item.price}
