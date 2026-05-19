@@ -4,21 +4,41 @@ import styles from "./product.module.css";
 import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
-import ProductActions from "./ProductActions"; // 🔥 NASZ NOWY IMPORT KLIENTA
+import ProductActions from "./ProductActions"; 
 import "@/models/Company";
 import "@/models/Category";
+
+// 🔥 IMPORT MODELU OPINII DO POBRANIA DANYCH NA SERWERZE
+import ReviewModel from "@/models/Review"; 
 
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import { Types } from "mongoose";
 
 import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
-import starIcon from "@/app/Public/Images/tabler-icon-star.svg";
+import starFull from "@/app/Public/Images/tabler-icon-star.svg";
+import starHalf from "@/app/Public/Images/star-half.svg";
+import starEmpty from "@/app/Public/Images/empty-star.svg";
 
 type ProductPageProps = {
   params: Promise<{
     id: string;
   }>;
+};
+
+// Funkcja pomocnicza do generowania gwiazdek na serwerze
+const getServerStars = (rating: number, className: string) => {
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    let currentIcon = starFull;
+    if (i > rating) {
+      currentIcon = i - rating <= 0.5 ? starHalf : starEmpty;
+    }
+    stars.push(
+      <Image key={i} className={className} src={currentIcon} alt="star" width={24} height={24} />
+    );
+  }
+  return stars;
 };
 
 export default async function ProductPage({
@@ -33,6 +53,7 @@ export default async function ProductPage({
     return <div>Nieprawidłowe ID produktu</div>;
   }
 
+  // Pobieramy produkt
   const product = await Product.findById(id)
     .populate("category")
     .populate("company")
@@ -41,6 +62,17 @@ export default async function ProductPage({
   if (!product) {
     return <div>Produkt nie istnieje</div>;
   }
+
+  // 🔥 POBIERAMY OPINIE BEZPOŚREDNIO Z BAZY DANYCH DLA TEGO PRODUKTU
+  const rawReviews = await ReviewModel.find({ product: new Types.ObjectId(id) }).lean();
+  
+  // 🔥 OBLICZAMY STATYSTYKI GWIAZDEK NA SERWERZE
+  const totalReviews = rawReviews.length;
+  const avgRating = totalReviews > 0 
+    ? Number((rawReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / totalReviews).toFixed(1))
+    : 0;
+
+  const hasValidPromo = product.promoPrice !== undefined && product.promoPrice !== null;
 
   return (
     <div className={styles.kategorie}>
@@ -78,28 +110,30 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* GWIAZDKI */}
+          {/* GWIAZDKI (TERAZ DYNAMICZNIE POŁĄCZONE Z BAZĄ OPINII) */}
           <div className={styles.frameDiv}>
             <div className={styles.tablerIconStarParent}>
-              {[...Array(5)].map((_, i) => (
-                <Image
-                  key={i}
-                  className={styles.tablerIconStar}
-                  src={starIcon}
-                  alt="star"
-                />
-              ))}
+              {/* 🔥 Dynamiczne renderowanie ikon pełnych/połówkowych/pustych gwiazdek */}
+              {getServerStars(avgRating, styles.tablerIconStar)}
             </div>
-            <div className={styles.div}>(76)</div>
+            {/* 🔥 Dynamiczny licznik opinii w nawiasie */}
+            <div className={styles.div}>({totalReviews})</div>
           </div>
 
           {/* CENA */}
           <div className={styles.frameParent2}>
-            <div className={styles.alphawolfParent}>
-              <div className={styles.z}>
+            <div className={styles.alphawolfParent} style={{ alignItems: 'baseline', justifyContent: 'flex-start', gap: '12px' }}>
+              <div className={`${styles.z} ${hasValidPromo ? styles.przekreslona : ""}`}>
                 {product.price} zł
               </div>
-              <div className={styles.zkg}>
+
+              {hasValidPromo && (
+                <b className={styles.cenaPromocyjna}>
+                  {product.promoPrice} zł
+                </b>
+              )}
+
+              <div className={styles.zkg} style={{ marginLeft: 'auto' }}>
                 Stan: {product.stock}
               </div>
             </div>
@@ -119,9 +153,8 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* ILOŚĆ + KOSZYK (TERAZ DYNAMICZNE Z BAZĄ) */}
+          {/* ILOŚĆ + KOSZYK */}
           <div className={styles.frameWrapper}>
-            {/* 🔥 Wstrzykujemy komponent kliencki i dajemy mu ID z bazy */}
             <ProductActions productId={product._id.toString()} />
           </div>
         </div>
@@ -156,12 +189,13 @@ export default async function ProductPage({
             <ul>
               <li>Dostępność: Produkt dostępny</li>
               <li>Wysyłka: 24h</li>
-              <li>Cena: {product.price} zł</li>
+              <li>Cena: {hasValidPromo ? product.promoPrice : product.price} zł</li>
             </ul>
           }
         />
 
-        <ReviewsSection productId={id} />
+        {/* 🔥 PRZEKAZUJEMY POBRANE WSTĘPNIE OPINIE DO KOMPONENTU KLIENCKIEGO */}
+        <ReviewsSection productId={id} initialReviews={JSON.parse(JSON.stringify(rawReviews))} />
       </div>
     </div>
   );

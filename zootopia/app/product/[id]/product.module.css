@@ -532,3 +532,17 @@
   	overflow: hidden;
   	flex-shrink: 0;
 }
+/* Klasa dodająca przekreślenie do starej ceny regularnej */
+.przekreslona {
+    text-decoration: line-through;
+    color: #899197 !important; /* Zmiana koloru na szary po przekreśleniu */
+    font-weight: 500 !important;
+}
+
+/* Klasa dla nowej, czerwonej ceny promocyjnej */
+.cenaPromocyjna {
+    position: relative;
+    line-height: 120%;
+    color: #d2465e; /* Dokładny odcień czerwieni ze strony głównej */
+    font-weight: 600;
+}
