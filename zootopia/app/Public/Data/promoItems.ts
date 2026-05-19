@@ -26,4 +26,12 @@ export const PromoItems = [
     promoPrice: 100,
     image: item1,
   },
+  {
+    id: 7,
+    brandName: "Karma kurczak 10kg",
+    productName: "Lepsza karma",
+    price: 199,
+    
+    image: item1,
+  },
 ];
