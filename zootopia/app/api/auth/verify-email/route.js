@@ -33,5 +33,5 @@ export async function GET(req) {
 
   await user.save();
 
-  return Response.redirect(`${process.env.APP_URL}`, 302);
+  return Response.redirect(`${process.env.APP_URL}/MojeKonto`, 302);
 }

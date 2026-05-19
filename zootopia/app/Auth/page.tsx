@@ -36,7 +36,7 @@ const ProduktyWKoszyku: NextPage = () => {
 
     alert("Zalogowano pomyślnie");
 
-    window.location.href = "/profile";
+    window.location.href = "/MojeKonto";
   }, [loginEmail, loginPassword]);
 
  const onRegisterSubmit = useCallback(async () => {
