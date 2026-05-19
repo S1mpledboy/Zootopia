@@ -40,6 +40,16 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    deleteUnverifiedAt: {
+      type: Date,
+      index: {
+        expires: 0,
+        partialFilterExpression: {
+          isEmailVerified: false,
+        },
+      },
+    },
+
     password: {
       type: String,
       required: true,

@@ -39,31 +39,27 @@ const ProduktyWKoszyku: NextPage = () => {
     window.location.href = "/profile";
   }, [loginEmail, loginPassword]);
 
-  const onRegisterSubmit = useCallback(async () => {
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: registerEmail,
-        password: registerPassword,
-      }),
-    });
+ const onRegisterSubmit = useCallback(async () => {
+  const res = await fetch("/api/auth/register", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: registerEmail,
+      password: registerPassword,
+    }),
+  });
 
-    const data = await res.json();
+  const data = await res.json();
 
-    if (!res.ok) {
-      alert(data.message || "Błąd rejestracji");
-      return;
-    }
+  if (!res.ok) {
+    alert(data.message || "Błąd rejestracji");
+    return;
+  }
 
-    localStorage.setItem("token", data.token);
-
-    alert("Konto zostało utworzone");
-
-    window.location.href = "/profile";
-  }, [registerEmail, registerPassword]);
+  window.location.href = "/check-email";
+}, [registerEmail, registerPassword]);
 
   return (
     <div className={styles.container}>
