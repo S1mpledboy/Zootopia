@@ -66,6 +66,8 @@ export async function register(data) {
     isEmailVerified: false,
     emailVerificationToken: verificationToken,
     emailVerificationTokenExpires: new Date(Date.now() + 60 * 60 * 1000),
+
+    deleteUnverifiedAt: new Date(Date.now() + 60 * 60 * 1000),
   });
 
   await sendVerificationEmail(user.email, verificationToken);

@@ -26,11 +26,14 @@ export async function GET(req) {
     );
   }
 
-  user.isEmailVerified = true;
-  user.emailVerificationToken = undefined;
-  user.emailVerificationTokenExpires = undefined;
+ user.isEmailVerified = true;
 
-  await user.save();
+user.emailVerificationToken = undefined;
+user.emailVerificationTokenExpires = undefined;
+
+user.deleteUnverifiedAt = undefined;
+
+await user.save();
 
   return Response.redirect(`${process.env.APP_URL}/Auth?verified=true`);
 }
