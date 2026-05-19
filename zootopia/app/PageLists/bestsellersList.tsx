@@ -12,7 +12,11 @@ interface Product {
 }
 
 async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
-  const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
+  // ✅ Zabezpieczenie adresu URL dla środowiska serwerowego i lokalnego
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+  const apiUrl = `${baseUrl}/api/products`;
+  
+  console.log('🌐 Fetching z adresu:', apiUrl);
   
   try {
     const response = await fetch(apiUrl, {
@@ -21,27 +25,51 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
     });
     
     if (!response.ok) {
-      console.error('❌ HTTP Error:', response.status, response.statusText);
+      console.error('❌ HTTP Error w komponencie:', response.status, response.statusText);
       return [];
     }
     
-    const jsonData = await response.json();
+    const products = await response.json();
+    console.log('📦 Surowe dane z API w komponencie:', products);
     
-    // API zwraca bezpośrednio tablicę sformatowanych obiektów
-    const products = Array.isArray(jsonData) ? jsonData : [];
-    
-    if (products.length === 0) {
+    if (!Array.isArray(products) || products.length === 0) {
+      console.warn('⚠️ API nie zwróciło tablicy lub tablica jest pusta.');
       return [];
     }
+
+    // ✅ Mapowanie dopasowane do struktury z Twojego route.ts i MongoDB
+    const formattedProducts = products.map((item: any) => {
+      // Obsługa zdjęcia: jeśli w API przekazałeś obiekt 'image' jako string, bierzemy go. 
+      // Jeśli to surowy obiekt z Mongo, szukamy w tablicy 'images'
+      let finalImage = '/placeholder.png';
+      if (typeof item.image === 'string' && item.image) {
+        finalImage = item.image;
+      } else if (Array.isArray(item.images) && item.images.length > 0) {
+        finalImage = item.images[0];
+      }
+
+      return {
+        id: String(item.id || item._id),
+        brandName: item.brandName || "Unknown Brand",
+        productName: item.productName || item.name || "Bez nazwy",
+        price: Number(item.price || 0),
+        image: finalImage,
+        quantity: Number(item.quantity !== undefined ? item.quantity : (item.stock || 0))
+      };
+    });
+
+    // ✅ Sortowanie od najniższego stanu (na wypadek gdyby API nie posortowało)
+    const sorted = formattedProducts.sort((a, b) => a.quantity - b.quantity);
+
+    // ✅ Wycinamy dokładnie 3 produkty z najniższym stanem
+    const limited = sorted.slice(0, 3);
+    console.log('✅ Sukces! Wybrane 3 produkty:', limited);
     
-    // API sortuje już po `stock: 1`, więc obiekty przychodzą od najmniejszej ilości.
-    // Wystarczy wyciąć pierwsze 3 elementy za pomocą .slice(0, 3)
-    const limitedProducts = products.slice(0, 3);
-    
-    console.log('🔽 Wybrano 3 produkty o najniższym stanie:', limitedProducts);
-    return limitedProducts;
+    return limited;
+
   } catch (error) {
-    console.error('❌ Błąd pobierania produktów:', error);
+    // Sprawdź konsolę (terminal), tu pojawi się dokładny powód błędu
+    console.error('❌ Krytyczny błąd w funkcji getProductsSortedByLowestQuantity:', error);
     return [];
   }
 }
