@@ -1,6 +1,4 @@
-
 import type { NextPage } from 'next';
-import Image from "next/image";
 import styles from '@/app/modulesCSS/promotionList.module.css';
 import PromotionItem from '../ItemBlocks/promotionItem';
 
@@ -15,7 +13,6 @@ interface Product {
 
 async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
   const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/api/products`;
-  console.log('🌐 URL endpointu:', apiUrl);
   
   try {
     const response = await fetch(apiUrl, {
@@ -29,28 +26,22 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
     }
     
     const jsonData = await response.json();
-    console.log('📦 Raw response:', jsonData);
     
-    // ✅ API zwraca { ok: true, data: [...] } - rozpakuj data
-    const products = Array.isArray(jsonData) ? jsonData : jsonData?.data || [];
-    console.log('✅ Pobrano:', products.length, 'produktów');
+    // API zwraca bezpośrednio tablicę sformatowanych obiektów
+    const products = Array.isArray(jsonData) ? jsonData : [];
     
-    if (!Array.isArray(products)) {
-      console.error('❌ Odpowiedź nie jest tablicą:', products);
+    if (products.length === 0) {
       return [];
     }
     
-    const productsWithStringId = products.map((item: any) => ({
-      ...item,
-      id: String(item.id || item._id),
-    }));
+    // API sortuje już po `stock: 1`, więc obiekty przychodzą od najmniejszej ilości.
+    // Wystarczy wyciąć pierwsze 3 elementy za pomocą .slice(0, 3)
+    const limitedProducts = products.slice(0, 3);
     
-    const sorted = productsWithStringId.sort((a: Product, b: Product) => a.quantity - b.quantity);
-    console.log('🔽 Posortowano:', sorted.length, 'produktów');
-    
-    return sorted;
+    console.log('🔽 Wybrano 3 produkty o najniższym stanie:', limitedProducts);
+    return limitedProducts;
   } catch (error) {
-    console.error('❌ Błąd:', error);
+    console.error('❌ Błąd pobierania produktów:', error);
     return [];
   }
 }
@@ -67,7 +58,7 @@ const Kategorie: NextPage = async () => {
           color: '#999',
           fontSize: '16px'
         }}>
-          ⚠️ Brak produktów
+          ⚠️ Brak produktów na stanie
         </div>
       ) : (
         products.map((item) => (
