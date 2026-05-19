@@ -1,4 +1,4 @@
-"use client"; // To pozwala nam na sprawdzanie stanu w przeglądarce
+"use client";
 
 import type { NextPage } from 'next';
 import Link from 'next/link';
@@ -14,12 +14,25 @@ import usericon from "@/app/Public/Images/tabler-icon-user-circle.svg";
 import Category from '@/Components/category';
 
 const Nawigacja: NextPage = () => {
-  // Domyślnie zakładamy false, dopóki przeglądarka nie sprawdzi statusu
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   useEffect(() => {
-    // Odpytujemy nasz prosty endpoint zaraz po załadowaniu paska nawigacji
-    fetch('/api/auth/status')
+    // 1. Pobieramy token z localStorage
+    const token = localStorage.getItem('token'); 
+
+    // Jeśli tokenu w ogóle nie ma, wiemy, że użytkownik jest niezalogowany
+    if (!token) {
+      setIsLoggedIn(false);
+      return;
+    }
+
+    // 2. Strzelamy do API, przekazując token w nagłówku, tak jak oczekuje getAuthUser(req)
+    fetch('/api/auth/status', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
       .then((res) => res.json())
       .then((data) => {
         setIsLoggedIn(data.isLoggedIn);
@@ -51,7 +64,7 @@ const Nawigacja: NextPage = () => {
             </div>
           </Link>
 
-          {/* DYNAMICZNY LINK: Przełącza się w zależności od stanu isLoggedIn */}
+          {/* DYNAMICZNY LINK: Przełącza adres na podstawie stanu autentykacji */}
           <Link href={isLoggedIn ? "/MojeKonto" : "/Auth"}>
             <div className={styles.tablerIconHeartParent}>
               <Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
