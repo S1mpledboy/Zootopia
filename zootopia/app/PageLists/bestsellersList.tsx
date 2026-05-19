@@ -12,35 +12,34 @@ interface Product {
 }
 
 async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
-  // ✅ Zabezpieczenie adresu URL dla środowiska serwerowego i lokalnego
+  // Automatyczne dopasowanie adresu URL dla serwera i środowiska lokalnego
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const apiUrl = `${baseUrl}/api/products`;
   
-  console.log('🌐 Fetching z adresu:', apiUrl);
-  
   try {
+    // cache: 'no-store' wymusza pobranie świeżych danych z bazy przy każdym żądaniu
     const response = await fetch(apiUrl, {
       method: 'GET',
-      next: { revalidate: 60 },
+      cache: 'no-store', 
     });
     
     if (!response.ok) {
-      console.error('❌ HTTP Error w komponencie:', response.status, response.statusText);
+      console.error('❌ HTTP Error w getProductsSortedByLowestQuantity:', response.status);
       return [];
     }
     
-    const products = await response.json();
-    console.log('📦 Surowe dane z API w komponencie:', products);
+    const jsonData = await response.json();
     
-    if (!Array.isArray(products) || products.length === 0) {
-      console.warn('⚠️ API nie zwróciło tablicy lub tablica jest pusta.');
+    // Sprawdzenie czy otrzymaliśmy poprawną tablicę danych
+    const products = Array.isArray(jsonData) ? jsonData : [];
+    
+    if (products.length === 0) {
       return [];
     }
 
-    // ✅ Mapowanie dopasowane do struktury z Twojego route.ts i MongoDB
+    // Mapowanie odporne na format danych (zadziała dla wersji z API oraz surowej z Mongo)
     const formattedProducts = products.map((item: any) => {
-      // Obsługa zdjęcia: jeśli w API przekazałeś obiekt 'image' jako string, bierzemy go. 
-      // Jeśli to surowy obiekt z Mongo, szukamy w tablicy 'images'
+      // Wyciąganie zdjęcia z pola 'image' (string) lub pierwszej pozycji z tablicy 'images'
       let finalImage = '/placeholder.png';
       if (typeof item.image === 'string' && item.image) {
         finalImage = item.image;
@@ -58,18 +57,14 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
       };
     });
 
-    // ✅ Sortowanie od najniższego stanu (na wypadek gdyby API nie posortowało)
+    // Sortowanie lokalne od najniższego stanu magazynowego na wypadek, gdyby inne skrypty zmieniały sortowanie w API
     const sorted = formattedProducts.sort((a, b) => a.quantity - b.quantity);
 
-    // ✅ Wycinamy dokładnie 3 produkty z najniższym stanem
-    const limited = sorted.slice(0, 3);
-    console.log('✅ Sukces! Wybrane 3 produkty:', limited);
-    
-    return limited;
+    // Wybór dokładnie 3 produktów o najniższym stanie
+    return sorted.slice(0, 3);
 
   } catch (error) {
-    // Sprawdź konsolę (terminal), tu pojawi się dokładny powód błędu
-    console.error('❌ Krytyczny błąd w funkcji getProductsSortedByLowestQuantity:', error);
+    console.error('❌ Krytyczny błąd pobierania produktów:', error);
     return [];
   }
 }
