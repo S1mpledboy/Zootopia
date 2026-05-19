@@ -8,7 +8,7 @@ import PromotionItem from '../ItemBlocks/promotionItem';
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import "@/models/Company"; 
-
+export const revalidate = 0;
 export default async function Kategorie() {
   // 1. Połączenie z bazą danych
   await connectToDatabase();
