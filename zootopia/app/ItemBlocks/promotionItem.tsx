@@ -7,7 +7,7 @@ import hearth from "@/app/Public/Images/tabler-icon-heart.svg";
 import Link from 'next/link';
 
 type PromotionItemProps = {
-    id: number;
+    id: string;
     brandName: string;
     productName: string;
     price: number;
