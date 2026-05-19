@@ -4,7 +4,7 @@ import styles from "./product.module.css";
 import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
-import QuantitySelector from "./QuantitySelectorProps";
+import ProductActions from "./ProductActions"; // 🔥 NASZ NOWY IMPORT KLIENTA
 import "@/models/Company";
 import "@/models/Category";
 
@@ -57,18 +57,15 @@ export default async function ProductPage({
           {/* KATEGORIA + SERCE */}
           <div className={styles.frameContainer}>
             <div className={styles.alphawolfParent}>
-
               <div className={styles.alphawolf}>
                 {product.company?.name || "Zootopia"}
               </div>
-
               <Image
                 className={styles.ulubioneIcon}
                 src={heartIcon}
                 alt="Ulubione"
               />
             </div>
-
             <div className={styles.divider} />
           </div>
 
@@ -93,22 +90,18 @@ export default async function ProductPage({
                 />
               ))}
             </div>
-
             <div className={styles.div}>(76)</div>
           </div>
 
           {/* CENA */}
           <div className={styles.frameParent2}>
             <div className={styles.alphawolfParent}>
-
               <div className={styles.z}>
                 {product.price} zł
               </div>
-
               <div className={styles.zkg}>
                 Stan: {product.stock}
               </div>
-
             </div>
 
             <div className={styles.najniszaCenaZ30DniPrzedParent}>
@@ -126,19 +119,10 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* ILOŚĆ + KOSZYK */}
+          {/* ILOŚĆ + KOSZYK (TERAZ DYNAMICZNE Z BAZĄ) */}
           <div className={styles.frameWrapper}>
-            <div className={styles.frameParent3}>
-
-              <QuantitySelector />
-
-              <button className={styles.dodajDoKoszykaWrapper}>
-                <div className={styles.dodajDoKoszyka}>
-                  Dodaj do koszyka
-                </div>
-              </button>
-
-            </div>
+            {/* 🔥 Wstrzykujemy komponent kliencki i dajemy mu ID z bazy */}
+            <ProductActions productId={product._id.toString()} />
           </div>
         </div>
       </div>
@@ -157,7 +141,6 @@ export default async function ProductPage({
           content={
             <>
               <p>W Zootopii nie mamy nic do ukrycia.</p>
-
               <ul>
                 <li>Kategoria: {product.category?.name || "Brak"}</li>
                 <li>Stan magazynowy: {product.stock}</li>

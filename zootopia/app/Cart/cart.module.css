@@ -1,0 +1,209 @@
+.produktyWKoszyku {
+  	width: 100%;
+  	position: relative;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	padding: 64px 40px;
+  	box-sizing: border-box;
+  	gap: 40px;
+  	text-align: left;
+  	font-size: 14px;
+  	color: #565e64;
+  	font-family: Poppins;
+}
+.wszystkieProdukty {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-end;
+  	padding: 0px 24px;
+  	gap: 32px;
+}
+.produktWKoszyku {
+  	width: 1072px;
+  	display: flex;
+  	align-items: center;
+  	gap: 32px;
+}
+.imgProduktuIcon {
+  	height: 100px;
+  	width: 100px;
+  	object-fit: cover;
+}
+.frameParent {
+  	flex: 1;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+}
+.frameGroup {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	gap: 24px;
+}
+.frameWrapper {
+  	flex: 1;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	justify-content: flex-end;
+}
+.krainaNoteciParent {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 4px;
+}
+.krainaNoteci {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+}
+.karmaLoremIpsum {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+  	color: #000;
+}
+.zWrapper {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-end;
+  	justify-content: center;
+  	text-align: center;
+  	font-size: 29px;
+  	color: #000;
+}
+.z {
+  	position: relative;
+  	letter-spacing: -0.04em;
+  	line-height: 120%;
+  	font-weight: 600;
+}
+.frameContainer {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+  	text-align: center;
+  	font-size: 19px;
+  	color: #000;
+}
+.parent {
+  	display: flex;
+  	align-items: flex-end;
+  	gap: 16px;
+}
+.div {
+  	height: 27px;
+  	width: 13px;
+  	position: relative;
+  	line-height: 150%;
+  	color: #565e64;
+  	display: inline-block;
+  	flex-shrink: 0;
+  	text-shadow: 1px 0 0 #565e64, 0 1px 0 #565e64, -1px 0 0 #565e64, 0 -1px 0 #565e64;
+}
+.wrapper {
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	min-width: 40px;
+}
+.div2 {
+  	flex: 1;
+  	position: relative;
+  	line-height: 150%;
+}
+.div3 {
+  	height: 27px;
+  	width: 15px;
+  	position: relative;
+  	line-height: 150%;
+  	display: inline-block;
+  	flex-shrink: 0;
+}
+.ulubioneParent {
+  	display: flex;
+  	align-items: center;
+  	gap: 15px;
+}
+.ulubioneIcon {
+  	height: 24px;
+  	width: 24px;
+  	position: relative;
+}
+.wszystkieProduktyChild {
+  	align-self: stretch;
+  	height: 1px;
+  	position: relative;
+  	border-top: 1px solid #a7acb1;
+  	box-sizing: border-box;
+  	transform:  rotate(0.3deg);
+}
+.karmaLoremIpsum2 {
+  	align-self: stretch;
+  	position: relative;
+  	font-size: 19px;
+  	line-height: 150%;
+  	color: #000;
+}
+.razemParent {
+  	display: flex;
+  	align-items: center;
+  	gap: 58px;
+  	text-align: center;
+  	font-size: 29px;
+  	color: #000;
+}
+.frameParent7 {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	padding: 0px 24px;
+  	gap: 20px;
+  	font-size: 25px;
+  	color: #000;
+}
+.tablerIconChevronCompactLeParent {
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	gap: 10px;
+  	cursor: pointer;
+}
+.tablerIconChevronCompactLe {
+  	height: 32px;
+  	width: 32px;
+  	position: relative;
+}
+.kontynuujZakupy {
+  	position: relative;
+  	letter-spacing: -0.02em;
+}
+.doKasy {
+  	height: 55px;
+  	width: 213px;
+  	border-radius: 20px;
+  	background-color: #fd798f;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 10px 40px;
+  	box-sizing: border-box;
+  	cursor: pointer;
+  	text-align: center;
+}
+.doKasy2 {
+  	position: relative;
+  	letter-spacing: -0.02em;
+  	flex-shrink: 0;
+}
+
