@@ -11,6 +11,7 @@ interface AuthInputProps {
   isPassword?: boolean;
   value: string;
   onChange: (value: string) => void;
+  autoComplete?: string; // 🔥 Nowy, opcjonalny prop sterujący zachowaniem menedżera haseł
 }
 
 export const AuthInput = ({
@@ -19,6 +20,7 @@ export const AuthInput = ({
   isPassword,
   value,
   onChange,
+  autoComplete, // 🔥 Odbieramy atrybut autocomplete
 }: AuthInputProps) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -30,6 +32,7 @@ export const AuthInput = ({
           placeholder={label}
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          autoComplete={autoComplete} // 🔥 Przekazujemy do natywnego inputa HTML
           className={styles.eMail}
           style={{
             border: "none",

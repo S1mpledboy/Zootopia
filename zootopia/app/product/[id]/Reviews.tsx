@@ -152,7 +152,7 @@ export default function Reviews({ productId, initialReviews }: { productId: stri
             <div className={styles.tablerIconStarParent}>
               {renderStars(stats.average, styles.tablerIconStar)}
             </div>
-            <div className={styles.div}>({styles.total ? stats.total : 0})</div>
+              <div className={styles.div}>({stats.total})</div>
           </div>
         </div>
         <Image
