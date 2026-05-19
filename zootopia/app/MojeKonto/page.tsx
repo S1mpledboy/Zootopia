@@ -4,12 +4,15 @@ import type { NextPage } from "next";
 import Image from "next/image";
 import { useState } from "react";
 
+import { useAuth } from "@/app/context/AuthContext";
+
 import styles from "./mojeKonto.module.css";
 import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
 
 import { userData, updateUserData } from "./userData";
 
 const ProduktyWKoszyku: NextPage = () => {
+  const { logout } = useAuth();
   // 1. Inicjalizujemy stan pustymi wartościami, aby placeholdery mogły działać
   const [formData, setFormData] = useState({
     imie: "",
@@ -184,7 +187,11 @@ const ProduktyWKoszyku: NextPage = () => {
 
               <div className={styles.frameItem} />
 
-              <div className={styles.listaUlubionychParent}>
+              <div
+                className={styles.listaUlubionychParent}
+                onClick={logout}
+                style={{ cursor: "pointer" }}
+              >
                 <div className={styles.mojeDane}>Wyloguj się</div>
                 <Image
                   src={arrow}

@@ -52,10 +52,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   function logout() {
-    localStorage.removeItem("token");
-    setUser(null);
-    window.location.href = "/Auth";
-  }
+  localStorage.removeItem("token");
+  setUser(null);
+  window.location.href = "/Auth";
+}
 
   useEffect(() => {
     refreshUser();
