@@ -16,7 +16,7 @@ const Kategorie: NextPage = () => {
                 {PromoItems.map((item) => (
                     <PromotionItem
                         key={item.id}
-                        id={item.id}
+                        id={String(item.id)}
                         brandName={item.brandName}
                         productName={item.productName}
                         price={item.price}
