@@ -23,14 +23,11 @@ type Review = {
 
 const renderStars = (rating: number, className: string) => {
   const stars = [];
-
   for (let i = 1; i <= 5; i++) {
     let currentIcon = starFull;
-
     if (i > rating) {
       currentIcon = i - rating <= 0.5 ? starHalf : starEmpty;
     }
-
     stars.push(
       <Image
         key={i}
@@ -40,7 +37,6 @@ const renderStars = (rating: number, className: string) => {
       />
     );
   }
-
   return stars;
 };
 
@@ -50,7 +46,7 @@ const ReviewItem = ({ review }: { review: Review }) => (
       <div className={styles.frameParent9}>
         <div className={styles.kasiaIRikoWrapper}>
           <div className={styles.kasiaIRiko}>
-            {review.user.firstName} {review.user.lastName}
+            {review.user?.firstName || "Użytkownik"} {review.user?.lastName || ""}
           </div>
         </div>
 
@@ -60,33 +56,30 @@ const ReviewItem = ({ review }: { review: Review }) => (
               <div className={styles.tablerIconStarParent}>
                 {renderStars(review.rating, styles.tablerIconStar)}
               </div>
-
               <div className={styles.div}>
                 {review.rating}/5
               </div>
             </div>
-
             <div className={styles.wrapper10}>
               <div className={styles.div}>
                 {new Date(review.createdAt).toLocaleDateString()}
               </div>
             </div>
           </div>
-
           <div className={styles.mjCockerSpaniel}>
             {review.text}
           </div>
         </div>
       </div>
     </div>
-
     <Image className={styles.property1opinieZwiniteItem} src={lineImg} alt="" />
   </>
 );
 
-export default function Reviews({ productId }: { productId: string }) {
+// 🔥 PRZYJMUJEMY INITIAL REVIEWS Z SERWERA
+export default function Reviews({ productId, initialReviews }: { productId: string; initialReviews: Review[] }) {
   const [isOpen, setIsOpen] = useState(false);
-  const [reviewsData, setReviewsData] = useState<Review[]>([]);
+  const [reviewsData, setReviewsData] = useState<Review[]>(initialReviews);
 
   // FORMULARZ
   const [text, setText] = useState("");
@@ -99,25 +92,19 @@ export default function Reviews({ productId }: { productId: string }) {
     setReviewsData(data);
   };
 
+  // Synchronizacja stanu, jeśli ID produktu ulegnie zmianie
   useEffect(() => {
-    fetchReviews();
-  }, [productId]);
+    setReviewsData(initialReviews);
+  }, [productId, initialReviews]);
 
   const stats = useMemo(() => {
     const total = reviewsData.length;
+    const avg = total > 0 ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / total : 0;
 
-    const avg =
-      total > 0
-        ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / total
-        : 0;
-
-    const counts: Record<number, number> = {
-      5: 0, 4: 0, 3: 0, 2: 0, 1: 0,
-    };
-
+    const counts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
     reviewsData.forEach((r) => {
       const key = Math.floor(r.rating);
-      counts[key] = (counts[key] || 0) + 1;
+      if (counts[key] !== undefined) counts[key]++;
     });
 
     const bars = [5, 4, 3, 2, 1].map((n) => {
@@ -132,12 +119,9 @@ export default function Reviews({ productId }: { productId: string }) {
     };
   }, [reviewsData]);
 
-  // DODAWANIE OPINII
   const submitReview = async () => {
     if (!text.trim()) return;
-
     setLoading(true);
-
     const token = localStorage.getItem("token");
 
     const res = await fetch("/api/reviews", {
@@ -146,19 +130,14 @@ export default function Reviews({ productId }: { productId: string }) {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        productId,
-        rating,
-        text,
-      }),
+      body: JSON.stringify({ productId, rating, text }),
     });
 
     setLoading(false);
-
     if (res.ok) {
       setText("");
       setRating(5);
-      fetchReviews(); // refresh
+      fetchReviews(); // Pobieramy najnowsze opinie po dodaniu nowej
     }
   };
 
@@ -173,10 +152,9 @@ export default function Reviews({ productId }: { productId: string }) {
             <div className={styles.tablerIconStarParent}>
               {renderStars(stats.average, styles.tablerIconStar)}
             </div>
-            <div className={styles.div}>({stats.total})</div>
+            <div className={styles.div}>({styles.total ? stats.total : 0})</div>
           </div>
         </div>
-
         <Image
           className={`${styles.tablerIconChevronCompactRi} ${isOpen ? styles.rotate : ''}`}
           src={chevronIcon}
@@ -191,11 +169,9 @@ export default function Reviews({ productId }: { productId: string }) {
             <div className={styles.tablerIconStarGroup}>
               {renderStars(stats.average, styles.tablerIconStar6)}
             </div>
-
             <div className={styles.wrapper}>
               <div className={styles.div2}>{stats.average}/5</div>
             </div>
-
             <div className={styles.frameParent2}>
               <div className={styles.naPodstawieParent}>
                 <div className={styles.naPodstawie}>na podstawie</div>
@@ -206,22 +182,20 @@ export default function Reviews({ productId }: { productId: string }) {
 
           <div className={styles.frameWrapper}>
             <div className={styles.frameParent3}>
-              {stats.bars.map((row) => (
+              {styles.bars ? stats.bars.map((row) => (
                 <div key={row.label} className={styles.frameParent4}>
                   <div className={styles.container}>
                     <div className={styles.div3}>{row.label}</div>
                   </div>
-
                   <div className={styles.rectangleParent}>
                     <div className={styles.frameChild} />
                     {row.w > 0 && <div className={styles.frameItem} style={{ width: row.w }} />}
                   </div>
-
                   <div className={styles.frame}>
                     <div className={styles.div3}>{row.val}</div>
                   </div>
                 </div>
-              ))}
+              )) : null}
             </div>
           </div>
         </div>
@@ -230,26 +204,18 @@ export default function Reviews({ productId }: { productId: string }) {
       {/* FORMULARZ DODAWANIA */}
       {isOpen && (
         <div style={{ padding: "12px 16px" }}>
-          
           <textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Napisz opinię..."
-            style={{
-              width: "100%",
-              minHeight: "70px",
-              borderRadius: "8px",
-              padding: "10px"
-            }}
+            style={{ width: "100%", minHeight: "70px", borderRadius: "8px", padding: "10px" }}
           />
-
           <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
             <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
               {[5,4,3,2,1].map((n) => (
                 <option key={n} value={n}>{n} ⭐</option>
               ))}
             </select>
-
             <button onClick={submitReview} disabled={loading}>
               {loading ? "Wysyłanie..." : "Dodaj opinię"}
             </button>
