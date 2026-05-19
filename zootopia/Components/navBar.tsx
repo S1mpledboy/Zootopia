@@ -17,16 +17,13 @@ const Nawigacja: NextPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
 
   useEffect(() => {
-    // 1. Pobieramy token z localStorage
     const token = localStorage.getItem('token'); 
 
-    // Jeśli tokenu w ogóle nie ma, wiemy, że użytkownik jest niezalogowany
     if (!token) {
       setIsLoggedIn(false);
       return;
     }
 
-    // 2. Strzelamy do API, przekazując token w nagłówku, tak jak oczekuje getAuthUser(req)
     fetch('/api/auth/status', {
       method: 'GET',
       headers: {
@@ -64,11 +61,14 @@ const Nawigacja: NextPage = () => {
             </div>
           </Link>
 
-          {/* DYNAMICZNY LINK: Przełącza adres na podstawie stanu autentykacji */}
+          {/* DYNAMICZNY LINK I TEKST */}
           <Link href={isLoggedIn ? "/MojeKonto" : "/Auth"}>
             <div className={styles.tablerIconHeartParent}>
               <Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
-              <div className={styles.ulubione}>Moje konto</div>
+              {/* Tutaj zmienia się napis w zależności od stanu zalogowania */}
+              <div className={styles.ulubione}>
+                {isLoggedIn ? "Moje konto" : "Zaloguj się"}
+              </div>
             </div>
           </Link>
 
