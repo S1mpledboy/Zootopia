@@ -42,7 +42,7 @@ export default async function ProductPage({
     return <div>Produkt nie istnieje</div>;
   }
 
-  // 🔥 Walidacja, czy cena promocyjna jest ustawiona w MongoDB
+  // Walidacja, czy cena promocyjna jest ustawiona w MongoDB
   const hasValidPromo = product.promoPrice !== undefined && product.promoPrice !== null;
 
   return (
@@ -98,20 +98,21 @@ export default async function ProductPage({
 
           {/* CENA */}
           <div className={styles.frameParent2}>
-            <div className={styles.alphawolfParent} style={{ alignItems: 'baseline', gap: '10px' }}>
+            <div className={styles.alphawolfParent} style={{ alignItems: 'baseline', justifyContent: 'flex-start', gap: '12px' }}>
               
-              {/* 🔥 Dynamiczne nadawanie klasy przekreślenia, jeśli produkt jest przeceniony */}
+              {/* STARA CENA: klasa "przekreslona" wchodzi automatycznie, gdy produkt ma promocję */}
               <div className={`${styles.z} ${hasValidPromo ? styles.przekreslona : ""}`}>
                 {product.price} zł
               </div>
 
-              {/* 🔥 Wyświetlenie ceny promocyjnej (np. w kolorze czerwonym, jeśli masz to w stylach) */}
+              {/* NOWA CENA: Odpala klasę "cenaPromocyjna" z Twojego pliku css o kolorze #d2465e */}
               {hasValidPromo && (
-                <b className={styles.cenaPromocyjna} style={{ color: '#d32f2f', fontSize: '1.25rem' }}>
+                <b className={styles.cenaPromocyjna}>
                   {product.promoPrice} zł
                 </b>
               )}
 
+              {/* Stan magazynowy ucieka automatycznie na prawy koniec linii dzięki marginLeft: 'auto' */}
               <div className={styles.zkg} style={{ marginLeft: 'auto' }}>
                 Stan: {product.stock}
               </div>
@@ -168,7 +169,6 @@ export default async function ProductPage({
             <ul>
               <li>Dostępność: Produkt dostępny</li>
               <li>Wysyłka: 24h</li>
-              {/* Wyświetlamy ostateczną cenę w podsumowaniu dolnym */}
               <li>Cena: {hasValidPromo ? product.promoPrice : product.price} zł</li>
             </ul>
           }
