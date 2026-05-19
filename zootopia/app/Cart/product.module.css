@@ -1,6 +1,124 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,400;0,600;0,700&display=swap');
-
-body {
-  	margin: 0; line-height: normal;
+.property1koszyk {
+  	width: 100%;
+  	position: relative;
+  	display: flex;
+  	align-items: center;
+  	gap: 32px;
+  	text-align: left;
+  	font-size: 14px;
+  	color: #565e64;
+  	font-family: Poppins;
+}
+.imgProduktuIcon {
+  	height: 100px;
+  	width: 100px;
+  	object-fit: cover;
+}
+.frameParent {
+  	flex: 1;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+}
+.frameGroup {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	gap: 24px;
+}
+.frameWrapper {
+  	flex: 1;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	justify-content: flex-end;
+}
+.krainaNoteciParent {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 4px;
+}
+.krainaNoteci {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+}
+.karmaLoremIpsum {
+  	align-self: stretch;
+  	position: relative;
+  	font-size: 19px;
+  	line-height: 150%;
+  	color: #000;
+}
+.zWrapper {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-end;
+  	justify-content: center;
+  	text-align: center;
+  	font-size: 29px;
+  	color: #000;
+}
+.z {
+  	position: relative;
+  	letter-spacing: -0.04em;
+  	line-height: 120%;
+  	font-weight: 600;
+}
+.frameContainer {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+  	text-align: center;
+  	font-size: 19px;
+  	color: #000;
+}
+.parent {
+  	display: flex;
+  	align-items: flex-end;
+  	gap: 16px;
+}
+.div {
+  	height: 27px;
+  	width: 13px;
+  	position: relative;
+  	line-height: 150%;
+  	color: #888;
+  	display: inline-block;
+  	flex-shrink: 0;
+}
+.wrapper {
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	min-width: 40px;
+}
+.div2 {
+  	flex: 1;
+  	position: relative;
+  	line-height: 150%;
+}
+.div3 {
+  	height: 27px;
+  	width: 15px;
+  	position: relative;
+  	line-height: 150%;
+  	display: inline-block;
+  	flex-shrink: 0;
+}
+.ulubioneParent {
+  	display: flex;
+  	align-items: center;
+  	gap: 15px;
+}
+.ulubioneIcon {
+  	height: 24px;
+  	width: 24px;
+  	position: relative;
 }
 
