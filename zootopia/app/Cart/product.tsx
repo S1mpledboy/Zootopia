@@ -6,11 +6,12 @@ import hearticon from "@/app/Public/Images/tabler-icon-heart.svg";
 import trashicon from "@/app/Public/Images/bin.svg";
 
 interface CartItemProps {
-  id: string;        // ID produktu
+  id: string;        
   name: string;
   price: number;
+  promoPrice?: number | null; // 🔥 DODANE DO TYPÓW
   companyName: string;
-  images: any;       // Zmieniamy na any, żeby TypeScript nie krzyczał o strukturę tablic
+  images: any;       
   quantity: number;
   onCartChanged: () => void; 
 }
@@ -19,6 +20,7 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
   id,
   name,
   price,
+  promoPrice, // 🔥 ODBIERAMY PROMO CENE
   companyName,
   images,
   quantity,
@@ -59,39 +61,28 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
     if (res.ok) onCartChanged();
   };
 
-  const handleAddToFavorites = () => {
-    console.log("Ulubione:", id);
-  };
+  const handleAddToFavorites = () => {};
 
-  const formattedPrice = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(price);
+  // 🔥 LOGIKA WYŚWIETLANIA CENY PROMOCYJNEJ
+  const hasValidPromo = promoPrice !== undefined && promoPrice !== null;
+  const displayPrice = hasValidPromo ? promoPrice : price;
 
-  // 🔥 ROZWIĄZANIE DLA STRUKTURY Z TWOJEJ BAZY:
+  const formattedRegularPrice = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(price);
+  const formattedPromoPrice = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(Number(promoPrice));
+
   let mainImage = "/fallback-image.png";
-
   if (images && images.length > 0) {
-    // Ponieważ w bazie masz tablicę w tablicy, najpierw wyciągamy wewnętrzną tablicę
     const innerArray = images[0];
-    
-    // Sprawdzamy czy to co wyciągnęliśmy to na pewno kolejna tablica i czy ma elementy
     if (Array.isArray(innerArray) && innerArray.length > 0) {
-      mainImage = innerArray[0]; // 🔥 Bierzemy pierwszy link z wewnętrznej tablicy
-    } 
-    // Zabezpieczenie na wypadek, gdyby dla nowego produktu zapisał się już jako normalny pojedynczy string
-    else if (typeof innerArray === 'string') {
+      mainImage = innerArray[0];
+    } else if (typeof innerArray === 'string') {
       mainImage = innerArray;
     }
   }
 
   return (
     <div className={styles.property1koszyk}>
-      <Image 
-        className={styles.imgProduktuIcon} 
-        src={mainImage} 
-        width={100} 
-        height={100} 
-        alt={name}
-        unoptimized={true} // Pomija błędy konfiguracji domen zewnętrznych w Next.js
-      />
+      <Image className={styles.imgProduktuIcon} src={mainImage} width={100} height={100} alt={name} unoptimized={true} />
       <div className={styles.frameParent}>
         <div className={styles.frameGroup}>
           <div className={styles.frameWrapper}>
@@ -100,7 +91,19 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
               <div className={styles.karmaLoremIpsum}>{name}</div>
             </div>
           </div>
-          <div className={styles.zWrapper}><div className={styles.z}>{formattedPrice}</div></div>
+          
+          {/* 🔥 POPRAWIONA SEKCJA CENY W KOSZYKU */}
+          <div className={styles.zWrapper} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+            <div className={`${styles.z} ${hasValidPromo ? styles.przekreslona : ""}`} style={{ fontSize: hasValidPromo ? '14px' : 'inherit' }}>
+              {formattedRegularPrice}
+            </div>
+            {hasValidPromo && (
+              <b className={styles.cenaPromocyjna} style={{ color: '#d2465e', fontSize: '18px' }}>
+                {formattedPromoPrice}
+              </b>
+            )}
+          </div>
+
         </div>
         <div className={styles.frameContainer}>
           <div className={styles.parent}>

@@ -6,7 +6,6 @@ import Image from "next/image";
 import styles from './cart.module.css';
 import Property1Koszyk from './product'; 
 
-// 🔥 IMPORT BRAKUJĄCEJ IKONY
 import tablerIconChevronCompactLe from "@/app/Public/Images/tabler-icon-chevron-compact-left.svg";
 
 interface CartItemFromServer {
@@ -16,7 +15,8 @@ interface CartItemFromServer {
     _id: string; 
     name: string; 
     price: number; 
-    images: string[]; 
+    promoPrice?: number | null; // 🔥 DODANE POLE PROMOCJI
+    images: any[]; 
     company: { name: string; }; 
   };
 }
@@ -43,18 +43,21 @@ const ProduktyWKoszyku: NextPage = () => {
     fetchCart(); 
   }, [fetchCart]);
 
-  const totalCartPrice = cartItems.reduce((total, item) => 
-    item.product ? total + (item.product.price * item.quantity) : total, 0
-  );
+  // 🔥 POPRAWIONE OBLICZANIE SUMY: Sprawdza, czy istnieje promoPrice
+  const totalCartPrice = cartItems.reduce((total, item) => {
+    if (!item.product) return total;
+    const finalPrice = item.product.promoPrice !== undefined && item.product.promoPrice !== null
+      ? item.product.promoPrice
+      : item.product.price;
+    return total + (finalPrice * item.quantity);
+  }, 0);
   
   const formattedTotal = new Intl.NumberFormat('pl-PL', { 
     style: 'currency', 
     currency: 'PLN' 
   }).format(totalCartPrice);
 
-  const onFrameContainerClick = useCallback(() => {
-    // Logika nawigacji (np. powrót do sklepu)
-  }, []);
+  const onFrameContainerClick = useCallback(() => {}, []);
 
   if (loading) return <div className={styles.produktyWKoszyku}>Ładowanie koszyka...</div>;
 
@@ -70,6 +73,7 @@ const ProduktyWKoszyku: NextPage = () => {
                 id={item.product._id}
                 name={item.product.name}
                 price={item.product.price}
+                promoPrice={item.product.promoPrice} // 🔥 PRZEKAZUJEMY PROMICJĘ DO KAFELKA
                 companyName={item.product.company?.name || "Nieznana marka"}
                 images={item.product.images}
                 quantity={item.quantity}
@@ -87,7 +91,6 @@ const ProduktyWKoszyku: NextPage = () => {
       
       <div className={styles.frameParent7}>
         <div className={styles.tablerIconChevronCompactLeParent} onClick={onFrameContainerClick}>
-          {/* 🔥 WPIĘCIE ZAIMPORTOWANEJ IKONY W SRC */}
           <Image 
             className={styles.tablerIconChevronCompactLe} 
             src={tablerIconChevronCompactLe} 

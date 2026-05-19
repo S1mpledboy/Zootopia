@@ -17,15 +17,17 @@ export async function GET(req: Request) {
 
     // Pobieramy wpisy z koszyka, automatycznie wyciągając dane produktu 
     // oraz nazwę firmy (company), czyli dokładnie to, czego wymaga nasz komponent!
-    const cartItems = await Cart.find({ user: user._id })
-      .populate({
-        path: "product",
-        populate: {
-          path: "company",
-          select: "name",
-        },
-      })
-      .sort({ createdAt: -1 });
+// Zmodyfikuj tylko sekcję .populate w metodzie GET pliku app/api/cart/route.ts:
+const cartItems = await Cart.find({ user: user._id })
+  .populate({
+    path: "product",
+    select: "name price promoPrice images company stock", // 🔥 DOPISANE: promoPrice
+    populate: {
+      path: "company",
+      select: "name",
+    },
+  })
+  .sort({ createdAt: -1 });
 
     return NextResponse.json(cartItems);
   } catch (error: any) {
