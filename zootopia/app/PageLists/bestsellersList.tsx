@@ -1,3 +1,4 @@
+
 import type { NextPage } from 'next';
 import Image from "next/image";
 import styles from '@/app/modulesCSS/promotionList.module.css';
@@ -27,7 +28,11 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
       return [];
     }
     
-    const products = await response.json();
+    const jsonData = await response.json();
+    console.log('📦 Raw response:', jsonData);
+    
+    // ✅ API zwraca { ok: true, data: [...] } - rozpakuj data
+    const products = Array.isArray(jsonData) ? jsonData : jsonData?.data || [];
     console.log('✅ Pobrano:', products.length, 'produktów');
     
     if (!Array.isArray(products)) {
@@ -37,7 +42,7 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
     
     const productsWithStringId = products.map((item: any) => ({
       ...item,
-      id: String(item.id),
+      id: String(item.id || item._id),
     }));
     
     const sorted = productsWithStringId.sort((a: Product, b: Product) => a.quantity - b.quantity);
