@@ -48,6 +48,7 @@ export default async function Kategorie() {
             brandName={product.company?.name || "Zootopia"}
             productName={product.name}
             price={product.price}
+            promoPrice={product.promoPrice} // 🔥 TA LINIJKA: Przekazuje cenę promocyjną (nawet jeśli to null)
             image={productImage} // Przekazujemy przefiltrowany, czysty link URL
           />
         );

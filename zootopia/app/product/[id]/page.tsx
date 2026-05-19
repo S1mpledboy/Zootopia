@@ -4,7 +4,7 @@ import styles from "./product.module.css";
 import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
-import ProductActions from "./ProductActions"; // 🔥 NASZ NOWY IMPORT KLIENTA
+import ProductActions from "./ProductActions"; 
 import "@/models/Company";
 import "@/models/Category";
 
@@ -41,6 +41,9 @@ export default async function ProductPage({
   if (!product) {
     return <div>Produkt nie istnieje</div>;
   }
+
+  // 🔥 Walidacja, czy cena promocyjna jest ustawiona w MongoDB
+  const hasValidPromo = product.promoPrice !== undefined && product.promoPrice !== null;
 
   return (
     <div className={styles.kategorie}>
@@ -95,11 +98,21 @@ export default async function ProductPage({
 
           {/* CENA */}
           <div className={styles.frameParent2}>
-            <div className={styles.alphawolfParent}>
-              <div className={styles.z}>
+            <div className={styles.alphawolfParent} style={{ alignItems: 'baseline', gap: '10px' }}>
+              
+              {/* 🔥 Dynamiczne nadawanie klasy przekreślenia, jeśli produkt jest przeceniony */}
+              <div className={`${styles.z} ${hasValidPromo ? styles.przekreslona : ""}`}>
                 {product.price} zł
               </div>
-              <div className={styles.zkg}>
+
+              {/* 🔥 Wyświetlenie ceny promocyjnej (np. w kolorze czerwonym, jeśli masz to w stylach) */}
+              {hasValidPromo && (
+                <b className={styles.cenaPromocyjna} style={{ color: '#d32f2f', fontSize: '1.25rem' }}>
+                  {product.promoPrice} zł
+                </b>
+              )}
+
+              <div className={styles.zkg} style={{ marginLeft: 'auto' }}>
                 Stan: {product.stock}
               </div>
             </div>
@@ -119,9 +132,8 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* ILOŚĆ + KOSZYK (TERAZ DYNAMICZNE Z BAZĄ) */}
+          {/* ILOŚĆ + KOSZYK */}
           <div className={styles.frameWrapper}>
-            {/* 🔥 Wstrzykujemy komponent kliencki i dajemy mu ID z bazy */}
             <ProductActions productId={product._id.toString()} />
           </div>
         </div>
@@ -156,7 +168,8 @@ export default async function ProductPage({
             <ul>
               <li>Dostępność: Produkt dostępny</li>
               <li>Wysyłka: 24h</li>
-              <li>Cena: {product.price} zł</li>
+              {/* Wyświetlamy ostateczną cenę w podsumowaniu dolnym */}
+              <li>Cena: {hasValidPromo ? product.promoPrice : product.price} zł</li>
             </ul>
           }
         />
