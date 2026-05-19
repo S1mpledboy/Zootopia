@@ -10,9 +10,9 @@ interface CartItemProps {
   name: string;
   price: number;
   companyName: string;
-  images: string[];
+  images: any;       // Zmieniamy na any, żeby TypeScript nie krzyczał o strukturę tablic
   quantity: number;
-  onCartChanged: () => void; // 🔥 JEDYNA funkcja z góry - informuje rodzica, że trzeba odświeżyć koszyk
+  onCartChanged: () => void; 
 }
 
 const Property1Koszyk: React.FC<CartItemProps> = ({
@@ -25,7 +25,6 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
   onCartChanged
 }) => {
   
-  // Helper do nagłówków z tokenem
   const getAuthHeaders = () => {
     const token = localStorage.getItem('token');
     return {
@@ -34,17 +33,15 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
     };
   };
 
-  // 🔥 Logika Plusa przeniesiona tutaj
   const handleIncrease = async () => {
     const res = await fetch('/api/cart', {
       method: 'PATCH',
       headers: getAuthHeaders(),
       body: JSON.stringify({ productId: id, action: 'increase' })
     });
-    if (res.ok) onCartChanged(); // Mówimy rodzicowi: "Ej, odśwież dane!"
+    if (res.ok) onCartChanged(); 
   };
 
-  // 🔥 Logika Minusa przeniesiona tutaj
   const handleDecrease = async () => {
     const res = await fetch('/api/cart', {
       method: 'PATCH',
@@ -54,7 +51,6 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
     if (res.ok) onCartChanged();
   };
 
-  // 🔥 Logika Usuwania przeniesiona tutaj
   const handleRemove = async () => {
     const res = await fetch(`/api/cart?productId=${id}`, {
       method: 'DELETE',
@@ -68,11 +64,34 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
   };
 
   const formattedPrice = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(price);
-  const mainImage = images && images.length > 0 ? images[0] : "/fallback-image.png";
+
+  // 🔥 ROZWIĄZANIE DLA STRUKTURY Z TWOJEJ BAZY:
+  let mainImage = "/fallback-image.png";
+
+  if (images && images.length > 0) {
+    // Ponieważ w bazie masz tablicę w tablicy, najpierw wyciągamy wewnętrzną tablicę
+    const innerArray = images[0];
+    
+    // Sprawdzamy czy to co wyciągnęliśmy to na pewno kolejna tablica i czy ma elementy
+    if (Array.isArray(innerArray) && innerArray.length > 0) {
+      mainImage = innerArray[0]; // 🔥 Bierzemy pierwszy link z wewnętrznej tablicy
+    } 
+    // Zabezpieczenie na wypadek, gdyby dla nowego produktu zapisał się już jako normalny pojedynczy string
+    else if (typeof innerArray === 'string') {
+      mainImage = innerArray;
+    }
+  }
 
   return (
     <div className={styles.property1koszyk}>
-      <Image className={styles.imgProduktuIcon} src={mainImage} width={100} height={100} alt={name} />
+      <Image 
+        className={styles.imgProduktuIcon} 
+        src={mainImage} 
+        width={100} 
+        height={100} 
+        alt={name}
+        unoptimized={true} // Pomija błędy konfiguracji domen zewnętrznych w Next.js
+      />
       <div className={styles.frameParent}>
         <div className={styles.frameGroup}>
           <div className={styles.frameWrapper}>
