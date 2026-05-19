@@ -2,6 +2,10 @@ import type { NextPage } from 'next';
 import styles from '@/app/modulesCSS/promotionList.module.css';
 import PromotionItem from '../ItemBlocks/promotionItem';
 
+// ✅ TA LINIA JEST KLUCZOWA DLA VERCELA:
+// Wymusza renderowanie dynamiczne przy każdym wejściu na stronę i wyłącza cache static-site
+export const dynamic = 'force-dynamic';
+
 interface Product {
   id: string;
   brandName: string;
@@ -12,12 +16,11 @@ interface Product {
 }
 
 async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
-  // Automatyczne dopasowanie adresu URL dla serwera i środowiska lokalnego
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
   const apiUrl = `${baseUrl}/api/products`;
   
   try {
-    // cache: 'no-store' wymusza pobranie świeżych danych z bazy przy każdym żądaniu
+    // Używamy cache: 'no-store' w połączeniu z force-dynamic
     const response = await fetch(apiUrl, {
       method: 'GET',
       cache: 'no-store', 
@@ -29,17 +32,14 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
     }
     
     const jsonData = await response.json();
-    
-    // Sprawdzenie czy otrzymaliśmy poprawną tablicę danych
     const products = Array.isArray(jsonData) ? jsonData : [];
     
     if (products.length === 0) {
       return [];
     }
 
-    // Mapowanie odporne na format danych (zadziała dla wersji z API oraz surowej z Mongo)
+    // Bezpieczne mapowanie danych (na wypadek surowego Mongo lub przetworzonego API)
     const formattedProducts = products.map((item: any) => {
-      // Wyciąganie zdjęcia z pola 'image' (string) lub pierwszej pozycji z tablicy 'images'
       let finalImage = '/placeholder.png';
       if (typeof item.image === 'string' && item.image) {
         finalImage = item.image;
@@ -57,11 +57,10 @@ async function getProductsSortedByLowestQuantity(): Promise<Product[]> {
       };
     });
 
-    // Sortowanie lokalne od najniższego stanu magazynowego na wypadek, gdyby inne skrypty zmieniały sortowanie w API
-    const sorted = formattedProducts.sort((a, b) => a.quantity - b.quantity);
-
-    // Wybór dokładnie 3 produktów o najniższym stanie
-    return sorted.slice(0, 3);
+    // Sortujemy od najniższego stanu magazynowego i bierzemy 3 sztuki
+    return formattedProducts
+      .sort((a, b) => a.quantity - b.quantity)
+      .slice(0, 3);
 
   } catch (error) {
     console.error('❌ Krytyczny błąd pobierania produktów:', error);
