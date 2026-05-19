@@ -62,11 +62,6 @@ const ProduktyWKoszyku: NextPage = () => {
 }, [registerEmail, registerPassword]);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.categoryHeader}>
-        <Category />
-      </div>
-
       <div className={styles.produktyWKoszyku}>
         <div className={styles.frameParent}>
           {/* LOGOWANIE */}
@@ -151,7 +146,6 @@ const ProduktyWKoszyku: NextPage = () => {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 
