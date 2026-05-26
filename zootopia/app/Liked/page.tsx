@@ -11,10 +11,12 @@ const UlubionePage: NextPage = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>Polubione produkty</h1>
 
-      <div className={styles.list}>
-        <Property1Ulubione />
-        <Property1Ulubione />
-        <Property1Ulubione />
+      <div className={styles.listWrapper}>
+        <div className={styles.list}>
+          <Property1Ulubione />
+          <Property1Ulubione />
+          <Property1Ulubione />
+        </div>
       </div>
 
       <div className={styles.summary}>
@@ -24,7 +26,7 @@ const UlubionePage: NextPage = () => {
 
       <Link href="/" className={styles.backButton}>
         <span className={styles.arrow}>‹</span>
-        Kontynuuj zakupy
+        <span className={styles.backButtonText}>Kontynuuj zakupy</span>
       </Link>
     </div>
   );

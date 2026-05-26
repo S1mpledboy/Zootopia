@@ -1,7 +1,5 @@
 .container {
   width: 100%;
-  max-width: 900px;
-  margin: 0 auto;
   padding: 40px 20px;
   font-family: Poppins;
 }
@@ -11,22 +9,33 @@
   font-weight: 600;
   color: #000;
   margin-bottom: 30px;
+  padding: 0 20px;
+}
+
+.listWrapper {
+  width: 100%;
+  background: #fff;
+  margin-bottom: 30px;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
 }
 
 .list {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  margin-bottom: 30px;
-  border-top: 1px solid #ddd;
+  gap: 0;
+  width: 100%;
 }
 
 .list > div {
   display: flex;
   align-items: center;
-  gap: 32px;
-  padding: 20px 0;
+  padding: 20px 40px;
   border-bottom: 1px solid #ddd;
+}
+
+.list > div:last-child {
+  border-bottom: none;
 }
 
 .property1ulubione {
@@ -165,23 +174,30 @@
   font-weight: 600;
   color: #000;
   margin-bottom: 30px;
-  padding-top: 20px;
-  border-top: 2px solid #ddd;
+  padding: 20px 40px;
+  border-bottom: 2px solid #ddd;
 }
 
 .backButton {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   color: #000;
   text-decoration: none;
-  font-size: 14px;
   cursor: pointer;
-  padding: 10px 0;
+  padding: 10px 40px;
+  font-family: Poppins;
 }
 
 .arrow {
-  font-size: 20px;
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.backButtonText {
+  font-size: 18px;
+  font-weight: 500;
 }
 
 .backButton:hover {
