@@ -1,0 +1,95 @@
+.etapy {
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 64px 40px 24px;
+  box-sizing: border-box;
+  text-align: center;
+  font-family: 'Poppins', sans-serif;
+}
+
+.frameParent {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 80px;
+  gap: 12px;
+}
+
+/* Wspólny blok dla każdego kroku */
+.stepBlock {
+  width: 185px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px 12px;
+  box-sizing: border-box;
+  gap: 12px;
+}
+
+/* Bazowy styl kółka */
+.circle {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  transition: background-color 0.3s ease; /* Płynna zmiana koloru */
+}
+
+/* STANY KOLORÓW KÓŁEK */
+.activeCircle {
+  background-color: #fc5773; /* Twój ciemny róż */
+  color: #fff;
+}
+
+.completedCircle {
+  background-color: #fc5773; /* Możesz zostawić ciemny róż lub dać np. zielony */
+  color: #fff;
+}
+
+.upcomingCircle {
+  background-color: #fedde3; /* Jasny róż */
+  color: #000;
+}
+
+.div {
+  position: relative;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+  font-size: 29px;
+}
+
+/* Teksty pod kółkami */
+.label {
+  position: relative;
+  font-size: 25px;
+  letter-spacing: -0.02em;
+  line-height: 140%;
+  color: #666; /* Domyślnie lekko szary dla nieaktywnych */
+}
+
+.activeLabel {
+  font-weight: 600;
+  color: #000; /* Czarny dla aktywnego */
+}
+
+/* Linia łącząca */
+.line {
+  height: 1px;
+  flex: 1;
+  position: relative;
+  border-top: 1px solid #000;
+  box-sizing: border-box;
+}
+
+/* Opcjonalnie: kolor linii, jeśli poprzedni krok jest ukończony */
+.completedLine {
+  border-top: 1px solid #fc5773;
+}
