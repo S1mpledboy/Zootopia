@@ -1,7 +1,7 @@
 import type { NextPage } from 'next';
 
 import styles from '@/Liked/liked.module.css';
-import ProductImage from '@/Public/Images/piesMokra.png';
+import ProductImage from '@/Public/Images/kotMokra.png';
 import FavoriteIcon from '@/Public/Images/Vector.svg';
 //import CartIcon from '@/Public/Images/tabler-icon-shopping-bag-plus.svg';
 import Image from 'next/image';
