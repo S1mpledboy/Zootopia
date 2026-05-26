@@ -3,6 +3,7 @@
 import type { NextPage } from 'next';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation'; // 🔥 1. DODANY IMPORT
 import styles from './delivery.module.css';
 
 import circleIcon from "@/app/Public/Images/Ellipse6.svg"; 
@@ -20,6 +21,8 @@ interface CartItemFromServer {
 }
 
 const WyborDostawyIPlatnosci: NextPage = () => {
+  const router = useRouter(); // 🔥 2. INICJALIZACJA ROUTERA
+  
   const [deliveryMethod, setDeliveryMethod] = useState<string>('paczkomat'); 
   const [paymentMethod, setPaymentMethod] = useState<string>('blik');     
   const [cartItems, setCartItems] = useState<CartItemFromServer[]>([]);
@@ -74,7 +77,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(value);
   };
 
-  // 🔥 FUNKCJA SKŁADANIA ZAMÓWIENIA W BAZIE MONGODB
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) {
       alert("Twój koszyk jest pusty!");
@@ -90,7 +92,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     setIsSubmitting(true);
 
     try {
-      // Pobieramy dane adresowe z komponentu user-info za pomocą Eventu
       const customerData = await new Promise<any>((resolve) => {
         const responder = (e: any) => {
           window.removeEventListener("responsePaymentFormData", responder);
@@ -102,11 +103,9 @@ const WyborDostawyIPlatnosci: NextPage = () => {
 
       const { formData, showInvoice, showOtherAddress } = customerData;
 
-      // Budujemy mapę przesyłanych nazw kurierów/płatności
       const deliveryNames: Record<string, string> = { paczkomat: "Paczkomat InPost", inpost: "Kurier InPost", dhl: "Kurier DHL" };
       const paymentNames: Record<string, string> = { blik: "BLIK", p24: "Przelewy24", odbior: "Przy odbiorze" };
 
-      // Pakiet danych gotowy do wysłania do bazy
       const orderData = {
         cartItems: cartItems.map(item => ({
           productId: item.product._id,
@@ -149,8 +148,10 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       const result = await response.json();
 
       if (response.ok) {
-        alert(`Sukces! Zamówienie zostało zapisane. Numer zamówienia: ${result.orderNumber}`);
-        // Przekierowanie na podsumowanie, np: window.location.href = `/order-success?id=${result.orderId}`;
+        // 🔥 3. TUTAJ WKLEJAMY PRZEJŚCIE DO NOWEJ STRONY
+        // Przekierowujemy pod adres folderu Twojej nowej strony sukcesu (np. /order-success)
+        // i przekazujemy wygenerowany przez bazę numer zamówienia jako parametr 'number'
+        router.push(`/Order-success?number=${result.orderNumber}`);
       } else {
         alert(`Błąd składania zamówienia: ${result.message}`);
       }
@@ -276,7 +277,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           </div>
         </div>
 
-        {/* 🔥 PRZYCISK FINALIACJI ZAMÓWIENIA */}
         <button 
           onClick={handlePlaceOrder} 
           disabled={isSubmitting}
