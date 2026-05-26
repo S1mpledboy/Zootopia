@@ -1,0 +1,75 @@
+.banerek {
+  	width: 100%;
+  	position: relative;
+  	background-color: #c3e2ed;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 24px 40px;
+  	box-sizing: border-box;
+  	text-align: center;
+  	font-size: 12px;
+  	color: #000;
+  	font-family: Poppins;
+}
+.frameParent {
+  	display: flex;
+  	align-items: center;
+  	gap: 120px;
+}
+.tablerIconWalletParent {
+  	width: 125px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 3px;
+}
+.tablerIconWallet {
+  	width: 50px;
+  	height: 50px;
+  	overflow: hidden;
+  	flex-shrink: 0;
+  	display: flex;
+  	align-items: center;
+  	padding: 8px;
+  	box-sizing: border-box;
+}
+.vectorIcon {
+  	height: 33.3px;
+  	width: 100%;
+  	position: relative;
+}
+.bezpiecznePatnoci {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+}
+.tablerIconPackageImportParent {
+  	width: 151px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 3px;
+}
+.tablerIconPackageImport {
+  	width: 50px;
+  	height: 50px;
+  	position: relative;
+}
+.tablerIconTruckDeliveryParent {
+  	width: 154px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 3px;
+}
+.tablerIconRosetteDiscountCParent {
+  	width: 106px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 3px;
+}
+

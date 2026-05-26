@@ -5,7 +5,8 @@ import { useCallback, useEffect, useState } from 'react';
 import Image from "next/image";
 import styles from './cart.module.css';
 import Property1Koszyk from './product'; 
-
+import Etapy from './Steps'; // 🔥 Importujemy nowo utworzony komponent etapów
+import Info from './cart-info';
 import tablerIconChevronCompactLe from "@/app/Public/Images/tabler-icon-chevron-compact-left.svg";
 
 interface CartItemFromServer {
@@ -63,6 +64,9 @@ const ProduktyWKoszyku: NextPage = () => {
 
   return (
     <div className={styles.produktyWKoszyku}>
+      {/* 🔥 Komponent Etapy dodany na samej górze strony zamówienia */}
+      <Etapy currentStep={1} />
+
       <div className={styles.wszystkieProdukty}>
         {cartItems.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center' }}>Twój koszyk jest pusty.</div>
@@ -105,6 +109,7 @@ const ProduktyWKoszyku: NextPage = () => {
           <div className={styles.doKasy2}>Do kasy</div>
         </div>
       </div>
+      <Info/>
     </div>
   );
 };
