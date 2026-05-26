@@ -5,9 +5,15 @@ import { createContext, useContext, useEffect, useState } from "react";
 type User = {
   id: string;
   email: string;
+  pendingEmail?: string;
   role: "user" | "admin";
   firstName?: string;
   lastName?: string;
+  country?: string;
+  street?: string;
+  city?: string;
+  postalCode?: string;
+  phone?: string;
 };
 
 type AuthContextType = {
