@@ -1,8 +1,8 @@
 import type { NextPage } from 'next';
 
-import styles from '@/Liked/liked.module.css';
-import ProductImage from '@/Public/Images/kotMokra.png';
-import FavoriteIcon from '@/Public/Images/Vector.svg';
+import styles from '@/app/Liked/liked.module.css';
+import ProductImage from '@/app/Public/Images/kotMokra.png';
+import FavoriteIcon from '@/app/Public/Images/Vector.svg';
 //import CartIcon from '@/Public/Images/tabler-icon-shopping-bag-plus.svg';
 import Image from 'next/image';
 
