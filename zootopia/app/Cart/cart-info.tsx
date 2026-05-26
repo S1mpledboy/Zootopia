@@ -10,61 +10,31 @@ import rosetteDiscountIcon from "@/app/Public/Images/tabler-icon-rosette-discoun
 
 const Banerek: NextPage = () => {
   return (
-    <div className={styles.banerek}>
-      <div className={styles.frameParent}>
+    <div className={styles.banerekOuter}>
+      <div className={styles.banerekInner}>
         
-        {/* 1. Bezpieczne płatności */}
-        <div className={styles.tablerIconWalletParent}>
-          <div className={styles.tablerIconWallet}>
-            <Image 
-              className={styles.vectorIcon} 
-              src={walletIcon} 
-              width={33.3} 
-              height={33.3} 
-              sizes="100vw" 
-              alt="Portfel" 
-            />
-          </div>
-          <b className={styles.bezpiecznePatnoci}>100% bezpieczne <br/>płatności</b>
+        {/* 1. Płatności */}
+        <div className={styles.banerekItem}>
+          <Image src={walletIcon} width={35} height={35} alt="Portfel" />
+          <b className={styles.banerekText}>100% bezpieczne <br/>płatności</b>
         </div>
 
-        {/* 2. 30 dni na zwrot */}
-        <div className={styles.tablerIconPackageImportParent}>
-          <Image 
-            className={styles.tablerIconPackageImport} 
-            src={packageImportIcon} 
-            width={50} 
-            height={50} 
-            sizes="100vw" 
-            alt="Zwrot paczki" 
-          />
-          <b className={styles.bezpiecznePatnoci}>30 dni na zwrot<br/>dla zalogowanych</b>
+        {/* 2. Zwrot */}
+        <div className={styles.banerekItem}>
+          <Image src={packageImportIcon} width={45} height={45} alt="Zwrot" />
+          <b className={styles.banerekText}>30 dni na zwrot<br/>dla zalogowanych</b>
         </div>
 
-        {/* 3. Darmowa dostawa */}
-        <div className={styles.tablerIconTruckDeliveryParent}>
-          <Image 
-            className={styles.tablerIconPackageImport} 
-            src={truckDeliveryIcon} 
-            width={50} 
-            height={50} 
-            sizes="100vw" 
-            alt="Dostawa" 
-          />
-          <b className={styles.bezpiecznePatnoci}>darmowa dostawa <br/>od 150 zł</b>
+        {/* 3. Dostawa */}
+        <div className={styles.banerekItem}>
+          <Image src={truckDeliveryIcon} width={45} height={45} alt="Dostawa" />
+          <b className={styles.banerekText}>darmowa dostawa <br/>od 150 zł</b>
         </div>
 
-        {/* 4. Gwarancja oryginalności */}
-        <div className={styles.tablerIconRosetteDiscountCParent}>
-          <Image 
-            className={styles.tablerIconPackageImport} 
-            src={rosetteDiscountIcon} 
-            width={50} 
-            height={50} 
-            sizes="100vw" 
-            alt="Certyfikat" 
-          />
-          <b className={styles.bezpiecznePatnoci}>gwarancja<br/>oryginalności</b>
+        {/* 4. Oryginalność */}
+        <div className={styles.banerekItem}>
+          <Image src={rosetteDiscountIcon} width={45} height={45} alt="Gwarancja" />
+          <b className={styles.banerekText}>gwarancja<br/>oryginalności</b>
         </div>
 
       </div>

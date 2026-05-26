@@ -1,78 +1,48 @@
-.banerek {
+/* Trik na rozciągnięcie tła do krawędzi ekranu, ignorując ograniczenia koszyka */
+.banerekOuter {
+  width: 100vw !important;
+  position: relative !important;
+  left: 50% !important;
+  right: 50% !important;
+  margin-left: -50vw !important;
+  margin-right: -50vw !important;
+  background-color: #cbdff2 !important; /* Błękitne tło */
+  padding: 24px 0 !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+  box-sizing: border-box !important;
+  margin-top: 40px; /* Odstęp od przycisków "Do kasy" */
+}
+
+/* Kontener na ikonki - dopasowany szerokością do reszty Twojej strony */
+.banerekInner {
   width: 100%;
-  background-color: #e0f2fe; /* Twój błękitny kolor tła */
-  padding: 24px 40px;
-  box-sizing: border-box;
-  display: flex;
-  justify-content: center; /* Centruje cały pasek na ekranie */
-  align-items: center;
+  max-width: 1200px; /* Tyle samo, ile ma reszta Twojej strony koszyka */
+  padding: 0 40px;   /* Bezpieczny margines boczny */
+  display: flex !important;
+  flex-direction: row !important; /* Ikonki w jednym rzędzie */
+  justify-content: space-between !important; /* Równe rozłożenie */
+  align-items: center !important;
+  box-sizing: border-box !important;
 }
 
-.frameParent {
-  width: 100%;
-  max-width: 1200px; /* Zapobiega zbytniemu rozjeżdżaniu się ikonek na bardzo szerokich monitorach */
-  display: flex;
-  flex-direction: row; /* Wymusza układ obok siebie (w rzędzie) */
-  justify-content: space-between; /* Rozkłada równomiernie elementy */
-  align-items: center;
-  gap: 20px;
+/* Pojedynczy element: Ikona + Tekst obok siebie */
+.banerekItem {
+  display: flex !important;
+  flex-direction: row !important; /* Wymuszenie: Ikona z lewej, tekst z prawej */
+  align-items: center !important;
+  gap: 12px !important;
 }
 
-/* Styl dla każdego z 4 bloków (Ikona + Tekst) */
-.tablerIconWalletParent,
-.tablerIconPackageImportParent,
-.tablerIconTruckDeliveryParent,
-.tablerIconRosetteDiscountCParent {
-  display: flex;
-  flex-direction: row; /* Zgodnie z grafiką: ikona obok tekstu */
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  flex: 1;
+/* Wygląd tekstu */
+.banerekText {
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 13px !important;
+  line-height: 1.3 !important;
+  color: #000000 !important;
+  text-transform: uppercase !important; /* Wielkie litery */
+  text-align: left !important;
+  font-weight: 600 !important;
+  white-space: nowrap; /* Zapobiega niekontrolowanemu łamaniu pojedynczych słów */
 }
-
-/* Wyrównanie kontenera pierwszej ikonki (portfela) do wielkości pozostałych */
-.tablerIconWallet {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 50px;
-  height: 50px;
-}
-
-/* Styl tekstu */
-.bezpiecznePatnoci {
-  font-family: 'Poppins', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
-  color: #000000;
-  text-align: left; /* Tekst wyrównany do lewej obok ikonki */
-}
-.tablerIconPackageImportParent {
-  	width: 151px;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: center;
-  	gap: 3px;
-}
-.tablerIconPackageImport {
-  	width: 50px;
-  	height: 50px;
-  	position: relative;
-}
-.tablerIconTruckDeliveryParent {
-  	width: 154px;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: center;
-  	gap: 3px;
-}
-.tablerIconRosetteDiscountCParent {
-  	width: 106px;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: center;
-  	gap: 3px;
-}
-
