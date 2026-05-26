@@ -7,10 +7,11 @@ const Kategorie: NextPage = () => {
   	return (
     		<div className={styles.kategorie}>
       			<div className={styles.frameParent}>
-					<Link href={"/ShopPage"}></Link>
+					<Link href={"/ShopPage"}>
         				<div className={styles.piesWrapper}>
           					<b className={styles.pies}>Pies</b>
         				</div>
+					</Link>
         				<div className={styles.piesWrapper}>
           					<b className={styles.pies}>Kot</b>
         				</div>

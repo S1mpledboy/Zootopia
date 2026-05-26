@@ -16,7 +16,7 @@ export default async function KategoriePage() {
   })
     .populate("company")
     .sort({ updatedAt: -1 }) 
-    .limit(5) // 🔥 TA LINIJKA: Usuń ją, jeśli chcesz pobrać więcej niż 5 produktów do kategorii
+    //.limit(5) // 🔥 TA LINIJKA: Usuń ją, jeśli chcesz pobrać więcej niż 5 produktów do kategorii
     .lean();
 
   // 3. Formatyzujemy dane, aby móc je przekazać do Client Component 
