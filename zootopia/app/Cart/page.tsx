@@ -109,7 +109,7 @@ const ProduktyWKoszyku: NextPage = () => {
           <div className={styles.doKasy2}>Do kasy</div>
         </div>
       </div>
-      <Info/>
+      <Info />
     </div>
   );
 };
