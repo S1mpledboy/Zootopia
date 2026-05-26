@@ -7,7 +7,7 @@ import CartIcon from '@/Public/Images/tabler-icon-shopping-bag-plus.svg';
 
 import Image from 'next/image';
 
-import styles from './likedItem.module.css';
+import styles from '@/Liked/liked.module.css';
 
 const Property1Ulubione: NextPage = () => {
 	return (

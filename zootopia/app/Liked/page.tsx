@@ -6,7 +6,7 @@ import Link from "next/link";
 import Property1Ulubione from "./likedItem";
 
 
-import styles from "./liked.module.css";
+import styles from '@/Liked/liked.module.css';
 
 const UlubionePage: NextPage = () => {
   return (
