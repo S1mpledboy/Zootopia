@@ -6,8 +6,8 @@ import Image from 'next/image';
 import styles from './index.module.css';
 
 // Importowanie ikon
-import circleIcon from "@/app/Public/Images/ellipse-parent.svg"; 
-import checkedCircleIcon from "@/app/Public/Images/ellipse-div.svg"; 
+import circleIcon from "@/app/Public/Images/Ellipse6.svg"; 
+import checkedCircleIcon from "@/app/Public/Images/Ellipse7.svg"; 
 
 const WyborDostawyIPlatnosci: NextPage = () => {
   const [deliveryMethod, setDeliveryMethod] = useState<string>('paczkomat'); 
