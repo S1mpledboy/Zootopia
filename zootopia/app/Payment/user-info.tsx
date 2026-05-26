@@ -1,10 +1,11 @@
-"use client";
+"use client"; 
 
 import type { NextPage } from 'next';
 import { useState, useEffect } from 'react';
-import styles from './user-info.module.css'; // Upewnij się, że index.module.css też tu jest!
+import styles from './user-info.module.css'; 
 
 const FormularzPlatnosci: NextPage = () => {
+  // 1. Stan formularza
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -22,14 +23,20 @@ const FormularzPlatnosci: NextPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // 👇 TUTAJ WSKOCZYŁ TEN NOWY POPRAWIONY BLOK 👇
   useEffect(() => {
     const fetchUserData = async () => {
       try {
         const response = await fetch('/api/user/me'); 
+        
         if (response.ok) {
           const resJson = await response.json();
-          if (resJson.ok && resJson.data) {
-            const user = resJson.data;
+          
+          // 🔥 Wyciągamy obiekt użytkownika niezależnie od formatu API
+          const user = resJson.data ? resJson.data : resJson;
+          
+          // Sprawdzamy, czy obiekt ma chociaż jedno pole z bazy (np. email lub _id)
+          if (user && (user.email || user._id)) {
             setIsLoggedIn(true);
             setFormData(prev => ({
               ...prev,
@@ -52,6 +59,7 @@ const FormularzPlatnosci: NextPage = () => {
     };
     fetchUserData();
   }, []);
+  // 👆 KONIEC NOWEGO BLOKU 👆
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -98,7 +106,6 @@ const FormularzPlatnosci: NextPage = () => {
           </div>
         </div>
         
-        {/* Pozostała część layoutu (Faktura, uwagi itp.) bez zmian */}
         <div className={styles.rectangleGroup}>
           <input type="checkbox" className={styles.frameChild} id="invoice" />
           <label htmlFor="invoice" className={styles.stworzyKonto}>Faktura</label>
@@ -108,5 +115,4 @@ const FormularzPlatnosci: NextPage = () => {
   );
 };
 
-// Kluczowe dla Next.js, by stworzyć podstronę /Payment
 export default FormularzPlatnosci;
