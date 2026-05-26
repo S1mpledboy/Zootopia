@@ -3,7 +3,7 @@ import type { NextPage } from 'next';
 import styles from '@/app/Liked/liked.module.css';
 import ProductImage from '@/app/Public/Images/kotMokra.png';
 import FavoriteIcon from '@/app/Public/Images/Vector.svg';
-//import CartIcon from '@/Public/Images/tabler-icon-shopping-bag-plus.svg';
+import CartIcon from '@/app/Public/Images/tabler-icon-shopping-bag-plus.svg';
 import Image from 'next/image';
 
 const Property1Ulubione: NextPage = () => {
@@ -50,7 +50,9 @@ const Property1Ulubione: NextPage = () => {
 					<div className={styles.ulubioneParent}>
 						<FavoriteIcon className={styles.ulubioneIcon} />
 
-
+					<div className={styles.dodajDoKoszyka}>
+							<CartIcon className={styles.vectorIcon} />
+						</div>
 
 						<FavoriteIcon className={styles.ulubioneIcon} />
 					</div>
@@ -61,6 +63,3 @@ const Property1Ulubione: NextPage = () => {
 };
 
 export default Property1Ulubione;
-						//<div className={styles.dodajDoKoszyka}>
-							//<CartIcon className={styles.vectorIcon} />
-						//</div>
