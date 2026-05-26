@@ -1,9 +1,9 @@
 import type { NextPage } from 'next';
 
-import ProductImage from "@app/Public/Images/freepik_photo-of-a-single-premium_2.png";
+import ProductImage from '@app/Public/Images/freepik_photo-of-a-single-premium_2.png';
 
-import FavoriteIcon from "@app/Public/Images/Vector.svg";
-import CartIcon from "@app/Public/Images/tabler-icon-shopping-bag-plus.svg";
+import FavoriteIcon from '@app/Public/Images/Vector.svg';
+import CartIcon from '@app/Public/Images/tabler-icon-shopping-bag-plus.svg';
 
 import Image from 'next/image';
 
