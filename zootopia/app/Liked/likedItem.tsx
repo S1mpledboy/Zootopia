@@ -6,6 +6,7 @@ import Image from 'next/image';
 import styles from './liked.module.css';
 import ProductImage from '@/app/Public/Images/kotMokra.png';
 import FavoriteIcon from '@/app/Public/Images/Vector.svg';
+import TrashIcon from '@/app/Public/Images/tabler-icon-trash.svg';
 import CartIcon from '@/app/Public/Images/tabler-icon-shopping-bag-plus.svg';
 
 const Property1Ulubione: NextPage = () => {
@@ -69,8 +70,8 @@ const Property1Ulubione: NextPage = () => {
 						</div>
 
 						<Image 
-							src={FavoriteIcon}
-							alt="Ulubione" 
+							src={TrashIcon}
+							alt="Dlete" 
 							className={styles.ulubioneIcon}
 							width={24}
 							height={24}
