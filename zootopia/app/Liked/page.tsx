@@ -5,9 +5,7 @@ import Link from "next/link";
 
 import Property1Ulubione from "./likedItem";
 
-
-
-import styles from '@/app/Liked/liked.module.css';
+import styles from '@/Liked/liked.module.css';  // ← Usuń '/app'
 
 const UlubionePage: NextPage = () => {
   return (
