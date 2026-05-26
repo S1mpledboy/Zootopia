@@ -6,7 +6,7 @@ import styles from './info.module.css';
 import walletIcon from "@/app/Public/Images/tabler-icon-wallet.svg";
 import packageImportIcon from "@/app/Public/Images/tabler-icon-package-import.svg";
 import truckDeliveryIcon from "@/app/Public/Images/tabler-icon-truck-delivery.svg";
-import rosetteDiscountIcon from "@/app/Public/Images/tabler-icon-rosette-discount-c.svg";
+import rosetteDiscountIcon from "@/app/Public/Images/tabler-icon-rosette-discount-check.svg";
 
 const Banerek: NextPage = () => {
   return (
