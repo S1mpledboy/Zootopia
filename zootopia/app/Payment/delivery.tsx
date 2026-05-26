@@ -3,10 +3,10 @@
 import type { NextPage } from 'next';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import styles from './index.module.css';
+import styles from './delivery.module.css';
 
-import circleIcon from "@/app/Public/Images/ellipse-parent.svg"; 
-import checkedCircleIcon from "@/app/Public/Images/ellipse-div.svg"; 
+import circleIcon from "@/app/Public/Images/Ellipse6.svg"; 
+import checkedCircleIcon from "@/app/Public/Images/Ellipse7.svg"; 
 
 interface CartItemFromServer {
   _id: string;
