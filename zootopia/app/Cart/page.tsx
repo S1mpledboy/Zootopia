@@ -2,10 +2,12 @@
 
 import type { NextPage } from 'next';
 import { useCallback, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation'; // 👇 KROK 1: Importujemy useRouter
 import Image from "next/image";
 import styles from './cart.module.css';
 import Property1Koszyk from './product'; 
-
+import Etapy from './Steps'; 
+import Info from './cart-info';
 import tablerIconChevronCompactLe from "@/app/Public/Images/tabler-icon-chevron-compact-left.svg";
 
 interface CartItemFromServer {
@@ -15,13 +17,14 @@ interface CartItemFromServer {
     _id: string; 
     name: string; 
     price: number; 
-    promoPrice?: number | null; // 🔥 DODANE POLE PROMOCJI
+    promoPrice?: number | null; 
     images: any[]; 
     company: { name: string; }; 
   };
 }
 
 const ProduktyWKoszyku: NextPage = () => {
+  const router = useRouter(); // 👇 KROK 2: Inicjalizujemy router
   const [cartItems, setCartItems] = useState<CartItemFromServer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -43,7 +46,6 @@ const ProduktyWKoszyku: NextPage = () => {
     fetchCart(); 
   }, [fetchCart]);
 
-  // 🔥 POPRAWIONE OBLICZANIE SUMY: Sprawdza, czy istnieje promoPrice
   const totalCartPrice = cartItems.reduce((total, item) => {
     if (!item.product) return total;
     const finalPrice = item.product.promoPrice !== undefined && item.product.promoPrice !== null
@@ -57,12 +59,22 @@ const ProduktyWKoszyku: NextPage = () => {
     currency: 'PLN' 
   }).format(totalCartPrice);
 
-  const onFrameContainerClick = useCallback(() => {}, []);
+  // 👇 KROK 3: Akcja dla przycisku "Kontynuuj zakupy" (powrót na stronę główną)
+  const onContinueShoppingClick = useCallback(() => {
+    router.push('/');
+  }, [router]);
+
+  // 👇 KROK 4: Akcja dla przycisku "Do kasy" (przejście do formularza płatności)
+  const onCheckoutClick = useCallback(() => {
+    router.push('/Payment'); // Przekierowanie do folderu payment
+  }, [router]);
 
   if (loading) return <div className={styles.produktyWKoszyku}>Ładowanie koszyka...</div>;
 
   return (
     <div className={styles.produktyWKoszyku}>
+      <Etapy currentStep={1} />
+
       <div className={styles.wszystkieProdukty}>
         {cartItems.length === 0 ? (
           <div style={{ padding: '40px', textAlign: 'center' }}>Twój koszyk jest pusty.</div>
@@ -73,7 +85,7 @@ const ProduktyWKoszyku: NextPage = () => {
                 id={item.product._id}
                 name={item.product.name}
                 price={item.product.price}
-                promoPrice={item.product.promoPrice} // 🔥 PRZEKAZUJEMY PROMICJĘ DO KAFELKA
+                promoPrice={item.product.promoPrice} 
                 companyName={item.product.company?.name || "Nieznana marka"}
                 images={item.product.images}
                 quantity={item.quantity}
@@ -90,7 +102,8 @@ const ProduktyWKoszyku: NextPage = () => {
       </div>
       
       <div className={styles.frameParent7}>
-        <div className={styles.tablerIconChevronCompactLeParent} onClick={onFrameContainerClick}>
+        {/* Podpięte onContinueShoppingClick */}
+        <div className={styles.tablerIconChevronCompactLeParent} onClick={onContinueShoppingClick}>
           <Image 
             className={styles.tablerIconChevronCompactLe} 
             src={tablerIconChevronCompactLe} 
@@ -101,10 +114,13 @@ const ProduktyWKoszyku: NextPage = () => {
           />
           <div className={styles.kontynuujZakupy}>Kontynuuj zakupy</div>
         </div>
-        <div className={styles.doKasy} onClick={onFrameContainerClick}>
+        
+        {/* 👇 Podpięte onCheckoutClick pod przycisk "Do kasy" */}
+        <div className={styles.doKasy} onClick={onCheckoutClick}>
           <div className={styles.doKasy2}>Do kasy</div>
         </div>
       </div>
+      <Info />
     </div>
   );
 };

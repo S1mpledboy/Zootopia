@@ -1,0 +1,154 @@
+.etapy {
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 44px 40px 24px;
+  box-sizing: border-box;
+  text-align: center;
+  font-size: 25px;
+  color: #000;
+  font-family: 'Poppins', sans-serif;
+}
+
+.frameParent {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0px 80px;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   KROK 1: TWÓJ KOSZYK
+   ========================================================================== */
+.frameGroup {
+  width: 171px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px 12px;
+  box-sizing: border-box;
+  gap: 12px;
+}
+
+.twjKoszyk {
+  position: relative;
+  letter-spacing: -0.02em;
+  line-height: 140%;
+  font-weight: 500;
+}
+
+/* Stan kółka: UKOŃCZONY KROK (Jasnoróżowy z ptaszkiem) */
+.tablerIconCheckWrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: #fedde3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+}
+
+.tablerIconCheck {
+  display: block;
+}
+
+/* ==========================================================================
+   KROK 2: DANE I WYSYŁKA
+   ========================================================================== */
+.frameContainer {
+  width: 185px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px 12px;
+  box-sizing: border-box;
+  gap: 12px;
+}
+
+/* Stan kółka: AKTYWNY KROK (Ciemnoróżowy z białym numerem) */
+.wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: #fc5773;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: #ffffff; /* Biały numer na ciemnym tle */
+}
+
+.daneIWysyka {
+  position: relative;
+  letter-spacing: -0.02em;
+  line-height: 140%;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   KROK 3: POTWIERDZENIE
+   ========================================================================== */
+.frameDiv {
+  width: 175px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0px 12px;
+  box-sizing: border-box;
+  gap: 12px;
+}
+
+/* Stan kółka: NADCHODZĄCY KROK (Jasnoróżowy z szarym/czarnym numerem) */
+.container {
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  background-color: #fedde3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  color: #000000;
+}
+
+.potwierdzenie {
+  position: relative;
+  letter-spacing: -0.02em;
+  line-height: 140%;
+  font-weight: 500;
+}
+
+/* Wspólny styl tekstu wewnątrz kółek (cyfr) */
+.div {
+  position: relative;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   LINIE ŁĄCZĄCE I TYPOGRAFIA DYNAMICZNA
+   ========================================================================== */
+.frameChild {
+  height: 1px;
+  flex: 1;
+  position: relative;
+  border-top: 1px solid #cbd5e1; /* Zmieniono na delikatny szary zamiast ostrej czerni */
+  box-sizing: border-box;
+}
+
+/* Linia dla ukończonego etapu */
+.completedLine {
+  border-top: 1px solid #fc5773; /* Zmienia kolor na różowy, jeśli krok za nią jest gotowy */
+}
+
+/* Klasa pogrubiająca tekst aktywnego etapu */
+.activeLabel {
+  font-weight: 700 !important;
+  color: #000000 !important;
+}

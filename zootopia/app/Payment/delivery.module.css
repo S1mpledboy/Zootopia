@@ -1,0 +1,205 @@
+/* ==========================================================================
+   GŁÓWNY UKŁAD STRONY (ROZDZIAŁ NA KOLUMNY)
+   ========================================================================== */
+.frameParent {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 60px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Lewa kolumna (Dostawa i Płatności) */
+.produktyWKoszykuParent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* Prawa kolumna (Podsumowanie) */
+.frameParent8 {
+  width: 440px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Wspólny styl dla bloków */
+.produktyWKoszyku {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   NAGŁÓWKI I LINIE ODDZIELAJĄCE
+   ========================================================================== */
+.metodyDostawyParent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.metodyDostawy {
+  font-size: 22px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+
+.lineDivider {
+  width: 100%;
+  height: 1px;
+  background-color: #cbd5e1; /* Cienka szara linia jak na zdjęciu */
+  border: none;
+  margin-bottom: 16px;
+}
+
+/* ==========================================================================
+   LISTA WYBORU (DOSTAWA I PŁATNOŚCI)
+   ========================================================================== */
+.frameGroup, .produktyWKoszykuInner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.frameContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Odstępy pionowe między opcjami */
+}
+
+/* Wiersz opcji (BRAK KAFELKÓW/OBRAMOWAŃ) */
+.frameDiv {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  cursor: pointer;
+  background: transparent;
+}
+
+.ellipseParent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Teksty opcji */
+.kurierInpost {
+  font-size: 15px;
+  color: #565e64;
+  font-weight: 400;
+}
+
+/* Ceny po prawej stronie opcji */
+.od999Z {
+  font-size: 15px;
+  color: #a7acb1;
+  font-weight: 400;
+  text-align: right;
+}
+
+/* Stan aktywny (zaznaczony) */
+.boldText {
+  font-weight: 700 !important;
+  color: #000000 !important;
+}
+
+/* Przycisk dla paczkomatu */
+.wybierzPunktOdbioruWrapper {
+  width: 100%;
+  background-color: #fd798f; /* Różowy kolor przycisku */
+  border-radius: 20px;
+  padding: 14px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-top: 20px;
+}
+
+.wybierzPunktOdbioru {
+  font-size: 13px;
+  font-weight: 600;
+  color: #000000;
+}
+
+/* ==========================================================================
+   TABELA PODSUMOWANIA (PRAWA KOLUMNA)
+   ========================================================================== */
+.frameParent9 {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.frameDivSummary {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.frameDivSummary .kurierInpost {
+  font-size: 15px;
+  color: #000000;
+}
+
+.frameDivSummary .kurierInpost:last-child {
+  font-weight: 400;
+  text-align: right;
+}
+
+/* Sekcja Sumy Całkowitej */
+.metodyDostawyParentTotal {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.frameDivSummaryTotal {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 16px;
+}
+
+.cakowitaSumaZContainer {
+  font-size: 22px; /* Większy tekst dla głównej sumy */
+}
+
+.cakowitaSuma {
+  font-weight: 700;
+  color: #000000;
+}
+
+.zVat {
+  font-size: 15px;
+  font-weight: 400;
+  color: #565e64;
+}
+
+/* Wielka pogrubiona kwota na samym dole */
+.totalAmountBig {
+  font-size: 26px;
+  font-weight: 700;
+  color: #000000;
+  text-align: right;
+}
