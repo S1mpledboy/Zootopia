@@ -1,13 +1,11 @@
 import type { NextPage } from 'next';
 
-import ProductImage from '@/Public/Images/piesMokra.png';
-
-import FavoriteIcon from 'app/Public/Images/Vector.svg';
-import CartIcon from 'app/Public/Images/tabler-icon-shopping-bag-plus.svg';
-
-import Image from 'next/image';
-
+// ✅ Poprawnie w likedItem.tsx:
 import styles from '@/Liked/liked.module.css';
+import ProductImage from '@/Public/Images/piesMokra.png';
+import FavoriteIcon from '@/Public/Images/Vector.svg';
+import CartIcon from '@/Public/Images/tabler-icon-shopping-bag-plus.svg';
+import Image from 'next/image';
 
 const Property1Ulubione: NextPage = () => {
 	return (
