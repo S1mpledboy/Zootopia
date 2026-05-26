@@ -1,11 +1,13 @@
 import type { NextPage } from 'next';
 import styles from '@/app/modulesCSS/category.module.css';
+import Link from 'next/link';
 
 
 const Kategorie: NextPage = () => {
   	return (
     		<div className={styles.kategorie}>
       			<div className={styles.frameParent}>
+					<Link href={"/ShopPage"}></Link>
         				<div className={styles.piesWrapper}>
           					<b className={styles.pies}>Pies</b>
         				</div>
