@@ -1,0 +1,73 @@
+.produktyWKoszyku {
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 32px 40px 64px;
+  box-sizing: border-box;
+  gap: 24px;
+  text-align: center;
+  font-size: 25px;
+  color: #000;
+  font-family: 'Poppins', sans-serif;
+}
+
+.twojeZamwienieZostao {
+  position: relative;
+  font-size: 45px; /* Przeniesione z pierwszej zdublowanej klasy */
+  letter-spacing: -0.05em;
+  line-height: 90%;
+  font-weight: 600;
+}
+
+.frameParent {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Zmienione na center, żeby teksty w środku były idealnie wyśrodkowane */
+  gap: 12px;
+}
+
+.numerTwojegoZamwieniaToParent {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.numerTwojegoZamwienia {
+  position: relative;
+  letter-spacing: -0.02em;
+  line-height: 140%;
+}
+
+.div {
+  position: relative;
+  font-size: 29px;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+}
+
+.potwierdzenieZamwieniaWraz {
+  width: 100%; /* Zmienione na 100% z max-width dla lepszej responsywności */
+  max-width: 1120px;
+  position: relative;
+  font-size: 19px;
+  line-height: 150%;
+  display: inline-block;
+}
+
+.dzikujemyZaZakupy {
+  width: 100%;
+  max-width: 1120px;
+  position: relative;
+  font-size: 29px;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+  display: inline-block;
+  margin-top: 10px; /* Delikatny odstęp dla idealnego balansu jak na zdjęciu */
+}

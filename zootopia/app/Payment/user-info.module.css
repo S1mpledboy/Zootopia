@@ -1,0 +1,204 @@
+/* ==========================================================================
+   1. GŁÓWNY UKŁAD FORMULARZA (Dane płatności + Blok prawy)
+   ========================================================================== */
+
+.produktyWKoszyku {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Flexbox dzielący formularz na lewą i prawą stronę */
+.frameParent {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+/* Lewa kolumna: Wszystkie pola i checkboxy */
+.frameGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* Odstęp pionowy między rzędami inputów */
+}
+
+/* Prawa kolumna: Logowanie + Uwagi */
+.frameParent6 {
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (max-width: 968px) {
+  .frameParent {
+    flex-direction: column;
+  }
+  .frameParent6 {
+    width: 100%;
+  }
+}
+
+/* Rzędy przechowujące inputy obok siebie */
+.frameContainer, .frameDiv, .frameParent2, .frameParent3 {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+}
+
+/* ==========================================================================
+   2. NAGŁÓWEK I LINIA ODDZIELAJĄCE
+   ========================================================================== */
+.metodyDostawyParent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+/* Dynamicznie dopasowana nazwa sekcji "Dane płatności" */
+.metodyDostawy {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.lineDivider {
+  width: 100%;
+  height: 1px;
+  background-color: #e2e8f0;
+  border: none;
+}
+
+/* ==========================================================================
+   3. STYLIZACJA INPUTÓW (ZAOKRĄGLONE RAMKI Z GRAFIKI)
+   ========================================================================== */
+.imiWrapper, .nazwiskoWrapper, .polskaWrapper, .kodPocztowyWrapper, 
+.telefonWrapper, .eMailWrapper, .nazwaFirmyWrapper, .nipWrapper {
+  flex: 1;
+  width: 100%;
+  border: 1.5px solid #a7acb1; /* Kolor ramki z rysunku */
+  border-radius: 14px;        /* Mocne zaokrąglenie rogów */
+  padding: 12px 20px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  height: 48px;
+}
+
+/* Wygląd tekstu wpisywanego oraz placeholderów */
+.imi {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #000000;
+  padding: 0;
+}
+
+.imi::placeholder {
+  color: #a7acb1; /* Szary tekst zastępczy */
+}
+
+/* ==========================================================================
+   4. CHECKBOXY I ICH ETYKIETY
+   ========================================================================== */
+.rectangleParent, .rectangleGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.frameChild {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #a7acb1;
+  border-radius: 4px;
+  accent-color: #fd798f;
+}
+
+.stworzyKonto {
+  font-size: 13px;
+  font-weight: 500;
+  color: #565e64;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   5. BLOK PRAWEJ STRONY: LOGOWANIE ORAZ UWAGI (ZDJĘCIE 1:1)
+   ========================================================================== */
+
+/* Szary kontener "Masz już konto?" */
+.frameWrapper {
+  width: 100%;
+  background-color: #eaf0f6; /* Jasnoszare tło panelu */
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.maszJuKontoParent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #000000;
+  font-weight: 500;
+}
+
+/* Czerwony/Różowy napis ZALOGUJ SIĘ */
+.zalogujSi {
+  color: #fd798f;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase; /* Wielkie litery */
+  cursor: pointer;
+}
+
+/* Kontener na uwagi (Duży, biały, zaokrąglony box) */
+.uwagiDoZamwieniaNpInfoWrapper {
+  width: 100%;
+  border: 1.5px solid #a7acb1;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  min-height: 160px; /* Wysokość dopasowana do makiety */
+}
+
+.uwagiDoZamwienia {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #000000;
+  resize: none;
+}
+
+.uwagiDoZamwienia::placeholder {
+  color: #a7acb1;
+}

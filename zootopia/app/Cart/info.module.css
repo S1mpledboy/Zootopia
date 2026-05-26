@@ -1,0 +1,50 @@
+.banerek {
+  width: 100%;                /* Zajmie całą dostępną szerokość od lewej do prawej */
+  background-color: #e0f2fe;  /* Jasnoniebieskie tło */
+  padding: 24px 0;            /* Odpowiedni odstęp od góry i dołu */
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;    /* Centruje wewnętrzny kontener na środku ekranu */
+  align-items: center;
+}
+
+.frameParent {
+  width: 100%;
+  max-width: 1200px;          /* Maksymalna szerokość zawartości baneru */
+  padding: 0 40px;            /* Bezpieczny margines boczny, żeby ikony nie dotykały krawędzi na mniejszych ekranach */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;        /* Wszystkie 4 elementy ładnie w jednym rzędzie */
+  justify-content: space-between; /* Rozsuwa je równomiernie */
+  align-items: center;
+}
+
+/* Pojedynczy boks (ikona + tekst) */
+.boxElement {
+  display: flex;
+  flex-direction: row;        /* Ikona OBOK tekstu */
+  align-items: center;        /* Centrowanie ikony i tekstu względem siebie w pionie */
+  gap: 12px;                  /* Odstęp między ikoną a napisem */
+}
+
+/* Kontener na ikonę – stabilizuje wymiary */
+.iconContainer {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;             /* Ikona nie zmniejszy się, jeśli zabraknie miejsca */
+}
+
+/* Styl tekstu */
+.bezpiecznePatnoci {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #000000;
+  text-align: left;           /* Tekst wyrównany do lewej (obok ikony) */
+  text-transform: uppercase;  /* Zamienia małe litery na WIELKIE */
+  letter-spacing: 0.02em;
+}
