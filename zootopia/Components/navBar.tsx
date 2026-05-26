@@ -37,10 +37,12 @@ const Nawigacja: NextPage = () => {
           					</Link>
 							<div className={styles.ulubione}>Moje konto</div>
         				</div>
+							<Link href="/ShopPage">
         				<div className={styles.tablerIconHeartParent}>
           					<Image src={bagicon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
           					<div className={styles.ulubione}>Koszyk</div>
         				</div>
+						</Link>
       			</div>
     		</div>
 			<Category/>
