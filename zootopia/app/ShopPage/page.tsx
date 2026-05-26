@@ -40,7 +40,8 @@ export default async function KategoriePage() {
       price: product.price,
       promoPrice: product.promoPrice,
       image: productImage,
-      companyName: product.company?.name || "Zootopia"
+      companyName: product.company?.name || "Zootopia",
+      category: product.category || "" // KONIECZNIE DODAJ TO POLE
     };
   });
 
