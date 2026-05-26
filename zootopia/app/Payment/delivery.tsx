@@ -3,7 +3,7 @@
 import type { NextPage } from 'next';
 import { useState } from 'react';
 import Image from 'next/image';
-import styles from './index.module.css';
+import styles from './delivery.module.css';
 
 // Importowanie ikon
 import circleIcon from "@/app/Public/Images/Ellipse6.svg"; 
