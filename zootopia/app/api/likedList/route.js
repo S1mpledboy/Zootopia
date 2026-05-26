@@ -1,45 +1,38 @@
-// app/api/likedList/route.js
-
 import { connectToDatabase } from "@/lib/mongodb";
-import User from "@/models/User"; // Upewnij się, że masz model User
+import User from "@/models/User";
 import Product from "@/models/Product";
 import "@/models/Company"; // Rejestracja modelu firmy dla .populate()
 import jwt from "jsonwebtoken";
 
+// 📥 GET: Pobieranie listy polubionych produktów użytkownika
 export async function GET(req) {
   try {
     await connectToDatabase();
 
-    // 1. Pobranie tokenu z nagłówka Authorization
     const authHeader = req.headers.get("Authorization");
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return Response.json({ error: "Brak autoryzacji" }, { status: 401 });
     }
 
     const token = authHeader.split(" ")[1];
-    
-    // 2. Weryfikacja tokenu JWT
     const decoded = jwt.verify(token, process.env.JWT_SECRET || 'TWÓJ_SEKRETNY_KLUCZ');
-    const userId = decoded.userId; // Upewnij się czy w tokenie zapisujesz userId czy id
+    const userId = decoded.userId;
 
-    // 3. Pobranie użytkownika wraz z jego polubionymi produktami
     const user = await User.findById(userId)
       .populate({
-        path: "likedProducts", // nazwa pola w schemacie User przechowująca ulubione produkty
-        populate: { path: "company" } // Głębokie populate dla pobrania marki/firmy
+        path: "likedProducts",
+        populate: { path: "company" }
       })
       .lean();
 
     if (!user) {
-      console.warn(`⚠️ Nie znaleziono użytkownika o ID: ${userId}`);
       return Response.json({ error: "Użytkownik nie istnieje" }, { status: 404 });
     }
 
     const products = user.likedProducts || [];
 
-    // 4. TRANSFORMACJA: Formatowanie danych z MongoDB do struktury frontendowej
+    // Transformacja danych na czysty format frontendowy
     const transformedProducts = products.map((product) => {
-      // Bezpieczne czyszczenie struktury zdjęć, podobnie jak w Twojej liście kategorii
       let productImage = "/placeholder.png";
       if (product.images && product.images.length > 0) {
         const innerImages = product.images[0];
@@ -52,26 +45,53 @@ export async function GET(req) {
 
       return {
         id: product._id.toString(),
-        productName: product.name, // ✅ name → productName
-        brandName: product.company?.name || "ZOOTOPIA", // ✅ company.name → brandName
+        productName: product.name,
+        brandName: product.company?.name || "ZOOTOPIA",
         price: product.price,
-        image: productImage, // ✅ Wyczyszczony URL zdjęcia
+        image: productImage,
       };
     });
 
-    console.log(`✅ Pobrano ${transformedProducts.length} polubionych produktów dla użytkownika ${userId}`);
-
-    // Zwracamy czystą tablicę obiektów bezpośrednio
     return Response.json(transformedProducts);
-
   } catch (error) {
     console.error("❌ Błąd GET /api/likedList:", error);
-    return Response.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+    return Response.json({ ok: false, error: "Błąd serwera" }, { status: 500 });
+  }
+}
+
+// 📤 POST: Dodawanie produktu do listy ulubionych
+export async function POST(req) {
+  try {
+    await connectToDatabase();
+
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return Response.json({ error: "Brak autoryzacji" }, { status: 401 });
+    }
+
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'TWÓJ_SEKRETNY_KLUCZ');
+    const userId = decoded.userId;
+
+    const { productId } = await req.json();
+    if (!productId) {
+      return Response.json({ error: "Brak ID produktu" }, { status: 400 });
+    }
+
+    // $addToSet zapewnia, że ID produktu doda się do tablicy tylko raz (unikamy duplikatów)
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $addToSet: { likedProducts: productId } },
+      { new: true }
     );
+
+    if (!user) {
+      return Response.json({ error: "Użytkownik nie istnieje" }, { status: 404 });
+    }
+
+    return Response.json({ ok: true, message: "Dodano do ulubionych" });
+  } catch (error) {
+    console.error("❌ Błąd POST /api/likedList:", error);
+    return Response.json({ ok: false, error: "Błąd serwera" }, { status: 500 });
   }
 }
