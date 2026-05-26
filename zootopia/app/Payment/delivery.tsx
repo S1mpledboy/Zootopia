@@ -151,7 +151,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
         // 🔥 3. TUTAJ WKLEJAMY PRZEJŚCIE DO NOWEJ STRONY
         // Przekierowujemy pod adres folderu Twojej nowej strony sukcesu (np. /order-success)
         // i przekazujemy wygenerowany przez bazę numer zamówienia jako parametr 'number'
-        router.push(`/order-success?number=${result.orderNumber}`);
+        router.push(`/Order-success?number=${result.orderNumber}`);
       } else {
         alert(`Błąd składania zamówienia: ${result.message}`);
       }
