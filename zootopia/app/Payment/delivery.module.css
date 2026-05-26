@@ -1,295 +1,144 @@
 /* ==========================================================================
-   1. GŁÓWNY KONTENER I UKŁAD STRONY
+   GŁÓWNY UKŁAD STRONY (ROZDZIAŁ NA KOLUMNY)
    ========================================================================== */
-
-.produktyWKoszyku {
+.frameParent {
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 40px 24px;
-  box-sizing: border-box;
-  gap: 32px;
-  text-align: left;
-  font-size: 14px;
-  color: #565e64;
-  font-family: 'Poppins', sans-serif;
-}
-
-/* Główny flex dla formularzy i podsumowania obok siebie / pod sobą */
-.frameParent {
-  width: 100%;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
   justify-content: space-between;
+  gap: 60px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Lewa kolumna (Dostawa i Płatności) */
+.produktyWKoszykuParent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   gap: 40px;
 }
 
-@media (max-width: 968px) {
-  .frameParent {
-    flex-direction: column;
-    align-items: center;
-  }
-}
-
-/* Lewa kolumna: formularze adresowe i metody wyboru */
-.produktyWKoszykuParent {
-  flex: 1;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 32px;
-}
-
-/* ==========================================================================
-   2. STYLIZACJA INPUTÓW I FORMULARZA ADRESOWEGO
-   ========================================================================== */
-
-.frameGroup {
-  width: 100%;
+/* Prawa kolumna (Podsumowanie) */
+.frameParent8 {
+  width: 440px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.frameContainer, .frameDiv, .frameParent2, .frameParent3 {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-}
-
-@media (max-width: 576px) {
-  .frameContainer, .frameDiv, .frameParent2, .frameParent3 {
-    flex-direction: column;
-    gap: 16px;
-  }
-}
-
-.imiWrapper, .nazwiskoWrapper, .polskaWrapper, .kodPocztowyWrapper, 
-.telefonWrapper, .eMailWrapper, .nazwaFirmyWrapper, .nipWrapper {
-  flex: 1;
-  width: 100%;
-  border: 1px solid #a7acb1;
-  border-radius: 12px;
-  padding: 14px 20px;
-  box-sizing: border-box;
-  background-color: #ffffff;
-  display: flex;
-  align-items: center;
-}
-
-/* Reset natywnych stylów przeglądarki dla inputów */
-.imi {
-  width: 100%;
-  border: none;
-  background: transparent;
-  outline: none;
-  font-family: 'Poppins', sans-serif;
-  font-size: 14px;
-  color: #000000;
-  padding: 0;
-}
-
-.imi::placeholder {
-  color: #a7acb1;
-}
-
-/* ==========================================================================
-   3. CHECKBOXY, LOGOWANIE I UWAGI
-   ========================================================================== */
-
-.rectangleParent, .rectangleGroup {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-/* Styl dla checkboxów */
-.frameChild {
-  cursor: pointer;
-  width: 20px;
-  height: 20px;
-  accent-color: #fd798f; /* Kolor dopasowany do przycisku "Do kasy" */
-}
-
-.stworzyKonto {
-  font-weight: 500;
-  color: #000000;
-  cursor: pointer;
-  user-select: none;
-}
-
-.frameParent6 {
+/* Wspólny styl dla bloków */
+.produktyWKoszyku {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  margin-top: 16px;
-}
-
-.maszJuKontoParent {
-  display: flex;
-  flex-direction: row;
-  gap: 6px;
-  font-size: 14px;
-}
-
-.zalogujSi {
-  color: #fd798f;
-  text-decoration: underline;
-}
-
-/* Kontener na uwagi (textarea) */
-.uwagiDoZamwieniaNpInfoWrapper {
-  width: 100%;
-  border: 1px solid #a7acb1;
-  border-radius: 12px;
-  padding: 14px 20px;
-  box-sizing: border-box;
-  background-color: #ffffff;
-}
-
-.uwagiDoZamwienia {
-  color: #000000;
-  font-family: 'Poppins', sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
 }
 
 /* ==========================================================================
-   4. METODY DOSTAWY I PŁATNOŚCI (INTERAKTYWNE KAFELKI)
+   NAGŁÓWKI I LINIE ODDZIELAJĄCE
    ========================================================================== */
-
 .metodyDostawyParent {
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 8px;
 }
 
 .metodyDostawy {
-  font-size: 16px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 700;
   color: #000000;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
 }
 
-/* Linia oddzielająca sekcje */
 .lineDivider {
   width: 100%;
   height: 1px;
-  background-color: #e2e8f0;
+  background-color: #cbd5e1; /* Cienka szara linia jak na zdjęciu */
   border: none;
-  margin: 4px 0 12px 0;
+  margin-bottom: 16px;
 }
 
-/* Wiersz pojedynczej opcji wyboru dostawy/płatności */
-.frameContainer .frameDiv, .produktyWKoszykuInner .frameDiv {
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-sizing: border-box;
+/* ==========================================================================
+   LISTA WYBORU (DOSTAWA I PŁATNOŚCI)
+   ========================================================================== */
+.frameGroup, .produktyWKoszykuInner {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.frameContainer {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Odstępy pionowe między opcjami */
+}
+
+/* Wiersz opcji (BRAK KAFELKÓW/OBRAMOWAŃ) */
+.frameDiv {
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  background-color: #ffffff;
+  padding: 4px 0;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
-}
-
-.frameContainer .frameDiv:hover, .produktyWKoszykuInner .frameDiv:hover {
-  border-color: #cbd5e1;
-  background-color: #f8fafc;
-}
-
-/* Klasa aktywująca dla wybranej metody */
-.activeOption {
-  border-color: #000000 !important;
-  background-color: #f8fafc !important;
+  background: transparent;
 }
 
 .ellipseParent {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
+/* Teksty opcji */
 .kurierInpost {
-  font-size: 14px;
-  color: #000000;
-  transition: font-weight 0.1s ease;
+  font-size: 15px;
+  color: #565e64;
+  font-weight: 400;
 }
 
-/* Dynamiczne pogrubianie wybranego tekstu */
+/* Ceny po prawej stronie opcji */
+.od999Z {
+  font-size: 15px;
+  color: #a7acb1;
+  font-weight: 400;
+  text-align: right;
+}
+
+/* Stan aktywny (zaznaczony) */
 .boldText {
   font-weight: 700 !important;
+  color: #000000 !important;
 }
 
-.od999Z {
-  font-size: 14px;
-  font-weight: 500;
-  color: #565e64;
-}
-
-/* Przycisk wyboru punktu odbioru dla Paczkomatów */
+/* Przycisk dla paczkomatu */
 .wybierzPunktOdbioruWrapper {
-  display: inline-flex;
-  border: 1px solid #000000;
+  width: 100%;
+  background-color: #fd798f; /* Różowy kolor przycisku */
   border-radius: 20px;
-  padding: 10px 24px;
+  padding: 14px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   cursor: pointer;
-  margin-top: 12px;
-  background-color: #ffffff;
-  transition: background-color 0.2s ease;
-}
-
-.wybierzPunktOdbioruWrapper:hover {
-  background-color: #000000;
-}
-
-.wybierzPunktOdbioruWrapper:hover .wybierzPunktOdbioru {
-  color: #ffffff;
+  margin-top: 20px;
 }
 
 .wybierzPunktOdbioru {
+  font-size: 13px;
   font-weight: 600;
   color: #000000;
-  font-size: 13px;
 }
 
 /* ==========================================================================
-   5. PRAWA KOLUMNA: PODSUMOWANIE CENOWE (POPRAWIONE)
+   TABELA PODSUMOWANIA (PRAWA KOLUMNA)
    ========================================================================== */
-
-.frameParent8 {
-  width: 400px;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  padding: 32px 24px;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  position: sticky;
-  top: 40px;
-}
-
-@media (max-width: 968px) {
-  .frameParent8 {
-    width: 100%;
-    position: static;
-  }
-}
-
 .frameParent9 {
   width: 100%;
   display: flex;
@@ -297,48 +146,43 @@
   gap: 14px;
 }
 
-/* Wymuszenie sztywnego układu obok siebie bez względu na szerokość ekranu */
 .frameDivSummary {
-  display: flex !important;
-  flex-direction: row !important; /* Tekst i cena ZAWSZE w jednej linii */
-  justify-content: space-between !important;
-  align-items: center !important;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
-  text-align: left !important;
 }
 
 .frameDivSummary .kurierInpost {
-  color: #565e64;
-  font-size: 14px;
+  font-size: 15px;
+  color: #000000;
 }
 
-/* Styl dla wartości po prawej stronie (ceny) */
 .frameDivSummary .kurierInpost:last-child {
-  color: #000000;
-  font-weight: 500;
+  font-weight: 400;
   text-align: right;
 }
 
-/* Sekcja ostatecznej sumy całkowitej */
+/* Sekcja Sumy Całkowitej */
 .metodyDostawyParentTotal {
   width: 100%;
   display: flex;
   flex-direction: column;
+  margin-top: 10px;
 }
 
-/* Wymuszenie wiersza dla linii podsumowującej kwotę do zapłaty */
 .frameDivSummaryTotal {
-  display: flex !important;
-  flex-direction: row !important; /* ZAWSZE obok siebie */
-  justify-content: space-between !important;
-  align-items: center !important;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
   width: 100%;
   margin-top: 16px;
 }
 
 .cakowitaSumaZContainer {
-  font-size: 16px;
-  text-align: left;
+  font-size: 22px; /* Większy tekst dla głównej sumy */
 }
 
 .cakowitaSuma {
@@ -347,13 +191,14 @@
 }
 
 .zVat {
+  font-size: 15px;
   font-weight: 400;
   color: #565e64;
 }
 
-/* Kwota całkowita (duża czcionka po prawej) */
-.frameDivSummaryTotal .metodyDostawy {
-  font-size: 22px;
+/* Wielka pogrubiona kwota na samym dole */
+.totalAmountBig {
+  font-size: 26px;
   font-weight: 700;
   color: #000000;
   text-align: right;
