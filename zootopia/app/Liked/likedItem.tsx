@@ -1,0 +1,128 @@
+// Ścieżka: app/Liked/likedItem.tsx
+"use client";
+
+import { FC, useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+
+import styles from './liked.module.css';
+import FavoriteIcon from '@/app/Public/Images/Vector.svg';
+import TrashIcon from '@/app/Public/Images/tabler-icon-trash.svg';
+import CartIcon from '@/app/Public/Images/tabler-icon-shopping-bag-plus.svg';
+
+interface LikedItemProps {
+    product: {
+        id: string;
+        productName: string;
+        brandName: string;
+        price: number;
+        image: string;
+    };
+}
+
+const LikedItem: FC<LikedItemProps> = ({ product }) => {
+    const router = useRouter();
+    const [isDeleting, setIsDeleting] = useState<boolean>(false);
+
+    // 🗑️ Funkcja obsługująca usuwanie produktu z ulubionych
+    const handleRemoveFromLiked = async () => {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        if (isDeleting) return;
+        setIsDeleting(true);
+
+        try {
+            const res = await fetch('/api/likedList', {
+                method: 'POST', // Nasze API wykonuje Toggle, więc usunie produkt, jeśli już tam jest
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ productId: product.id })
+            });
+
+            if (res.ok) {
+                // ✅ Odświeża komponenty serwerowe / stronę, aby zaktualizować listę i sumę cen
+                router.refresh(); 
+            } else {
+                const data = await res.json();
+                alert(data.error || "Nie udało się usunąć produktu.");
+                setIsDeleting(false);
+            }
+        } catch (err) {
+            console.error("Błąd podczas usuwania z ulubionych:", err);
+            alert("Błąd połączenia z serwerem.");
+            setIsDeleting(false);
+        }
+    };
+
+    return (
+        <div className={`${styles.property1ulubione} ${isDeleting ? styles.itemDeleting : ""}`} style={{ opacity: isDeleting ? 0.5 : 1 }}>
+            
+            {/* 🔗 Poprawna ścieżka z małej litery: /product/[id] */}
+            <Link href={`/product/${product.id}`}>
+                <Image
+                    className={styles.imgProduktuIcon}
+                    src={product.image}
+                    width={100}
+                    height={100}
+                    alt={product.productName}
+                    style={{ cursor: "pointer" }}
+                />
+            </Link>
+
+            <div className={styles.frameParent}>
+                <div className={styles.frameGroup}>
+                    <div className={styles.frameWrapper}>
+                        <div className={styles.krainaNoteciParent}>
+                            <b className={styles.krainaNoteci}>
+                                {product.brandName.toUpperCase()}
+                            </b>
+                            <div className={styles.karmaLoremIpsum}>
+                                {product.productName}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className={styles.zWrapper}>
+                        <div className={styles.z}>
+                            {product.price.toFixed(2).replace('.', ',')} zł
+                        </div>
+                    </div>
+                </div>
+
+                <div className={styles.frameContainer}>
+                    <div className={styles.parent}>
+                        <div className={styles.div}>-</div>
+                        <div className={styles.wrapper}>
+                            <div className={styles.div2}>1</div>
+                        </div>
+                        <div className={styles.div3}>+</div>
+                    </div>
+
+                    <div className={styles.ulubioneParent}>
+                        <Image src={FavoriteIcon} alt="Ulubione" className={styles.ulubioneIcon} width={24} height={24} />
+                        <div className={styles.dodajDoKoszyka}>
+                            <Image src={CartIcon} alt="Koszyk" className={styles.vectorIcon} width={24} height={24} />
+                        </div>
+                        
+                        {/* 🗑️ IKONA KOSZA Z PODPIĘTĄ FUNKCJĄ USUWANIA */}
+                        <Image 
+                            src={TrashIcon} 
+                            alt="Usuń" 
+                            className={styles.ulubioneIcon} 
+                            width={24} 
+                            height={24} 
+                            onClick={handleRemoveFromLiked}
+                            style={{ cursor: "pointer" }}
+                        />
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default LikedItem;

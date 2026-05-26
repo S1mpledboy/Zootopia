@@ -54,29 +54,30 @@ const Nawigacja: NextPage = () => {
         </div>
         
         <div className={styles.frameParent}>
-          <Link href="/MojeKonto">
+          {/* ZMIENIONY PRZYCISK ULUBIONE */}
+          <Link href={isLoggedIn ? "/Liked" : "/Auth"}>
             <div className={styles.tablerIconHeartParent}>
               <Image src={hearticon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
               <div className={styles.ulubione}>Ulubione</div>
             </div>
           </Link>
 
-          {/* DYNAMICZNY LINK I TEKST */}
+          {/* DYNAMICZNY LINK I TEKST KONTA */}
           <Link href={isLoggedIn ? "/MojeKonto" : "/Auth"}>
             <div className={styles.tablerIconHeartParent}>
               <Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
-              {/* Tutaj zmienia się napis w zależności od stanu zalogowania */}
               <div className={styles.ulubione}>
                 {isLoggedIn ? "Moje konto" : "Zaloguj się"}
               </div>
             </div>
           </Link>
-		<Link href="/Cart">
-          <div className={styles.tablerIconHeartParent}>
-            <Image src={bagicon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
-            <div className={styles.ulubione}>Koszyk</div>
-          </div>
-		  </Link>
+
+          <Link href="/Cart">
+            <div className={styles.tablerIconHeartParent}>
+              <Image src={bagicon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
+              <div className={styles.ulubione}>Koszyk</div>
+            </div>
+          </Link>
         </div>
       </div>
       <Category />
