@@ -1,21 +1,26 @@
 import React from 'react';
-// 👇 Poprawny import Twojego komponentu z folderu payment
 import UserInfo from "@/app/Payment/user-info"; 
-import Banerek from "@/app/Cart/cart-info"; // dopasuj ścieżkę do swojego baneru
+import Banerek from "@/app/Cart/cart-info"; 
+// 👇 Importujemy komponent etapów z folderu Cart
+import Etapy from "@/app/Cart/Steps"; 
 
-export default function Home() {
+export default function PaymentPage() {
   return (
     <main style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       
-      {/* Górna część strony głównej */}
+      {/* 👇 Komponent etapów ustawiony na górze strony z wartością 2 👇 */}
+      <Etapy currentStep={2} />
+
       <div style={{ flex: 1, padding: '20px' }}>
-        <h1>Strona Główna Zootopia</h1>
+        <h1 style={{ textAlign: 'center', fontFamily: 'Poppins, sans-serif', fontSize: '24px', margin: '20px 0' }}>
+          Strona Płatności Zootopia
+        </h1>
       </div>
 
-      {/* 👇 Tutaj renderuje się Twój formularz z danymi z bazy 👇 */}
+      {/* Formularz pobierający dane z MongoDB */}
       <UserInfo />
 
-      {/* 👇 Niebieski banerek, który idealnie złączy się ze stopką 👇 */}
+      {/* Niebieski banerek */}
       <Banerek />
 
     </main>
