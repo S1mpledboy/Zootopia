@@ -4,9 +4,9 @@ import type { NextPage } from 'next';
 import Image from 'next/image';
 
 import styles from './liked.module.css';
-import ProductImage from '@/Public/Images/kotMokra.png';  // ← Bez `/app`
-import FavoriteIcon from '@/Public/Images/Vector.svg';
-import CartIcon from '@/Public/Images/tabler-icon-shopping-bag-plus.svg';
+import ProductImage from '@/app/Public/Images/kotMokra.png';  // ← Dodaj /app
+import FavoriteIcon from '@/app/Public/Images/Vector.svg';
+import CartIcon from '@/app/Public/Images/tabler-icon-shopping-bag-plus.svg';
 
 const Property1Ulubione: NextPage = () => {
 	return (
