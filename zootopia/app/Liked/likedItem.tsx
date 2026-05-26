@@ -1,13 +1,13 @@
 import type { NextPage } from 'next';
 
-import ProductImage from '@app/Public/Images/freepik_photo-of-a-single-premium_2.png';
+import ProductImage from '@/Public/Images/piesMokra.png';
 
-import FavoriteIcon from '@app/Public/Images/Vector.svg';
-import CartIcon from '@app/Public/Images/tabler-icon-shopping-bag-plus.svg';
+import FavoriteIcon from '@/Public/Images/Vector.svg';
+import CartIcon from '@/Public/Images/tabler-icon-shopping-bag-plus.svg';
 
 import Image from 'next/image';
 
-import styles from './liked.module.css';
+import styles from './likedItem.module.css';
 
 const Property1Ulubione: NextPage = () => {
 	return (
