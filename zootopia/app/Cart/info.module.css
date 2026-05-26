@@ -1,58 +1,50 @@
 .banerek {
-  width: 100vw;               /* Wymusza szerokość na 100% okna przeglądarki */
-  position: relative;
-  left: 50%;
-  right: 50%;
-  margin-left: -50vw;         /* Te 3 linijki pozwalają wyrwać się z kontenera koszyka na pełną szerokość strony */
-  margin-right: -50vw;
-  
-  background-color: #e0f2fe;  /* Jasnoniebieski kolor tła */
-  padding: 35px 0;            /* Górny i dolny margines wewnętrzny */
+  width: 100%;                /* Zajmie całą dostępną szerokość od lewej do prawej */
+  background-color: #e0f2fe;  /* Jasnoniebieskie tło */
+  padding: 24px 0;            /* Odpowiedni odstęp od góry i dołu */
   box-sizing: border-box;
   display: flex;
-  justify-content: center;
+  justify-content: center;    /* Centruje wewnętrzny kontener na środku ekranu */
   align-items: center;
 }
 
 .frameParent {
   width: 100%;
-  max-width: 1200px;         /* Maksymalna szerokość zawartości baneru */
-  padding: 0 40px;            /* Bezpieczny odstęp od boków ekranu */
+  max-width: 1200px;          /* Maksymalna szerokość zawartości baneru */
+  padding: 0 40px;            /* Bezpieczny margines boczny, żeby ikony nie dotykały krawędzi na mniejszych ekranach */
   box-sizing: border-box;
   display: flex;
-  flex-direction: row;        /* Wszystkie 4 elementy obok siebie */
-  justify-content: space-between; /* Rozsuwa elementy równomiernie */
+  flex-direction: row;        /* Wszystkie 4 elementy ładnie w jednym rzędzie */
+  justify-content: space-between; /* Rozsuwa je równomiernie */
   align-items: center;
-  gap: 20px;
 }
 
-/* Jeden uniwersalny styl dla każdego z 4 boksów (ikona + tekst) */
+/* Pojedynczy boks (ikona + tekst) */
 .boxElement {
   display: flex;
-  flex-direction: row;        /* Ikona OBOK tekstu - tak jak na oryginalnym projekcie */
-  align-items: center;        /* Centrowanie ikony i tekstu w pionie */
-  justify-content: center;
-  gap: 12px;                  /* Odstęp między ikoną a tekstem */
+  flex-direction: row;        /* Ikona OBOK tekstu */
+  align-items: center;        /* Centrowanie ikony i tekstu względem siebie w pionie */
+  gap: 12px;                  /* Odstęp między ikoną a napisem */
 }
 
-/* Kontener na ikonę, gwarantujący, że każda będzie miała dokładnie tyle samo miejsca */
+/* Kontener na ikonę – stabilizuje wymiary */
 .iconContainer {
   width: 50px;
   height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;             /* Blokuje zmniejszanie się ikon */
+  flex-shrink: 0;             /* Ikona nie zmniejszy się, jeśli zabraknie miejsca */
 }
 
-/* Styl tekstu pisany wielkimi literami i wyrównany do lewej (bo stoi obok ikony) */
+/* Styl tekstu */
 .bezpiecznePatnoci {
   font-family: 'Poppins', sans-serif;
   font-size: 13px;
   font-weight: 700;
   line-height: 1.2;
   color: #000000;
-  text-align: left;           /* Tekst wyrównany do lewej strony */
-  text-transform: uppercase;  /* Zamiana na WIELKIE LITERY */
+  text-align: left;           /* Tekst wyrównany do lewej (obok ikony) */
+  text-transform: uppercase;  /* Zamienia małe litery na WIELKIE */
   letter-spacing: 0.02em;
 }

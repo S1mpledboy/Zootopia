@@ -23,7 +23,7 @@ const Banerek: NextPage = () => {
         {/* 2. 30 dni na zwrot */}
         <div className={styles.boxElement}>
           <div className={styles.iconContainer}>
-            <Image src={packageImportIcon} width={45} height={45} alt="Zwrot paczki" />
+            <Image src={packageImportIcon} width={45} height={45} alt="Zwrot" />
           </div>
           <b className={styles.bezpiecznePatnoci}>30 dni na zwrot<br/>dla zalogowanych</b>
         </div>
@@ -39,7 +39,7 @@ const Banerek: NextPage = () => {
         {/* 4. Gwarancja oryginalności */}
         <div className={styles.boxElement}>
           <div className={styles.iconContainer}>
-            <Image src={rosetteDiscountIcon} width={45} height={45} alt="Certyfikat" />
+            <Image src={rosetteDiscountIcon} width={45} height={45} alt="Gwarancja" />
           </div>
           <b className={styles.bezpiecznePatnoci}>gwarancja<br/>oryginalności</b>
         </div>
