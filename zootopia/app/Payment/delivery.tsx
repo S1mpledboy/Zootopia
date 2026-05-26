@@ -1,19 +1,64 @@
 "use client";
 
 import type { NextPage } from 'next';
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import styles from './delivery.module.css';
+import styles from './index.module.css';
 
-// Importowanie ikon
-import circleIcon from "@/app/Public/Images/Ellipse6.svg"; 
-import checkedCircleIcon from "@/app/Public/Images/Ellipse7.svg"; 
+import circleIcon from "@/app/Public/Images/ellipse-parent.svg"; 
+import checkedCircleIcon from "@/app/Public/Images/ellipse-div.svg"; 
+
+// Interfejs odpowiadający strukturze Twojej bazy danych i populacji pól
+interface CartItemFromServer {
+  _id: string;
+  quantity: number;
+  product: { 
+    _id: string; 
+    name: string; 
+    price: number; 
+    promoPrice?: number | null; 
+  };
+}
 
 const WyborDostawyIPlatnosci: NextPage = () => {
   const [deliveryMethod, setDeliveryMethod] = useState<string>('paczkomat'); 
   const [paymentMethod, setPaymentMethod] = useState<string>('odbior');     
+  
+  // 🔥 STANY DLA DANYCH Z BAZY
+  const [cartItems, setCartItems] = useState<CartItemFromServer[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  const basePrice = 478.00;
+  // Funkcja pobierająca koszyk zalogowanego użytkownika
+  const fetchCartData = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/api/cart', { 
+        headers: { 'Authorization': `Bearer ${token}` } 
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCartItems(data);
+      }
+    } catch (err) {
+      console.error("Błąd podczas pobierania kwoty koszyka:", err);
+    } finally { 
+      setIsLoading(false); 
+    }
+  }, []);
+
+  useEffect(() => { 
+    fetchCartData(); 
+  }, [fetchCartData]);
+
+  // 🔥 DYNAMICZNE OBLICZANIE SUMY CZĘŚCIOWEJ NA PODSTAWIE REKORDÓW Z BAZY
+  const basePrice = cartItems.reduce((total, item) => {
+    if (!item.product) return total;
+    // Sprawdzamy czy produkt ma aktywną promocję
+    const finalPrice = item.product.promoPrice !== undefined && item.product.promoPrice !== null
+      ? item.product.promoPrice
+      : item.product.price;
+    return total + (finalPrice * item.quantity);
+  }, 0);
 
   const getDeliveryCost = () => {
     switch (deliveryMethod) {
@@ -28,11 +73,19 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     return paymentMethod === 'odbior' ? 5.99 : 0.00;
   };
 
+  // Całkowita suma (Suma z bazy + koszty dostawy + koszty płatności)
   const totalSum = basePrice + getDeliveryCost() + getAdditionalCost();
 
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(value);
+    return new Intl.NumberFormat('pl-PL', { 
+      style: 'currency', 
+      currency: 'PLN' 
+    }).format(value);
   };
+
+  if (isLoading) {
+    return <div className={styles.produktyWKoszyku} style={{textAlign: 'center'}}>Obliczanie kwoty zamówienia...</div>;
+  }
 
   return (
     <div className={styles.frameParent}>
@@ -48,47 +101,34 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           <div className={styles.frameGroup}>
             <div className={styles.frameContainer}>
               
-              {/* Kurier Inpost */}
-              <div 
-                className={`${styles.frameDiv} ${deliveryMethod === 'inpost' ? styles.activeOption : ''}`}
-                onClick={() => setDeliveryMethod('inpost')}
-              >
+              <div className={styles.frameDiv} onClick={() => setDeliveryMethod('inpost')}>
                 <div className={styles.ellipseParent}>
-                  <Image src={deliveryMethod === 'inpost' ? checkedCircleIcon : circleIcon} width={20} height={20} alt="wybór" />
-                  {/* 👇 Pogrubianie tekstu warunkiem (klasa lub tag 'b') */}
+                  <Image src={deliveryMethod === 'inpost' ? checkedCircleIcon : circleIcon} width={18} height={18} alt="wybór" />
                   <div className={`${styles.kurierInpost} ${deliveryMethod === 'inpost' ? styles.boldText : ''}`}>
                     Kurier Inpost
                   </div>
                 </div>
-                <div className={styles.od999Z}>9,99 zł</div>
+                <div className={`${styles.od999Z} ${deliveryMethod === 'inpost' ? styles.boldText : ''}`}>9,99 zł</div>
               </div>
 
-              {/* Kurier DHL */}
-              <div 
-                className={`${styles.frameDiv} ${deliveryMethod === 'dhl' ? styles.activeOption : ''}`}
-                onClick={() => setDeliveryMethod('dhl')}
-              >
+              <div className={styles.frameDiv} onClick={() => setDeliveryMethod('dhl')}>
                 <div className={styles.ellipseParent}>
-                  <Image src={deliveryMethod === 'dhl' ? checkedCircleIcon : circleIcon} width={20} height={20} alt="wybór" />
+                  <Image src={deliveryMethod === 'dhl' ? checkedCircleIcon : circleIcon} width={18} height={18} alt="wybór" />
                   <div className={`${styles.kurierInpost} ${deliveryMethod === 'dhl' ? styles.boldText : ''}`}>
                     Kurier DHL
                   </div>
                 </div>
-                <div className={styles.od999Z}>11,99 zł</div>
+                <div className={`${styles.od999Z} ${deliveryMethod === 'dhl' ? styles.boldText : ''}`}>11,99 zł</div>
               </div>
 
-              {/* Paczkomat Inpost */}
-              <div 
-                className={`${styles.frameDiv} ${deliveryMethod === 'paczkomat' ? styles.activeOption : ''}`}
-                onClick={() => setDeliveryMethod('paczkomat')}
-              >
+              <div className={styles.frameDiv} onClick={() => setDeliveryMethod('paczkomat')}>
                 <div className={styles.ellipseParent}>
-                  <Image src={deliveryMethod === 'paczkomat' ? checkedCircleIcon : circleIcon} width={20} height={20} alt="wybór" />
+                  <Image src={deliveryMethod === 'paczkomat' ? checkedCircleIcon : circleIcon} width={18} height={18} alt="wybór" />
                   <div className={`${styles.kurierInpost} ${deliveryMethod === 'paczkomat' ? styles.boldText : ''}`}>
                     Paczkomat Inpost
                   </div>
                 </div>
-                <div className={styles.od999Z}>Darmowe</div>
+                <div className={`${styles.od999Z} ${deliveryMethod === 'paczkomat' ? styles.boldText : ''}`}>Darmowe</div>
               </div>
 
             </div>
@@ -111,46 +151,34 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           <div className={styles.produktyWKoszykuInner}>
             <div className={styles.frameContainer}>
               
-              {/* Blik */}
-              <div 
-                className={`${styles.frameDiv} ${paymentMethod === 'blik' ? styles.activeOption : ''}`}
-                onClick={() => setPaymentMethod('blik')}
-              >
+              <div className={styles.frameDiv} onClick={() => setPaymentMethod('blik')}>
                 <div className={styles.ellipseParent}>
-                  <Image src={paymentMethod === 'blik' ? checkedCircleIcon : circleIcon} width={20} height={20} alt="wybór" />
+                  <Image src={paymentMethod === 'blik' ? checkedCircleIcon : circleIcon} width={18} height={18} alt="wybór" />
                   <div className={`${styles.kurierInpost} ${paymentMethod === 'blik' ? styles.boldText : ''}`}>
                     Blik
                   </div>
                 </div>
-                <div className={styles.od999Z}>Darmowe</div>
+                <div className={`${styles.od999Z} ${paymentMethod === 'blik' ? styles.boldText : ''}`}>Darmowe</div>
               </div>
 
-              {/* Przelewy 24h */}
-              <div 
-                className={`${styles.frameDiv} ${paymentMethod === 'p24' ? styles.activeOption : ''}`}
-                onClick={() => setPaymentMethod('p24')}
-              >
+              <div className={styles.frameDiv} onClick={() => setPaymentMethod('p24')}>
                 <div className={styles.ellipseParent}>
-                  <Image src={paymentMethod === 'p24' ? checkedCircleIcon : circleIcon} width={20} height={20} alt="wybór" />
+                  <Image src={paymentMethod === 'p24' ? checkedCircleIcon : circleIcon} width={18} height={18} alt="wybór" />
                   <div className={`${styles.kurierInpost} ${paymentMethod === 'p24' ? styles.boldText : ''}`}>
                     Przelewy 24h
                   </div>
                 </div>
-                <div className={styles.od999Z}>Darmowe</div>
+                <div className={`${styles.od999Z} ${paymentMethod === 'p24' ? styles.boldText : ''}`}>Darmowe</div>
               </div>
 
-              {/* Przy odbiorze */}
-              <div 
-                className={`${styles.frameDiv} ${paymentMethod === 'odbior' ? styles.activeOption : ''}`}
-                onClick={() => setPaymentMethod('odbior')}
-              >
+              <div className={styles.frameDiv} onClick={() => setPaymentMethod('odbior')}>
                 <div className={styles.ellipseParent}>
-                  <Image src={paymentMethod === 'odbior' ? checkedCircleIcon : circleIcon} width={20} height={20} alt="wybór" />
+                  <Image src={paymentMethod === 'odbior' ? checkedCircleIcon : circleIcon} width={18} height={18} alt="wybór" />
                   <div className={`${styles.kurierInpost} ${paymentMethod === 'odbior' ? styles.boldText : ''}`}>
                     Przy odbiorze
                   </div>
                 </div>
-                <div className={styles.od999Z}>5,99 zł</div>
+                <div className={`${styles.od999Z} ${paymentMethod === 'odbior' ? styles.boldText : ''}`}>5,99 zł</div>
               </div>
 
             </div>
@@ -168,6 +196,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
         <div className={styles.frameParent9}>
           <div className={styles.frameDivSummary}>
             <div className={styles.kurierInpost}>Suma częściowa:</div>
+            {/* Wyświetla zsumowaną kwotę produktów z bazy */}
             <div className={styles.kurierInpost}>{formatCurrency(basePrice)}</div>
           </div>
           <div className={styles.frameDivSummary}>
@@ -191,7 +220,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
               <span className={styles.cakowitaSuma}>Całkowita suma</span>
               <span className={styles.zVat}> z VAT</span>
             </div>
-            <div className={styles.metodyDostawy}>{formatCurrency(totalSum)}</div>
+            <div className={styles.totalAmountBig}>{formatCurrency(totalSum)}</div>
           </div>
         </div>
       </div>

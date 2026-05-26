@@ -2,9 +2,12 @@
 
 import type { NextPage } from 'next';
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // 👇 KROK 1: Importujemy useRouter
 import styles from './user-info.module.css';
 
 const FormularzPlatnosci: NextPage = () => {
+  const router = useRouter(); // 👇 KROK 2: Inicjalizujemy router
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -16,11 +19,19 @@ const FormularzPlatnosci: NextPage = () => {
     email: '',
     companyName: '',
     nip: '',
-    notes: ''
+    notes: '',
+    shippingCountry: 'Polska',
+    shippingStreet: '',
+    shippingCity: '',
+    shippingPostalCode: ''
   });
 
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  
+  const [createAccount, setCreateAccount] = useState(false);
+  const [showInvoice, setShowInvoice] = useState(false);
+  const [showOtherAddress, setShowOtherAddress] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -41,12 +52,14 @@ const FormularzPlatnosci: NextPage = () => {
               city: user.city || '',
               postalCode: user.postalCode || '',
               phone: user.phone || '',
-              email: user.email || ''
+              email: user.email || '',
+              companyName: user.companyName || '',
+              nip: user.nip || ''
             }));
           }
         }
       } catch (error) {
-        console.error("Błąd pobierania danych:", error);
+        console.error("Błąd podczas pobierania danych:", error);
       } finally {
         setIsLoading(false);
       }
@@ -59,14 +72,18 @@ const FormularzPlatnosci: NextPage = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  // 👇 KROK 3: Funkcja obsługująca kliknięcie przycisku "Zaloguj się"
+  const handleLoginRedirect = () => {
+    router.push('/Auth'); // Zmień na '/auth' z małej, jeśli Twój folder to app/auth/page.tsx
+  };
+
   if (isLoading) {
-    return <div className={styles.produktyWKoszyku}>Ładowanie danych...</div>;
+    return <div className={styles.produktyWKoszyku}>Ładowanie formularza...</div>;
   }
 
   return (
     <div className={styles.produktyWKoszyku}>
       
-      {/* NAGŁÓWEK FORMULARZA */}
       <div className={styles.metodyDostawyParent}>
         <div className={styles.metodyDostawy}>Dane płatności:</div>
         <div className={styles.lineDivider} />
@@ -74,7 +91,7 @@ const FormularzPlatnosci: NextPage = () => {
 
       <div className={styles.frameParent}>
         
-        {/* LEWA KOLUMNA: POLA INPUT */}
+        {/* LEWA KOLUMNA FORMULARZA */}
         <div className={styles.frameGroup}>
           <div className={styles.frameContainer}>
             <div className={styles.imiWrapper}>
@@ -111,57 +128,65 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           </div>
 
-          {/* CHECKBOXY */}
           {!isLoggedIn && (
             <div className={styles.rectangleParent}>
-              <input type="checkbox" className={styles.frameChild} id="createAccount" />
+              <input type="checkbox" checked={createAccount} onChange={(e) => setCreateAccount(e.target.checked)} className={styles.frameChild} id="createAccount" />
               <label htmlFor="createAccount" className={styles.stworzyKonto}>Stworzyć konto?</label>
             </div>
           )}
 
           <div className={styles.rectangleGroup}>
-            <input type="checkbox" className={styles.frameChild} id="invoice" />
+            <input type="checkbox" checked={showInvoice} onChange={(e) => setShowInvoice(e.target.checked)} className={styles.frameChild} id="invoice" />
             <label htmlFor="invoice" className={styles.stworzyKonto}>Faktura</label>
           </div>
 
-          {/* DANE FIRMY */}
-          <div className={styles.frameParent3}>
-            <div className={styles.nazwaFirmyWrapper}>
-              <input type="text" name="companyName" placeholder="Nazwa firmy" value={formData.companyName} onChange={handleChange} className={styles.imi} />
+          {showInvoice && (
+            <div className={styles.frameParent3}>
+              <div className={styles.nazwaFirmyWrapper}>
+                <input type="text" name="companyName" placeholder="Nazwa firmy" value={formData.companyName} onChange={handleChange} className={styles.imi} />
+              </div>
+              <div className={styles.nipWrapper}>
+                <input type="text" name="nip" placeholder="NIP" value={formData.nip} onChange={handleChange} className={styles.imi} />
+              </div>
             </div>
-            <div className={styles.nipWrapper}>
-              <input type="text" name="nip" placeholder="NIP" value={formData.nip} onChange={handleChange} className={styles.imi} />
-            </div>
-          </div>
+          )}
 
           <div className={styles.rectangleGroup}>
-            <input type="checkbox" className={styles.frameChild} id="otherAddress" />
+            <input type="checkbox" checked={showOtherAddress} onChange={(e) => setShowOtherAddress(e.target.checked)} className={styles.frameChild} id="otherAddress" />
             <label htmlFor="otherAddress" className={styles.stworzyKonto}>Wysyłka na inny adres</label>
           </div>
 
-          <div className={styles.polskaWrapper}>
-            <input type="text" placeholder="Polska" className={styles.imi} readOnly />
-          </div>
-          <div className={styles.polskaWrapper}>
-            <input type="text" placeholder="Ulica i numer" className={styles.imi} />
-          </div>
-          <div className={styles.frameDiv}>
-            <div className={styles.nazwiskoWrapper}>
-              <input type="text" placeholder="Miasto" className={styles.imi} />
+          {showOtherAddress && (
+            <div className={styles.frameGroup} style={{ gap: '14px' }}>
+              <div className={styles.polskaWrapper}>
+                <input type="text" name="shippingCountry" placeholder="Polska" value={formData.shippingCountry} onChange={handleChange} className={styles.imi} />
+              </div>
+              <div className={styles.polskaWrapper}>
+                <input type="text" name="shippingStreet" placeholder="Ulica i numer" value={formData.shippingStreet} onChange={handleChange} className={styles.imi} />
+              </div>
+              <div className={styles.frameDiv}>
+                <div className={styles.nazwiskoWrapper}>
+                  <input type="text" name="shippingCity" placeholder="Miasto" value={formData.shippingCity} onChange={handleChange} className={styles.imi} />
+                </div>
+                <div className={styles.kodPocztowyWrapper}>
+                  <input type="text" name="shippingPostalCode" placeholder="Kod pocztowy" value={formData.shippingPostalCode} onChange={handleChange} className={styles.imi} />
+                </div>
+              </div>
             </div>
-            <div className={styles.kodPocztowyWrapper}>
-              <input type="text" placeholder="Kod pocztowy" className={styles.imi} />
-            </div>
-          </div>
+          )}
+
         </div>
 
-        {/* PRAWA KOLUMNA: LOGOWANIE + UWAGI */}
+        {/* PRAWA KOLUMNA */}
         <div className={styles.frameParent6}>
           {!isLoggedIn && (
             <div className={styles.frameWrapper}>
               <div className={styles.maszJuKontoParent}>
                 <div>Masz już konto?</div>
-                <div className={styles.zalogujSi}>Zaloguj się</div>
+                {/* 👇 KROK 4: Dodany onClick do napisu Zaloguj się */}
+                <div className={styles.zalogujSi} onClick={handleLoginRedirect}>
+                  Zaloguj się
+                </div>
               </div>
             </div>
           )}
