@@ -1,20 +1,17 @@
 import type { NextPage } from 'next';
-
-import styles from '@/app/Liked/liked.module.css';
-import ProductImage from '@/app/Public/Images/kotMokra.png';
-import FavoriteIcon from '@/app/Public/Images/Vector.svg';
-import CartIcon from '@/app/Public/Images/tabler-icon-shopping-bag-plus.svg';
 import Image from 'next/image';
+
+import styles from './liked.module.css';  // ← Ścieżka względna!
 
 const Property1Ulubione: NextPage = () => {
 	return (
 		<div className={styles.property1ulubione}>
 			<Image
 				className={styles.imgProduktuIcon}
-				src={ProductImage}
+				src="/Public/Images/kotMokra.png"  // ← Ścieżka zamiast importu
 				width={100}
 				height={100}
-				alt=""
+				alt="Produkt"
 			/>
 
 			<div className={styles.frameParent}>
@@ -48,13 +45,26 @@ const Property1Ulubione: NextPage = () => {
 					</div>
 
 					<div className={styles.ulubioneParent}>
-						<FavoriteIcon className={styles.ulubioneIcon} />
+						{/* SVG jako <img> tag */}
+						<img 
+							src="/Public/Images/Vector.svg" 
+							alt="Ulubione" 
+							className={styles.ulubioneIcon} 
+						/>
 
-					<div className={styles.dodajDoKoszyka}>
-							<CartIcon className={styles.vectorIcon} />
+						<div className={styles.dodajDoKoszyka}>
+							<img 
+								src="/Public/Images/tabler-icon-shopping-bag-plus.svg" 
+								alt="Koszyk" 
+								className={styles.vectorIcon} 
+							/>
 						</div>
 
-						<FavoriteIcon className={styles.ulubioneIcon} />
+						<img 
+							src="/Public/Images/Vector.svg" 
+							alt="Ulubione" 
+							className={styles.ulubioneIcon} 
+						/>
 					</div>
 				</div>
 			</div>
