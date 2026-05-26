@@ -78,18 +78,26 @@ export async function POST(req) {
       return Response.json({ error: "Brak ID produktu" }, { status: 400 });
     }
 
-    // $addToSet zapewnia, że ID produktu doda się do tablicy tylko raz (unikamy duplikatów)
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { $addToSet: { likedProducts: productId } },
-      { new: true }
-    );
+    // 1. Sprawdzamy czy użytkownik ma już ten produkt w ulubionych
+    const userObj = await User.findById(userId);
+    const hasProduct = userObj.likedProducts.includes(productId);
 
-    if (!user) {
-      return Response.json({ error: "Użytkownik nie istnieje" }, { status: 404 });
+    let updateOperation;
+    let message;
+
+    if (hasProduct) {
+      // Jeśli już ma – usuwamy ($pull)
+      updateOperation = { $pull: { likedProducts: productId } };
+      message = "Usunięto z ulubionych";
+    } else {
+      // Jeśli nie ma – dodajemy ($addToSet)
+      updateOperation = { $addToSet: { likedProducts: productId } };
+      message = "Dodano do ulubionych";
     }
 
-    return Response.json({ ok: true, message: "Dodano do ulubionych" });
+    await User.findByIdAndUpdate(userId, updateOperation);
+
+    return Response.json({ ok: true, message });
   } catch (error) {
     console.error("❌ Błąd POST /api/likedList:", error);
     return Response.json({ ok: false, error: "Błąd serwera" }, { status: 500 });
