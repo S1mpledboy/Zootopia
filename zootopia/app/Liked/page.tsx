@@ -1,11 +1,11 @@
-// pages/ulubione/index.tsx
+// app/Liked/page.tsx
 
 import type { NextPage } from "next";
 import Link from "next/link";
 
 import Property1Ulubione from "./likedItem";
 
-import styles from '@/Liked/liked.module.css';  // ← Usuń '/app'
+import styles from './liked.module.css';  // ← Ścieżka względna!
 
 const UlubionePage: NextPage = () => {
   return (
