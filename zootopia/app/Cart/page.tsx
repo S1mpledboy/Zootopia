@@ -66,7 +66,7 @@ const ProduktyWKoszyku: NextPage = () => {
 
   // 👇 KROK 4: Akcja dla przycisku "Do kasy" (przejście do formularza płatności)
   const onCheckoutClick = useCallback(() => {
-    router.push('/payment'); // Przekierowanie do folderu payment
+    router.push('/Payment'); // Przekierowanie do folderu payment
   }, [router]);
 
   if (loading) return <div className={styles.produktyWKoszyku}>Ładowanie koszyka...</div>;
