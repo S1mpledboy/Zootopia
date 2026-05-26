@@ -1,0 +1,163 @@
+.frameParent {
+  	width: 100%;
+  	position: relative;
+  	display: flex;
+  	align-items: flex-start;
+  	justify-content: space-between;
+  	padding: 24px 40px 64px;
+  	box-sizing: border-box;
+  	gap: 20px;
+  	text-align: center;
+  	font-size: 29px;
+  	color: #000;
+  	font-family: Poppins;
+}
+.produktyWKoszykuParent {
+  	width: 630px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 64px;
+}
+.produktyWKoszyku {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 24px;
+}
+.metodyDostawyParent {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 12px;
+}
+.metodyDostawy {
+  	position: relative;
+  	letter-spacing: -0.04em;
+  	line-height: 120%;
+  	font-weight: 600;
+}
+.frameChild {
+  	align-self: stretch;
+  	height: 1px;
+  	position: relative;
+  	max-width: 100%;
+  	overflow: hidden;
+  	max-height: 100%;
+}
+.frameGroup {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 30px;
+  	font-size: 19px;
+}
+.frameContainer {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 16px;
+}
+.frameDiv {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+}
+.ellipseParent {
+  	display: flex;
+  	align-items: center;
+  	gap: 12px;
+}
+.frameItem {
+  	height: 20px;
+  	width: 20px;
+  	position: relative;
+  	border-radius: 50%;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+}
+.kurierInpost {
+  	position: relative;
+  	line-height: 150%;
+}
+.od999Z {
+  	position: relative;
+  	line-height: 150%;
+  	color: #565e64;
+  	text-align: right;
+}
+.ellipseDiv {
+  	height: 20px;
+  	width: 20px;
+  	position: relative;
+  	border-radius: 50%;
+  	background-color: #b0d898;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+}
+.wybierzPunktOdbioruWrapper {
+  	align-self: stretch;
+  	height: 50.8px;
+  	border-radius: 20px;
+  	background-color: #fd798f;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 10px 20px;
+  	box-sizing: border-box;
+  	font-size: 16px;
+}
+.wybierzPunktOdbioru {
+  	position: relative;
+  	letter-spacing: -0.01em;
+  	font-weight: 500;
+}
+.produktyWKoszykuInner {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	font-size: 19px;
+}
+.frameParent8 {
+  	width: 440px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 24px;
+}
+.frameParent9 {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 16px;
+  	font-size: 19px;
+}
+.frameChild6 {
+  	align-self: stretch;
+  	height: 1px;
+  	position: relative;
+  	max-width: 100%;
+  	overflow: hidden;
+  	flex-shrink: 0;
+}
+.cakowitaSumaZContainer {
+  	position: relative;
+}
+.cakowitaSuma {
+  	letter-spacing: -0.04em;
+  	line-height: 120%;
+  	font-weight: 600;
+}
+.zVat {
+  	font-size: 19px;
+  	line-height: 150%;
+}
+
