@@ -1,6 +1,6 @@
 import type { NextPage } from 'next';
 
-import ProductImage from "@app/Public/Images/product-image.png";
+import ProductImage from "@app/Public/Images/freepik_photo-of-a-single-premium_2.png";
 
 import FavoriteIcon from "@app/Public/Images/ulubione-icon.svg";
 import CartIcon from "@app/Public/Images/tabler-icon-shopping-bag-plus.svg";
