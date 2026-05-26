@@ -5,17 +5,15 @@ import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
 import ProductActions from "./ProductActions"; 
+import HeartButton from "./HeartButton"; // 🔥 IMPORT NOWEGO PRZYCISKU
 import "@/models/Company";
 import "@/models/Category";
 
-// 🔥 IMPORT MODELU OPINII DO POBRANIA DANYCH NA SERWERZE
 import ReviewModel from "@/models/Review"; 
-
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import { Types } from "mongoose";
 
-import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
 import starFull from "@/app/Public/Images/tabler-icon-star.svg";
 import starHalf from "@/app/Public/Images/star-half.svg";
 import starEmpty from "@/app/Public/Images/empty-star.svg";
@@ -26,7 +24,6 @@ type ProductPageProps = {
   }>;
 };
 
-// Funkcja pomocnicza do generowania gwiazdek na serwerze
 const getServerStars = (rating: number, className: string) => {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
@@ -53,7 +50,6 @@ export default async function ProductPage({
     return <div>Nieprawidłowe ID produktu</div>;
   }
 
-  // Pobieramy produkt
   const product = await Product.findById(id)
     .populate("category")
     .populate("company")
@@ -63,10 +59,8 @@ export default async function ProductPage({
     return <div>Produkt nie istnieje</div>;
   }
 
-  // 🔥 POBIERAMY OPINIE BEZPOŚREDNIO Z BAZY DANYCH DLA TEGO PRODUKTU
   const rawReviews = await ReviewModel.find({ product: new Types.ObjectId(id) }).lean();
   
-  // 🔥 OBLICZAMY STATYSTYKI GWIAZDEK NA SERWERZE
   const totalReviews = rawReviews.length;
   const avgRating = totalReviews > 0 
     ? Number((rawReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / totalReviews).toFixed(1))
@@ -92,11 +86,10 @@ export default async function ProductPage({
               <div className={styles.alphawolf}>
                 {product.company?.name || "Zootopia"}
               </div>
-              <Image
-                className={styles.ulubioneIcon}
-                src={heartIcon}
-                alt="Ulubione"
-              />
+              
+              {/* 🔥 TUTAJ ZMIANA: Przycisk serduszka z akcją dodawania */}
+              <HeartButton productId={product._id.toString()} />
+              
             </div>
             <div className={styles.divider} />
           </div>
@@ -110,13 +103,11 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* GWIAZDKI (TERAZ DYNAMICZNIE POŁĄCZONE Z BAZĄ OPINII) */}
+          {/* GWIAZDKI */}
           <div className={styles.frameDiv}>
             <div className={styles.tablerIconStarParent}>
-              {/* 🔥 Dynamiczne renderowanie ikon pełnych/połówkowych/pustych gwiazdek */}
               {getServerStars(avgRating, styles.tablerIconStar)}
             </div>
-            {/* 🔥 Dynamiczny licznik opinii w nawiasie */}
             <div className={styles.div}>({totalReviews})</div>
           </div>
 
@@ -194,7 +185,6 @@ export default async function ProductPage({
           }
         />
 
-        {/* 🔥 PRZEKAZUJEMY POBRANE WSTĘPNIE OPINIE DO KOMPONENTU KLIENCKIEGO */}
         <ReviewsSection productId={id} initialReviews={JSON.parse(JSON.stringify(rawReviews))} />
       </div>
     </div>
