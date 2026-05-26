@@ -8,7 +8,6 @@ import styles from './user-info.module.css';
 const FormularzPlatnosci: NextPage = () => {
   const router = useRouter();
   
-  // Główny stan formularza adresowego
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -30,7 +29,6 @@ const FormularzPlatnosci: NextPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   
-  // Stany dla checkboxów rozwijających sekcje dodatkowe
   const [createAccount, setCreateAccount] = useState(false);
   const [showInvoice, setShowInvoice] = useState(false);
   const [showOtherAddress, setShowOtherAddress] = useState(false);
@@ -38,28 +36,42 @@ const FormularzPlatnosci: NextPage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // Pobieramy token z pamięci przeglądarki
-        const token = localStorage.getItem('token');
+        // 1. Próbujemy pobrać token z localStorage na wypadek, gdyby tam był
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         
-        // Wysyłamy zapytanie do API z nagłówkiem autoryzacji Bearer
-        const response = await fetch('/api/user/me', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
+        // 2. Budujemy nagłówki. Jeśli token istnieje, dodajemy go.
+        const headers: HeadersInit = {
+          'Content-Type': 'application/json',
+        };
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        // 3. Strzał do API (dodajemy credentials: 'include', gdybyś używał ciasteczek/sesji)
+        const response = await fetch('/api/user/me', { 
+          method: 'GET',
+          headers: headers,
+          credentials: 'include' 
         }); 
-        
+
+        console.log("Status odpowiedzi z /api/user/me:", response.status);
+
         if (response.ok) {
           const resJson = await response.json();
-          const user = resJson.data ? resJson.data : resJson;
+          console.log("Dane odebrane z bazy danych:", resJson);
+
+          // Rozpakowanie obiektu użytkownika (obsługuje: resJson, resJson.data lub resJson.user)
+          const user = resJson.user ? resJson.user : (resJson.data ? resJson.data : resJson);
           
-          // Jeśli baza zwróciła poprawnego użytkownika
-          if (user && (user.email || user._id)) {
-            setIsLoggedIn(true); // Użytkownik jest zalogowany
+          // 🔥 KLUCZOWA POPRAWKA: Jeśli obiekt istnieje i ma jakikolwiek identyfikator lub email
+          if (user && (user._id || user.email || user.username)) {
+            console.log("Pomyślnie zautoryzowano użytkownika:", user.email || user._id);
+            setIsLoggedIn(true); // Ukrywa przycisk logowania i checkbox "Stwórz konto"
             
-            // Wstrzykujemy dane z MongoDB bezpośrednio do stanów pól tekstowych
+            // Wpisanie danych bezpośrednio do pól formularza
             setFormData(prev => ({
               ...prev,
-              firstName: user.firstName || '',
+              firstName: user.firstName || user.name || '',
               lastName: user.lastName || '',
               country: user.country || 'Polska',
               street: user.street || '',
@@ -70,40 +82,41 @@ const FormularzPlatnosci: NextPage = () => {
               companyName: user.companyName || '',
               nip: user.nip || ''
             }));
+          } else {
+            console.warn("Zwrócony obiekt użytkownika jest pusty lub niepoprawny.");
+            setIsLoggedIn(false);
           }
         } else {
-          // Status 401 lub inny oznacza brak zalogowania (użytkownik to gość)
+          console.log("Użytkownik niezalogowany (brak statusu OK)");
           setIsLoggedIn(false);
         }
       } catch (error) {
-        console.error("Błąd podczas pobierania danych z MongoDB:", error);
+        console.error("Błąd krytyczny podczas pobierania danych:", error);
         setIsLoggedIn(false);
       } finally {
         setIsLoading(false);
       }
     };
+
     fetchUserData();
   }, []);
 
-  // Funkcja aktualizująca stan w czasie rzeczywistym podczas pisania
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  // Obsługa przekierowania do podstrony logowania
   const handleLoginRedirect = () => {
     router.push('/Auth');
   };
 
   if (isLoading) {
-    return <div className={styles.produktyWKoszyku}>Pobieranie profilu klienta z bazy...</div>;
+    return <div className={styles.produktyWKoszyku}>Weryfikacja sesji klienta...</div>;
   }
 
   return (
     <div className={styles.produktyWKoszyku}>
       
-      {/* NAGŁÓWEK SEKCI */}
       <div className={styles.metodyDostawyParent}>
         <div className={styles.metodyDostawy}>Dane płatności:</div>
         <div className={styles.lineDivider} />
@@ -114,7 +127,6 @@ const FormularzPlatnosci: NextPage = () => {
         {/* LEWA KOLUMNA FORMULARZA */}
         <div className={styles.frameGroup}>
           
-          {/* Imię i Nazwisko */}
           <div className={styles.frameContainer}>
             <div className={styles.imiWrapper}>
               <input type="text" name="firstName" placeholder="Imię" value={formData.firstName} onChange={handleChange} className={styles.imi} />
@@ -124,17 +136,14 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           </div>
 
-          {/* Kraj */}
           <div className={styles.polskaWrapper}>
             <input type="text" name="country" placeholder="Polska" value={formData.country} onChange={handleChange} className={styles.imi} />
           </div>
 
-          {/* Ulica i numer */}
           <div className={styles.polskaWrapper}>
             <input type="text" name="street" placeholder="Ulica i numer" value={formData.street} onChange={handleChange} className={styles.imi} />
           </div>
 
-          {/* Miasto i Kod pocztowy */}
           <div className={styles.frameDiv}>
             <div className={styles.nazwiskoWrapper}>
               <input type="text" name="city" placeholder="Miasto" value={formData.city} onChange={handleChange} className={styles.imi} />
@@ -144,7 +153,6 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           </div>
 
-          {/* Telefon i E-mail */}
           <div className={styles.frameParent2}>
             <div className={styles.telefonWrapper}>
               <input type="tel" name="phone" placeholder="Telefon" value={formData.phone} onChange={handleChange} className={styles.imi} />
@@ -154,7 +162,7 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           </div>
 
-          {/* CHECKBOX: Stworzyć konto (Pokazuje się tylko gościom) */}
+          {/* Rejestracja widoczna tylko dla gości */}
           {!isLoggedIn && (
             <div className={styles.rectangleParent}>
               <input type="checkbox" checked={createAccount} onChange={(e) => setCreateAccount(e.target.checked)} className={styles.frameChild} id="createAccount" />
@@ -162,13 +170,11 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           )}
 
-          {/* CHECKBOX: Faktura */}
           <div className={styles.rectangleGroup}>
             <input type="checkbox" checked={showInvoice} onChange={(e) => setShowInvoice(e.target.checked)} className={styles.frameChild} id="invoice" />
             <label htmlFor="invoice" className={styles.stworzyKonto}>Faktura</label>
           </div>
 
-          {/* DANE FAKTURY (Pokazywane warunkowo) */}
           {showInvoice && (
             <div className={styles.frameParent3}>
               <div className={styles.nazwaFirmyWrapper}>
@@ -180,13 +186,11 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           )}
 
-          {/* CHECKBOX: Wysyłka na inny adres */}
           <div className={styles.rectangleGroup}>
             <input type="checkbox" checked={showOtherAddress} onChange={(e) => setShowOtherAddress(e.target.checked)} className={styles.frameChild} id="otherAddress" />
             <label htmlFor="otherAddress" className={styles.stworzyKonto}>Wysyłka na inny adres</label>
           </div>
 
-          {/* POLA INNEGO ADRESU (Pokazywane warunkowo) */}
           {showOtherAddress && (
             <div className={styles.frameGroup} style={{ gap: '14px' }}>
               <div className={styles.polskaWrapper}>
@@ -208,10 +212,10 @@ const FormularzPlatnosci: NextPage = () => {
 
         </div>
 
-        {/* PRAWA KOLUMNA: BLOK LOGOWANIA I UWAGI */}
+        {/* PRAWA KOLUMNA */}
         <div className={styles.frameParent6}>
           
-          {/* 🔥 WARUNEK: Panel logowania wyświetli się WYŁĄCZNIE gościom (gdy isLoggedIn === false) */}
+          {/* 🔥 DYNAMICZNY BLOK LOGOWANIA - Zniknie natychmiast po ustawieniu isLoggedIn na true */}
           {!isLoggedIn && (
             <div className={styles.frameWrapper}>
               <div className={styles.maszJuKontoParent}>
@@ -223,7 +227,6 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           )}
 
-          {/* Pole uwag do zamówienia */}
           <div className={styles.uwagiDoZamwieniaNpInfoWrapper}>
             <textarea 
               name="notes"
