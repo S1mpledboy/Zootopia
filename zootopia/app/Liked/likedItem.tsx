@@ -24,6 +24,53 @@ interface LikedItemProps {
 const LikedItem: FC<LikedItemProps> = ({ product }) => {
     const router = useRouter();
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
+    const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
+    
+    // 🔢 Dynamiczny licznik ilości produktów do dodania
+    const [quantity, setQuantity] = useState<number>(1);
+
+    const handleIncrease = () => setQuantity((prev) => prev + 1);
+    const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
+
+    // 🛒 Funkcja obsługująca dodawanie produktu do koszyka
+    const handleAddToCart = async () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            alert("Musisz się zalogować, aby dodać produkt do koszyka!");
+            router.push("/Auth");
+            return;
+        }
+
+        if (isAddingToCart) return;
+        setIsAddingToCart(true);
+
+        try {
+            const res = await fetch("/api/cart", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    productId: product.id,
+                    quantity: quantity, // Przekazujemy wybrany stan ilości
+                }),
+            });
+
+            if (res.ok) {
+                alert(`Dodano do koszyka (${quantity} szt.) produkt: ${product.productName}`);
+            } else {
+                const data = await res.json();
+                alert(`Błąd: ${data.message || "Nie udało się dodać produktu do koszyka"}`);
+            }
+        } catch (err) {
+            console.error("Błąd podczas dodawania do koszyka:", err);
+            alert("Wystąpił błąd sieci podczas dodawania do koszyka.");
+        } finally {
+            setIsAddingToCart(false);
+        }
+    };
 
     // 🗑️ Funkcja obsługująca usuwanie produktu z ulubionych
     const handleRemoveFromLiked = async () => {
@@ -35,7 +82,7 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
 
         try {
             const res = await fetch('/api/likedList', {
-                method: 'POST', // Nasze API wykonuje Toggle, więc usunie produkt, jeśli już tam jest
+                method: 'POST', 
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`
@@ -44,7 +91,6 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
             });
 
             if (res.ok) {
-                // ✅ Odświeża komponenty serwerowe / stronę, aby zaktualizować listę i sumę cen
                 router.refresh(); 
             } else {
                 const data = await res.json();
@@ -59,9 +105,9 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
     };
 
     return (
-        <div className={`${styles.property1ulubione} ${isDeleting ? styles.itemDeleting : ""}`} style={{ opacity: isDeleting ? 0.5 : 1 }}>
+        <div className={styles.property1ulubione} style={{ opacity: isDeleting ? 0.5 : 1 }}>
             
-            {/* 🔗 Poprawna ścieżka z małej litery: /product/[id] */}
+            {/* 🔗 Kliknięcie w obrazek przenosi na podstronę produktu */}
             <Link href={`/product/${product.id}`}>
                 <Image
                     className={styles.imgProduktuIcon}
@@ -94,21 +140,31 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
                 </div>
 
                 <div className={styles.frameContainer}>
+                    {/* 🔢 AKTYWNY SELEKTOR ILOŚCI */}
                     <div className={styles.parent}>
-                        <div className={styles.div}>-</div>
+                        <div className={styles.div} onClick={handleDecrease} style={{ cursor: "pointer", userSelect: "none" }}>-</div>
                         <div className={styles.wrapper}>
-                            <div className={styles.div2}>1</div>
+                            <div className={styles.div2}>{quantity}</div>
                         </div>
-                        <div className={styles.div3}>+</div>
+                        <div className={styles.div3} onClick={handleIncrease} style={{ cursor: "pointer", userSelect: "none" }}>+</div>
                     </div>
 
                     <div className={styles.ulubioneParent}>
                         <Image src={FavoriteIcon} alt="Ulubione" className={styles.ulubioneIcon} width={24} height={24} />
-                        <div className={styles.dodajDoKoszyka}>
+                        
+                        {/* 🛒 INTERAKTYWNY PRZYCISK KOSZYKA */}
+                        <div 
+                            className={styles.dodajDoKoszyka} 
+                            onClick={handleAddToCart}
+                            style={{ 
+                                cursor: isAddingToCart ? "not-allowed" : "pointer",
+                                opacity: isAddingToCart ? 0.5 : 1 
+                            }}
+                        >
                             <Image src={CartIcon} alt="Koszyk" className={styles.vectorIcon} width={24} height={24} />
                         </div>
                         
-                        {/* 🗑️ IKONA KOSZA Z PODPIĘTĄ FUNKCJĄ USUWANIA */}
+                        {/* 🗑️ IKONA KOSZA (USUWANIE Z ULUBIONYCH) */}
                         <Image 
                             src={TrashIcon} 
                             alt="Usuń" 
