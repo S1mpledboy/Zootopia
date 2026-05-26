@@ -3,7 +3,7 @@
 import type { NextPage } from 'next';
 import Image from 'next/image';
 import styles from './shopPage.module.css';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 import arrowDown from '@/app/Public/Images/arrowDown.svg';
 import arrowRight from '@/app/Public/Images/arrowRight.svg';
@@ -12,17 +12,13 @@ import line from '@/app/Public/Images/line.svg';
 import PromotionItem from '../ItemBlocks/promotionItem';
 
 // =========================
-// SECTION (WYCIĄGNIĘTY NA ZEWNĄTRZ — FIX FOCUS)
+// SECTION COMPONENT
 // =========================
 function Section({ id, title, children, openSections, toggleSection }: any) {
   const open = openSections[id];
-
   return (
     <div className={styles.frameGroup}>
-      <div
-        className={styles.tablerIconChevronCompactRiParent}
-        onClick={() => toggleSection(id)}
-      >
+      <div className={styles.tablerIconChevronCompactRiParent} onClick={() => toggleSection(id)}>
         <Image src={open ? arrowDown : arrowRight} width={24} height={24} alt="" />
         <div className={styles.cena}>{title}</div>
       </div>
@@ -54,48 +50,87 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sort, setSort] = useState<string>('popularność');
 
-  // ===== CENA STATE =====
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
 
-  // ===== TOGGLE SECTION =====
+  // ===== TOGGLE LOGIC =====
   const toggleSection = (key: string) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // ===== CHECKBOX =====
   const toggleFilter = (group: string, value: string) => {
     setFilters((prev) => {
       const current = prev[group] || [];
-      const exists = current.includes(value);
-      const updated = exists ? current.filter((v) => v !== value) : [...current, value];
+      const updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
       return { ...prev, [group]: updated };
     });
   };
 
-  // ===== APPLY FILTERS =====
-  const applyFilters = () => {
-    alert(
-      `Wybrane filtry:\n` +
-        Object.entries(filters).map(([k, v]) => `${k}: ${v.join(', ') || 'brak'}`).join('\n') +
-        `\nCena: ${priceFrom || 'brak'} - ${priceTo || 'brak'}`
-    );
-  };
-
-  // ===== CATEGORY & SORT =====
-  const selectCategory = (value: string) => alert(`Wybrana kategoria: ${value}`);
   const selectSort = (value: string) => {
     setSort(value);
-    alert(`Sortowanie: ${value}`);
   };
 
-  // ===== CHECKBOX COMPONENT =====
+  // ==========================================
+  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA
+  // ==========================================
+  const filteredAndSortedProducts = useMemo(() => {
+    // 1. Klonujemy oryginalną listę, aby jej nie zepsuć
+    let result = [...initialProducts];
+
+    // 2. FILTROWANIE: Marka
+    if (filters.marka && filters.marka.length > 0) {
+      result = result.filter(product => filters.marka.includes(product.companyName));
+    }
+
+    // 3. FILTROWANIE: Cena (bierzemy pod uwagę cenę promocyjną, jeśli istnieje, w przeciwnym razie zwykłą)
+    const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
+    const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
+    
+    if (minPrice > 0 || maxPrice < Infinity) {
+      result = result.filter(product => {
+        const actualPrice = product.promoPrice || product.price;
+        return actualPrice >= minPrice && actualPrice <= maxPrice;
+      });
+    }
+
+    // TUTAJ W PRZYSZŁOŚCI DODASZ FILTROWANIE PO WIEKU / WIELKOŚCI RASY
+    // if (filters.wiek && filters.wiek.length > 0) {
+    //   result = result.filter(product => filters.wiek.includes(product.ageGroup));
+    // }
+
+    // 4. SORTOWANIE
+    result.sort((a, b) => {
+      const priceA = a.promoPrice || a.price;
+      const priceB = b.promoPrice || b.price;
+
+      switch (sort) {
+        case 'Nazwa rosnąco':
+          return a.name.localeCompare(b.name);
+        case 'Nazwa malejąco':
+          return b.name.localeCompare(a.name);
+        case 'Cena rosnąco':
+          return priceA - priceB;
+        case 'Cena malejąco':
+          return priceB - priceA;
+        case 'popularność':
+        default:
+          return 0; // Zostawia domyślną kolejność z bazy
+      }
+    });
+
+    return result;
+  }, [initialProducts, filters, priceFrom, priceTo, sort]);
+
+  // ==========================================
+
   const Checkbox = ({ group, value }: { group: string; value: string }) => {
     const checked = filters[group]?.includes(value);
     return (
-      <div className={styles.frameParent2} onClick={() => toggleFilter(group, value)}>
+      <div className={styles.frameParent2} onClick={() => toggleFilter(group, value)} style={{ cursor: 'pointer' }}>
         <div className={styles.tablerIconSquareWrapper}>
-          <input type="checkbox" readOnly checked={!!checked} />
+          <input type="checkbox" readOnly checked={!!checked} style={{ pointerEvents: 'none' }} />
         </div>
         <div className={styles.cena}>{value}</div>
       </div>
@@ -104,7 +139,7 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
 
   return (
     <div className={styles.kategorie}>
-      {/* ================= LEFT ================= */}
+      {/* ================= LEFT (FILTRY) ================= */}
       <div className={styles.frameParent}>
         <div className={styles.frameWrapper}>
           <div className={styles.filtrujWrapper}>
@@ -113,7 +148,6 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
         </div>
         <Image src={line} width={216} height={1} alt="" />
 
-        {/* ===== FILTRY ===== */}
         <Section id="cena" title="Cena" openSections={openSections} toggleSection={toggleSection}>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input type="number" placeholder="od" value={priceFrom} onChange={(e) => setPriceFrom(e.target.value)} style={{ width: '80px' }} />
@@ -148,32 +182,13 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
           <Checkbox group="potrzeby" value="Wysoka aktywność" />
         </Section>
 
-        <div className={styles.zastosujFiltryWrapper} onClick={applyFilters}>
-          <div className={styles.zastosujFiltry}>Zastosuj filtry</div>
-        </div>
-        <Image src={line} width={216} height={1} alt="" />
-
-        {/* ===== KATEGORIE ===== */}
-        <div className={styles.frameWrapper}>
-          <div className={styles.filtrujWrapper}>
-            <div className={styles.filtruj}>Kategorie</div>
-          </div>
-        </div>
-        <Image src={line} width={216} height={1} alt="" />
-
-        <div className={styles.frameGroup}>
-          <div className={styles.cena}>Pies</div>
-          <div className={styles.frameDiv}>
-            {['Karma mokra', 'Karma sucha', 'Przysmaki i gryzaki', 'Spacer i podróż', 'Legowiska i dom'].map((c) => (
-              <div key={c} className={styles.karmaMokraWrapper} onClick={() => selectCategory(c)}>
-                <div className={styles.cena}>{c}</div>
-              </div>
-            ))}
-          </div>
+        {/* Zastosuj filtry można usunąć, bo filtry działają w czasie rzeczywistym! Zostawiłem tylko do wizualnego efektu resetu */}
+        <div className={styles.zastosujFiltryWrapper} onClick={() => { setFilters({}); setPriceFrom(''); setPriceTo(''); }} style={{ cursor: 'pointer' }}>
+          <div className={styles.zastosujFiltry}>Resetuj filtry</div>
         </div>
       </div>
 
-      {/* ================= RIGHT ================= */}
+      {/* ================= RIGHT (PRODUKTY) ================= */}
       <div className={styles.frameParent25}>
         <div className={styles.sortowanieParent}>
           <div className={styles.sortowanie}>
@@ -186,7 +201,12 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
             <div className={styles.sortujPo}>Sortuj po</div>
             <div className={styles.sortowanie2}>
               {['Nazwa rosnąco', 'Nazwa malejąco', 'Cena rosnąco', 'Cena malejąco', 'popularność'].map((s) => (
-                <div key={s} className={styles.opcjaSortowania} onClick={() => selectSort(s)}>
+                <div 
+                  key={s} 
+                  className={styles.opcjaSortowania} 
+                  onClick={() => selectSort(s)}
+                  style={{ cursor: 'pointer', opacity: sort === s ? 1 : 0.6 }}
+                >
                   <b className={styles.nazwaRosnco}>{s}</b>
                 </div>
               ))}
@@ -195,24 +215,28 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
 
           <div className={styles.sortowanie3}>
             <div className={styles.stronaGwna}>
-              {initialProducts.length} produktów • sort: {sort}
+              {filteredAndSortedProducts.length} produktów • sort: {sort}
             </div>
           </div>
         </div>
 
-        {/* ===== SYSTEM RENDERU PRODUKTÓW (Z BAZY) ===== */}
+        {/* WYSWIETLAMY PRZEFILTROWANA TABLICE */}
         <div className={styles.produktPromocjaPiesParent}>
-          {initialProducts.map((product) => (
-            <PromotionItem
-              key={product._id}
-              id={product._id}
-              brandName={product.companyName}
-              productName={product.name}
-              price={product.price}
-              promoPrice={product.promoPrice}
-              image={product.image}
-            />
-          ))}
+          {filteredAndSortedProducts.length > 0 ? (
+            filteredAndSortedProducts.map((product) => (
+              <PromotionItem
+                key={product._id}
+                id={product._id}
+                brandName={product.companyName}
+                productName={product.name}
+                price={product.price}
+                promoPrice={product.promoPrice}
+                image={product.image}
+              />
+            ))
+          ) : (
+            <div style={{ padding: '20px', fontSize: '18px' }}>Brak produktów spełniających kryteria.</div>
+          )}
         </div>
       </div>
     </div>
