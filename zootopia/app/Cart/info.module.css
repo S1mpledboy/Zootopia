@@ -1,78 +1,58 @@
 .banerek {
-  width: 100%;
-  background-color: #e0f2fe; /* Twój błękitny kolor tła */
-  padding: 24px 40px;
+  width: 100vw;               /* Wymusza szerokość na 100% okna przeglądarki */
+  position: relative;
+  left: 50%;
+  right: 50%;
+  margin-left: -50vw;         /* Te 3 linijki pozwalają wyrwać się z kontenera koszyka na pełną szerokość strony */
+  margin-right: -50vw;
+  
+  background-color: #e0f2fe;  /* Jasnoniebieski kolor tła */
+  padding: 35px 0;            /* Górny i dolny margines wewnętrzny */
   box-sizing: border-box;
   display: flex;
-  justify-content: center; /* Centruje cały pasek na ekranie */
+  justify-content: center;
   align-items: center;
 }
 
 .frameParent {
   width: 100%;
-  max-width: 1200px; /* Zapobiega zbytniemu rozjeżdżaniu się ikonek na bardzo szerokich monitorach */
+  max-width: 1200px;         /* Maksymalna szerokość zawartości baneru */
+  padding: 0 40px;            /* Bezpieczny odstęp od boków ekranu */
+  box-sizing: border-box;
   display: flex;
-  flex-direction: row; /* Wymusza układ obok siebie (w rzędzie) */
-  justify-content: space-between; /* Rozkłada równomiernie elementy */
+  flex-direction: row;        /* Wszystkie 4 elementy obok siebie */
+  justify-content: space-between; /* Rozsuwa elementy równomiernie */
   align-items: center;
   gap: 20px;
 }
 
-/* Styl dla każdego z 4 bloków (Ikona + Tekst) */
-.tablerIconWalletParent,
-.tablerIconPackageImportParent,
-.tablerIconTruckDeliveryParent,
-.tablerIconRosetteDiscountCParent {
+/* Jeden uniwersalny styl dla każdego z 4 boksów (ikona + tekst) */
+.boxElement {
   display: flex;
-  flex-direction: row; /* Zgodnie z grafiką: ikona obok tekstu */
-  align-items: center;
+  flex-direction: row;        /* Ikona OBOK tekstu - tak jak na oryginalnym projekcie */
+  align-items: center;        /* Centrowanie ikony i tekstu w pionie */
   justify-content: center;
-  gap: 12px;
-  flex: 1;
+  gap: 12px;                  /* Odstęp między ikoną a tekstem */
 }
 
-/* Wyrównanie kontenera pierwszej ikonki (portfela) do wielkości pozostałych */
-.tablerIconWallet {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* Kontener na ikonę, gwarantujący, że każda będzie miała dokładnie tyle samo miejsca */
+.iconContainer {
   width: 50px;
   height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;             /* Blokuje zmniejszanie się ikon */
 }
 
-/* Styl tekstu */
+/* Styl tekstu pisany wielkimi literami i wyrównany do lewej (bo stoi obok ikony) */
 .bezpiecznePatnoci {
   font-family: 'Poppins', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 1.3;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.2;
   color: #000000;
-  text-align: left; /* Tekst wyrównany do lewej obok ikonki */
+  text-align: left;           /* Tekst wyrównany do lewej strony */
+  text-transform: uppercase;  /* Zamiana na WIELKIE LITERY */
+  letter-spacing: 0.02em;
 }
-.tablerIconPackageImportParent {
-  	width: 151px;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: center;
-  	gap: 3px;
-}
-.tablerIconPackageImport {
-  	width: 50px;
-  	height: 50px;
-  	position: relative;
-}
-.tablerIconTruckDeliveryParent {
-  	width: 154px;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: center;
-  	gap: 3px;
-}
-.tablerIconRosetteDiscountCParent {
-  	width: 106px;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: center;
-  	gap: 3px;
-}
-
