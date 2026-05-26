@@ -36,10 +36,8 @@ const FormularzPlatnosci: NextPage = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        // 1. Próbujemy pobrać token z localStorage na wypadek, gdyby tam był
         const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
         
-        // 2. Budujemy nagłówki. Jeśli token istnieje, dodajemy go.
         const headers: HeadersInit = {
           'Content-Type': 'application/json',
         };
@@ -47,31 +45,20 @@ const FormularzPlatnosci: NextPage = () => {
           headers['Authorization'] = `Bearer ${token}`;
         }
 
-        // 3. Strzał do API (dodajemy credentials: 'include', gdybyś używał ciasteczek/sesji)
         const response = await fetch('/api/user/me', { 
           method: 'GET',
-          headers: headers,
-          credentials: 'include' 
+          headers: headers
         }); 
 
-        console.log("Status odpowiedzi z /api/user/me:", response.status);
-
         if (response.ok) {
-          const resJson = await response.json();
-          console.log("Dane odebrane z bazy danych:", resJson);
+          const user = await response.json();
 
-          // Rozpakowanie obiektu użytkownika (obsługuje: resJson, resJson.data lub resJson.user)
-          const user = resJson.user ? resJson.user : (resJson.data ? resJson.data : resJson);
-          
-          // 🔥 KLUCZOWA POPRAWKA: Jeśli obiekt istnieje i ma jakikolwiek identyfikator lub email
-          if (user && (user._id || user.email || user.username)) {
-            console.log("Pomyślnie zautoryzowano użytkownika:", user.email || user._id);
-            setIsLoggedIn(true); // Ukrywa przycisk logowania i checkbox "Stwórz konto"
+          if (user && (user._id || user.email)) {
+            setIsLoggedIn(true);
             
-            // Wpisanie danych bezpośrednio do pól formularza
             setFormData(prev => ({
               ...prev,
-              firstName: user.firstName || user.name || '',
+              firstName: user.firstName || '',
               lastName: user.lastName || '',
               country: user.country || 'Polska',
               street: user.street || '',
@@ -82,16 +69,12 @@ const FormularzPlatnosci: NextPage = () => {
               companyName: user.companyName || '',
               nip: user.nip || ''
             }));
-          } else {
-            console.warn("Zwrócony obiekt użytkownika jest pusty lub niepoprawny.");
-            setIsLoggedIn(false);
           }
         } else {
-          console.log("Użytkownik niezalogowany (brak statusu OK)");
           setIsLoggedIn(false);
         }
       } catch (error) {
-        console.error("Błąd krytyczny podczas pobierania danych:", error);
+        console.error("Błąd podczas pobierania profilu:", error);
         setIsLoggedIn(false);
       } finally {
         setIsLoading(false);
@@ -100,6 +83,23 @@ const FormularzPlatnosci: NextPage = () => {
 
     fetchUserData();
   }, []);
+
+  // 🔥 NOWOŚĆ: Udostępniamy aktualne dane z formularza do pliku podsumowania zamówień
+  useEffect(() => {
+    const handleRequestFormData = () => {
+      const event = new CustomEvent("responsePaymentFormData", {
+        detail: {
+          formData,
+          showInvoice,
+          showOtherAddress
+        }
+      });
+      window.dispatchEvent(event);
+    };
+
+    window.addEventListener("requestPaymentFormData", handleRequestFormData);
+    return () => window.removeEventListener("requestPaymentFormData", handleRequestFormData);
+  }, [formData, showInvoice, showOtherAddress]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -111,7 +111,7 @@ const FormularzPlatnosci: NextPage = () => {
   };
 
   if (isLoading) {
-    return <div className={styles.produktyWKoszyku}>Weryfikacja sesji klienta...</div>;
+    return <div className={styles.produktyWKoszyku}>Weryfikacja sesji użytkownika...</div>;
   }
 
   return (
@@ -124,7 +124,6 @@ const FormularzPlatnosci: NextPage = () => {
 
       <div className={styles.frameParent}>
         
-        {/* LEWA KOLUMNA FORMULARZA */}
         <div className={styles.frameGroup}>
           
           <div className={styles.frameContainer}>
@@ -162,7 +161,6 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           </div>
 
-          {/* Rejestracja widoczna tylko dla gości */}
           {!isLoggedIn && (
             <div className={styles.rectangleParent}>
               <input type="checkbox" checked={createAccount} onChange={(e) => setCreateAccount(e.target.checked)} className={styles.frameChild} id="createAccount" />
@@ -212,10 +210,7 @@ const FormularzPlatnosci: NextPage = () => {
 
         </div>
 
-        {/* PRAWA KOLUMNA */}
         <div className={styles.frameParent6}>
-          
-          {/* 🔥 DYNAMICZNY BLOK LOGOWANIA - Zniknie natychmiast po ustawieniu isLoggedIn na true */}
           {!isLoggedIn && (
             <div className={styles.frameWrapper}>
               <div className={styles.maszJuKontoParent}>

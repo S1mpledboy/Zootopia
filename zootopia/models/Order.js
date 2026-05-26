@@ -5,6 +5,7 @@ const orderItemSchema = new mongoose.Schema(
     productId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Product",
+      required: true,
     },
     name: {
       type: String,
@@ -54,13 +55,46 @@ const orderSchema = new mongoose.Schema(
       default: "IN_PROGRESS",
     },
 
+    // 🏡 PODSTAWOWY ADRES DOSTAWY I DANE KLIENTA (z user-info)
     deliveryAddress: {
-      firstName: String,
-      lastName: String,
-      street: String,
-      city: String,
-      postalCode: String,
-      phone: String,
+      firstName: { type: String, required: true },
+      lastName: { type: String, required: true },
+      country: { type: String, required: true, default: "Polska" }, // Sparametryzowane pod pole z frontu
+      street: { type: String, required: true },
+      city: { type: String, required: true },
+      postalCode: { type: String, required: true },
+      phone: { type: String, required: true },
+      email: { type: String, required: true }, // Przydatne do powiadomień mailowych o zamówieniu
+    },
+
+    // 📦 METODY DOSTAWY I PŁATNOŚCI (z shipping-payment)
+    shippingMethod: {
+      type: String, // 'inpost', 'dhl', 'paczkomat'
+      required: true,
+    },
+    paymentMethod: {
+      type: String, // 'blik', 'p24', 'odbior'
+      required: true,
+    },
+
+    // 🧾 OPCJONALNE DANE DO FAKTURY (z checkboxa 'Faktura')
+    invoiceData: {
+      companyName: { type: String, default: "" },
+      nip: { type: String, default: "" },
+    },
+
+    // 🚚 OPCJONALNY ALTERNATYWNY ADRES WYSYŁKI
+    alternativeShippingAddress: {
+      country: { type: String, default: "" },
+      street: { type: String, default: "" },
+      city: { type: String, default: "" },
+      postalCode: { type: String, default: "" },
+    },
+
+    // ✍️ UWAGI DO ZAMÓWIENIA (z textarea)
+    notes: {
+      type: String,
+      default: "",
     },
   },
   { timestamps: true }
