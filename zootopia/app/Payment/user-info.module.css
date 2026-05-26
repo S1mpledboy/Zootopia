@@ -1,229 +1,204 @@
+/* ==========================================================================
+   1. GŁÓWNY UKŁAD FORMULARZA (Dane płatności + Blok prawy)
+   ========================================================================== */
+
 .produktyWKoszyku {
-  	width: 100%;
-  	position: relative;
-  	display: flex;
-  	align-items: flex-start;
-  	justify-content: space-between;
-  	padding: 12px 40px;
-  	box-sizing: border-box;
-  	gap: 20px;
-  	text-align: center;
-  	font-size: 19px;
-  	color: #565e64;
-  	font-family: Poppins;
-}
-.frameParent {
-  	width: 630px;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-start;
-  	gap: 24px;
-}
-.frameGroup {
-  	align-self: stretch;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-start;
-  	gap: 16px;
-  	flex-shrink: 0;
-}
-.frameContainer {
-  	align-self: stretch;
-  	display: flex;
-  	align-items: center;
-  	gap: 16px;
-}
-.imiWrapper {
-  	height: 58px;
-  	width: 300px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-}
-.imi {
-  	position: relative;
-  	line-height: 150%;
-}
-.nazwiskoWrapper {
-  	height: 58px;
-  	flex: 1;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-}
-.polskaWrapper {
-  	align-self: stretch;
-  	height: 58px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-}
-.frameDiv {
-  	align-self: stretch;
-  	display: flex;
-  	align-items: center;
-  	gap: 16px;
-  	text-align: left;
-}
-.kodPocztowyWrapper {
-  	height: 58px;
-  	flex: 1;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-  	text-align: center;
-}
-.frameParent2 {
-  	align-self: stretch;
-  	display: flex;
-  	align-items: center;
-  	gap: 32px;
-}
-.telefonWrapper {
-  	height: 58px;
-  	width: 225px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-  	flex-shrink: 0;
-}
-.eMailWrapper {
-  	height: 58px;
-  	width: 375px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-  	flex-shrink: 0;
-}
-.rectangleParent {
-  	display: flex;
-  	align-items: center;
-  	padding: 0px 20px;
-  	gap: 8px;
-  	flex-shrink: 0;
-  	font-size: 16px;
-  	color: #000;
-}
-.frameChild {
-  	height: 20px;
-  	width: 20px;
-  	position: relative;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-}
-.stworzyKonto {
-  	position: relative;
-  	letter-spacing: 0.02em;
-  	line-height: 140%;
-}
-.rectangleGroup {
-  	display: flex;
-  	align-items: flex-end;
-  	padding: 0px 20px;
-  	gap: 8px;
-  	flex-shrink: 0;
-  	font-size: 16px;
-  	color: #000;
-}
-.frameParent3 {
-  	display: flex;
-  	align-items: center;
-  	gap: 32px;
-  	flex-shrink: 0;
-}
-.nazwaFirmyWrapper {
-  	height: 58px;
-  	width: 375px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-}
-.nipWrapper {
-  	height: 58px;
-  	width: 225px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	justify-content: center;
-  	padding: 14px 165px 15px 30px;
-}
-.frameParent6 {
-  	width: 380px;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-start;
-  	padding: 0px 0px 12px;
-  	box-sizing: border-box;
-  	gap: 24px;
-  	color: #000;
-}
-.frameWrapper {
-  	align-self: stretch;
-  	height: 58px;
-  	border-radius: 20px;
-  	background-color: #e2e3e5;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: center;
-  	justify-content: center;
-  	padding: 14px 41px 15px 54px;
-  	box-sizing: border-box;
-}
-.maszJuKontoParent {
-  	display: flex;
-  	align-items: center;
-  	justify-content: center;
-  	gap: 8px;
-  	flex-shrink: 0;
-}
-.zalogujSi {
-  	position: relative;
-  	font-size: 16px;
-  	letter-spacing: 0.2em;
-  	text-transform: uppercase;
-  	color: #fc5773;
-}
-.uwagiDoZamwieniaNpInfoWrapper {
-  	align-self: stretch;
-  	height: 237px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	justify-content: center;
-  	padding: 30px 25px 120px 30px;
-  	text-align: left;
-  	color: #565e64;
-}
-.uwagiDoZamwienia {
-  	width: 328px;
-  	position: relative;
-  	line-height: 150%;
-  	display: inline-block;
-  	flex-shrink: 0;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 24px;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
 }
 
+/* Flexbox dzielący formularz na lewą i prawą stronę */
+.frameParent {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 50px;
+}
+
+/* Lewa kolumna: Wszystkie pola i checkboxy */
+.frameGroup {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px; /* Odstęp pionowy między rzędami inputów */
+}
+
+/* Prawa kolumna: Logowanie + Uwagi */
+.frameParent6 {
+  width: 360px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+@media (max-width: 968px) {
+  .frameParent {
+    flex-direction: column;
+  }
+  .frameParent6 {
+    width: 100%;
+  }
+}
+
+/* Rzędy przechowujące inputy obok siebie */
+.frameContainer, .frameDiv, .frameParent2, .frameParent3 {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 14px;
+}
+
+/* ==========================================================================
+   2. NAGŁÓWEK I LINIA ODDZIELAJĄCE
+   ========================================================================== */
+.metodyDostawyParent {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+}
+
+/* Dynamicznie dopasowana nazwa sekcji "Dane płatności" */
+.metodyDostawy {
+  font-size: 24px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.03em;
+  margin-bottom: 12px;
+}
+
+.lineDivider {
+  width: 100%;
+  height: 1px;
+  background-color: #e2e8f0;
+  border: none;
+}
+
+/* ==========================================================================
+   3. STYLIZACJA INPUTÓW (ZAOKRĄGLONE RAMKI Z GRAFIKI)
+   ========================================================================== */
+.imiWrapper, .nazwiskoWrapper, .polskaWrapper, .kodPocztowyWrapper, 
+.telefonWrapper, .eMailWrapper, .nazwaFirmyWrapper, .nipWrapper {
+  flex: 1;
+  width: 100%;
+  border: 1.5px solid #a7acb1; /* Kolor ramki z rysunku */
+  border-radius: 14px;        /* Mocne zaokrąglenie rogów */
+  padding: 12px 20px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  height: 48px;
+}
+
+/* Wygląd tekstu wpisywanego oraz placeholderów */
+.imi {
+  width: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #000000;
+  padding: 0;
+}
+
+.imi::placeholder {
+  color: #a7acb1; /* Szary tekst zastępczy */
+}
+
+/* ==========================================================================
+   4. CHECKBOXY I ICH ETYKIETY
+   ========================================================================== */
+.rectangleParent, .rectangleGroup {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.frameChild {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  border: 1.5px solid #a7acb1;
+  border-radius: 4px;
+  accent-color: #fd798f;
+}
+
+.stworzyKonto {
+  font-size: 13px;
+  font-weight: 500;
+  color: #565e64;
+  cursor: pointer;
+}
+
+/* ==========================================================================
+   5. BLOK PRAWEJ STRONY: LOGOWANIE ORAZ UWAGI (ZDJĘCIE 1:1)
+   ========================================================================== */
+
+/* Szary kontener "Masz już konto?" */
+.frameWrapper {
+  width: 100%;
+  background-color: #eaf0f6; /* Jasnoszare tło panelu */
+  border-radius: 14px;
+  padding: 14px 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.maszJuKontoParent {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #000000;
+  font-weight: 500;
+}
+
+/* Czerwony/Różowy napis ZALOGUJ SIĘ */
+.zalogujSi {
+  color: #fd798f;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase; /* Wielkie litery */
+  cursor: pointer;
+}
+
+/* Kontener na uwagi (Duży, biały, zaokrąglony box) */
+.uwagiDoZamwieniaNpInfoWrapper {
+  width: 100%;
+  border: 1.5px solid #a7acb1;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-sizing: border-box;
+  background-color: #ffffff;
+  min-height: 160px; /* Wysokość dopasowana do makiety */
+}
+
+.uwagiDoZamwienia {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #000000;
+  resize: none;
+}
+
+.uwagiDoZamwienia::placeholder {
+  color: #a7acb1;
+}
