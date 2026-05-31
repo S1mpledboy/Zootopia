@@ -141,6 +141,12 @@ export async function getMe(userId) {
       { status: 404 }
     );
   }
+  if (!user.isActive) {
+  return Response.json(
+    { message: "Account is inactive" },
+    { status: 403 }
+  );
+}
 
   return Response.json({
     user: {

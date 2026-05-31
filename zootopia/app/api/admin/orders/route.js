@@ -1,4 +1,4 @@
-import User from "@/models/User";
+import Order from "@/models/Order";
 import { getAuthUser } from "@/middleware/auth";
 import { connectToDatabase } from "@/lib/mongodb";
 
@@ -26,44 +26,34 @@ export async function GET(req) {
   const status = searchParams.get("status");
   const search = searchParams.get("search");
 
-  const filter = {
-    role: "user",
-  };
+  const filter = {};
 
-  if (status === "ACTIVE") {
-    filter.isActive = true;
-  }
-
-  if (status === "INACTIVE") {
-    filter.isActive = false;
+  if (status && status !== "ALL") {
+    filter.status = status;
   }
 
   if (search) {
     filter.$or = [
-      { firstName: { $regex: search, $options: "i" } },
-      { lastName: { $regex: search, $options: "i" } },
-      { email: { $regex: search, $options: "i" } },
+      { orderNumber: { $regex: search, $options: "i" } },
+      { invoiceNumber: { $regex: search, $options: "i" } },
+      { "deliveryAddress.lastName": { $regex: search, $options: "i" } },
     ];
   }
 
-  const users = await User.find(filter)
-    .select("-password")
+  const orders = await Order.find(filter)
+    .populate("userId", "email firstName lastName")
     .sort({ createdAt: -1 });
 
   const counts = {
-    ALL: await User.countDocuments({ role: "user" }),
-    ACTIVE: await User.countDocuments({
-      role: "user",
-      isActive: true,
-    }),
-    INACTIVE: await User.countDocuments({
-      role: "user",
-      isActive: false,
-    }),
+    ALL: await Order.countDocuments(),
+    COMPLETED: await Order.countDocuments({ status: "COMPLETED" }),
+    IN_PROGRESS: await Order.countDocuments({ status: "IN_PROGRESS" }),
+    SHIPPED: await Order.countDocuments({ status: "SHIPPED" }),
+    CANCELLED: await Order.countDocuments({ status: "CANCELLED" }),
   };
 
   return Response.json({
-    users,
+    orders,
     counts,
   });
 }
