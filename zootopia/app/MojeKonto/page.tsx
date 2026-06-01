@@ -183,9 +183,8 @@ const ProduktyWKoszyku: NextPage = () => {
             </div>
 
             <div className={styles.frameItem} />
-
-            <div className={styles.listaUlubionychParent}>
               <Link href={"/ListaUlubionych" }></Link>
+            <div className={styles.listaUlubionychParent}>
               <div className={styles.mojeDane}>Lista ulubionych</div>
               <Image
                 src={arrow}
