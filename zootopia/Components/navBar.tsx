@@ -17,7 +17,7 @@ interface ISearchProduct {
   _id: string;
   name: string;
   price: number;
-  images?: string[]; // Zmienione na opcjonalne dla bezpieczeństwa
+  images?: string[];
 }
 
 const Nawigacja: NextPage = () => {
@@ -44,7 +44,7 @@ const Nawigacja: NextPage = () => {
       .catch(() => setIsLoggedIn(false));
   }, []);
 
-  // Logika wyszukiwania z debounce
+  // Wyszukiwanie
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
       setProducts([]);
@@ -61,16 +61,16 @@ const Nawigacja: NextPage = () => {
         .then((data) => {
           if (Array.isArray(data)) {
             setProducts(data);
-            setIsOpen(data.length > 0); // Otwórz tylko wtedy, gdy faktycznie są produkty
+            setIsOpen(data.length > 0);
           }
         })
-        .catch((err) => console.error("Błąd pobierania danych wyszukiwania:", err));
+        .catch((err) => console.error("Błąd wyszukiwania:", err));
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Zamykanie listy po kliknięciu poza obszar
+  // Zamknięcie po kliknięciu poza obszar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -83,14 +83,14 @@ const Nawigacja: NextPage = () => {
 
   return (
     <main>
-      <div className={styles.nawigacja}>
+      <div className={styles.nawigacja} style={{ overflow: 'visible' }}>
         <div className={styles.zootopiaWrapper}>
           <Link href="/">
             <Image src={logo} className={styles.zootopiaIcon} width={253.6} height={40} sizes="100vw" alt="" />
           </Link>
         </div>
         
-        {/* Wyszukiwarka */}
+        {/* Wyszukiwarka - wymuszone overflow visible */}
         <div 
           className={styles.szukajParent} 
           ref={searchContainerRef} 
@@ -98,7 +98,8 @@ const Nawigacja: NextPage = () => {
             position: 'relative', 
             display: 'flex', 
             alignItems: 'center',
-            zIndex: 100
+            overflow: 'visible', // Zapobiega obcinaniu dropdownu przez style rodzica
+            zIndex: 999999
           }}
         >
           <input
@@ -115,29 +116,27 @@ const Nawigacja: NextPage = () => {
               fontFamily: 'inherit',
               fontSize: 'inherit',
               color: 'inherit',
-              cursor: 'text',
-              position: 'relative',
-              zIndex: 101,
-              pointerEvents: 'auto'
+              cursor: 'text'
             }}
           />
           <Image src={searchicon} className={styles.tablerIconSearch} width={24} height={24} sizes="100vw" alt="" />
 
-          {/* Wyniki wyszukiwania (Dropdown) */}
+          {/* Ostatecznie ostylowany Dropdown przebijający się przez CSS Modules */}
           {isOpen && products.length > 0 && (
             <div style={{
               position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
+              top: 'calc(100% + 5px)',
+              left: '0px',
+              width: '100%',
+              minWidth: '280px', // Gwarantuje minimalną czytelną szerokość
               backgroundColor: '#ffffff',
               borderRadius: '8px',
-              boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.15)',
-              border: '1px solid #e2e8f0',
-              zIndex: 9999,
-              marginTop: '8px',
-              maxHeight: '320px',
-              overflowY: 'auto'
+              boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.25)',
+              border: '1px solid #cbd5e1',
+              zIndex: 9999999, // Ekstremalnie wysoki, by być nad wszystkim na stronie
+              maxHeight: '350px',
+              overflowY: 'auto',
+              display: 'block'
             }}>
               {products.map((product) => (
                 <Link 
@@ -155,22 +154,26 @@ const Nawigacja: NextPage = () => {
                     borderBottom: '1px solid #f1f5f9',
                     textDecoration: 'none',
                     color: '#1a1a1a',
+                    background: '#ffffff'
                   }}
                 >
-                  {/* Bezpieczne renderowanie zdjęcia z fallbackiem, na wypadek gdyby tablica była pusta */}
                   {product.images && product.images.length > 0 ? (
                     <img 
                       src={product.images[0]} 
-                      alt={product.name} 
-                      style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} 
+                      alt="" 
+                      style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px', flexShrink: 0 }} 
                     />
                   ) : (
-                    <div style={{ width: '40px', height: '40px', backgroundColor: '#e2e8f0', borderRadius: '6px' }} />
+                    <div style={{ width: '40px', height: '40px', backgroundColor: '#e2e8f0', borderRadius: '6px', flexShrink: 0 }} />
                   )}
                   
-                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                    <span style={{ fontSize: '14px', fontWeight: 500, textAlign: 'left' }}>{product.name}</span>
-                    <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600, textAlign: 'left' }}>{product.price} zł</span>
+                  <div style={{ display: 'flex', flexDirection: 'column', flex: 1, alignItems: 'flex-start' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 500, color: '#1a1a1a', textDecoration: 'none', textAlign: 'left' }}>
+                      {product.name}
+                    </span>
+                    <span style={{ fontSize: '13px', color: '#dc2626', fontWeight: 600, marginTop: '2px' }}>
+                      {product.price} zł
+                    </span>
                   </div>
                 </Link>
               ))}
