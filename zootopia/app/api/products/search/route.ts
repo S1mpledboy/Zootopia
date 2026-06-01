@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
-import Product from "@/models/Product";
+import mongoose from "mongoose";
 
-// Wymuszenie rejestracji modeli powiązanych
+// 🔥 Wymuszamy rejestrację wszystkich powiązanych modeli, aby Mongoose widział ich relacje na Vercelu
 import "@/models/Company";
 import "@/models/Category";
+import ProductModel from "@/models/Product";
+
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   try {
@@ -17,26 +20,22 @@ export async function GET(request: Request) {
 
     const cleanQuery = query.trim();
 
-    // 1. Łączenie z bazą danych
+    // 1. Połączenie z bazą danych
     await connectToDatabase();
 
-    // 2. Bardziej elastyczne wyszukiwanie (szuka fragmentu słowa niezależnie od wielkości liter)
+    // 2. Bezpieczne pobranie modelu (zapobiega konfliktom i pustym kolekcjom na Vercelu)
+    const Product = mongoose.models.Product || ProductModel;
+
+    // 3. Wyszukiwanie uproszczone za pomocą samego $regex (niezależne od indeksów tekstowych MongoDB)
     const products = await Product.find({
-      $or: [
-        { name: { $regex: cleanQuery, $options: "i" } },
-        { tags: { $regex: cleanQuery, $options: "i" } }
-      ]
-      // Usunęliśmy tymczasowo isActive: true, aby wykluczyć sytuację, 
-      // w której testowy produkt jest domyślnie ustawiony jako nieaktywny
+      name: { $regex: cleanQuery, $options: "i" },
+      isActive: true
     })
       .select("name price images")
       .limit(6)
       .lean();
 
-    // Debuggowanie w konsoli serwera (terminalu VS Code) - zobaczysz co dokładnie wypluwa baza
-    console.log(`[API Serwer] Szukana fraza: "${cleanQuery}". Znaleziono w bazie:`, products);
-
-    // Przekształcamy _id na string, aby frontend nie miał problemów z obiektem ObjectId
+    // 4. Mapowanie _id na ciąg tekstowy dla frontendu
     const serializedProducts = products.map((prod: any) => ({
       ...prod,
       _id: prod._id.toString(),
@@ -44,9 +43,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json(serializedProducts);
   } catch (error: any) {
-    console.error("[API ERROR] Krytyczny błąd wyszukiwania:", error);
+    console.error("[API SEARCH ERROR]:", error);
     return NextResponse.json(
-      { message: "Błąd serwera", error: error.message },
+      { message: "Błąd wyszukiwania", error: error.message },
       { status: 500 }
     );
   }
