@@ -13,18 +13,15 @@ import bagicon from "@/app/Public/Images/tabler-icon-shopping-bag.svg";
 import usericon from "@/app/Public/Images/tabler-icon-user-circle.svg";
 import Category from '@/Components/category';
 
-// Interfejs odzwierciedlający pobierane dane ze schematu bazy danych
 interface ISearchProduct {
   _id: string;
   name: string;
   price: number;
-  images: string[];
+  images?: string[]; // Zmienione na opcjonalne dla bezpieczeństwa
 }
 
 const Nawigacja: NextPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  
-  // Nowe stany dla wyszukiwarki
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [products, setProducts] = useState<ISearchProduct[]>([]);
   const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -33,7 +30,6 @@ const Nawigacja: NextPage = () => {
   // Status logowania
   useEffect(() => {
     const token = localStorage.getItem('token'); 
-
     if (!token) {
       setIsLoggedIn(false);
       return;
@@ -41,20 +37,14 @@ const Nawigacja: NextPage = () => {
 
     fetch('/api/auth/status', {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { 'Authorization': `Bearer ${token}` }
     })
       .then((res) => res.json())
-      .then((data) => {
-        setIsLoggedIn(data.isLoggedIn);
-      })
-      .catch(() => {
-        setIsLoggedIn(false);
-      });
+      .then((data) => setIsLoggedIn(data.isLoggedIn))
+      .catch(() => setIsLoggedIn(false));
   }, []);
 
-  // Wyszukiwanie produktów z efektem debounce (opóźnienie zapytania o 300ms, by nie przeciążać bazy)
+  // Logika wyszukiwania z debounce
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
       setProducts([]);
@@ -64,20 +54,23 @@ const Nawigacja: NextPage = () => {
 
     const delayDebounceFn = setTimeout(() => {
       fetch(`/api/products/search?query=${encodeURIComponent(searchQuery)}`)
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) throw new Error(`Status: ${res.status}`);
+          return res.json();
+        })
         .then((data) => {
           if (Array.isArray(data)) {
             setProducts(data);
-            setIsOpen(true);
+            setIsOpen(data.length > 0); // Otwórz tylko wtedy, gdy faktycznie są produkty
           }
         })
-        .catch((err) => console.error("Search fetch error:", err));
+        .catch((err) => console.error("Błąd pobierania danych wyszukiwania:", err));
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Zamykanie listy po kliknięciu poza obszar wyszukiwarki
+  // Zamykanie listy po kliknięciu poza obszar
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -97,18 +90,23 @@ const Nawigacja: NextPage = () => {
           </Link>
         </div>
         
-        {/* MODYFIKACJA: Zamiana div na dynamiczną wyszukiwarkę z listą podpowiedzi */}
+        {/* Wyszukiwarka */}
         <div 
           className={styles.szukajParent} 
           ref={searchContainerRef} 
-          style={{ position: 'relative', display: 'flex', alignItems: 'center' }}
+          style={{ 
+            position: 'relative', 
+            display: 'flex', 
+            alignItems: 'center',
+            zIndex: 100
+          }}
         >
           <input
             type="text"
             placeholder="Szukaj..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            onFocus={() => searchQuery.trim().length >= 2 && setIsOpen(true)}
+            onFocus={() => searchQuery.trim().length >= 2 && products.length > 0 && setIsOpen(true)}
             style={{
               border: 'none',
               outline: 'none',
@@ -116,12 +114,16 @@ const Nawigacja: NextPage = () => {
               width: '100%',
               fontFamily: 'inherit',
               fontSize: 'inherit',
-              color: 'inherit'
+              color: 'inherit',
+              cursor: 'text',
+              position: 'relative',
+              zIndex: 101,
+              pointerEvents: 'auto'
             }}
           />
           <Image src={searchicon} className={styles.tablerIconSearch} width={24} height={24} sizes="100vw" alt="" />
 
-          {/* Kontener wyników wyszukiwania (Dropdown) */}
+          {/* Wyniki wyszukiwania (Dropdown) */}
           {isOpen && products.length > 0 && (
             <div style={{
               position: 'absolute',
@@ -130,9 +132,9 @@ const Nawigacja: NextPage = () => {
               right: 0,
               backgroundColor: '#ffffff',
               borderRadius: '8px',
-              boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.1)',
+              boxShadow: '0px 8px 16px rgba(0, 0, 0, 0.15)',
               border: '1px solid #e2e8f0',
-              zIndex: 999,
+              zIndex: 9999,
               marginTop: '8px',
               maxHeight: '320px',
               overflowY: 'auto'
@@ -140,7 +142,7 @@ const Nawigacja: NextPage = () => {
               {products.map((product) => (
                 <Link 
                   key={product._id} 
-                  href={`/product/${product._id}`} // Zmień na swój aktualny schemat routingu produktów
+                  href={`/product/${product._id}`} 
                   onClick={() => {
                     setIsOpen(false);
                     setSearchQuery("");
@@ -149,19 +151,23 @@ const Nawigacja: NextPage = () => {
                     display: 'flex',
                     alignItems: 'center',
                     gap: '12px',
-                    padding: '10px 16px',
+                    padding: '12px 16px',
                     borderBottom: '1px solid #f1f5f9',
                     textDecoration: 'none',
                     color: '#1a1a1a',
                   }}
                 >
-                  {product.images && product.images[0] && (
+                  {/* Bezpieczne renderowanie zdjęcia z fallbackiem, na wypadek gdyby tablica była pusta */}
+                  {product.images && product.images.length > 0 ? (
                     <img 
                       src={product.images[0]} 
                       alt={product.name} 
                       style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '6px' }} 
                     />
+                  ) : (
+                    <div style={{ width: '40px', height: '40px', backgroundColor: '#e2e8f0', borderRadius: '6px' }} />
                   )}
+                  
                   <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                     <span style={{ fontSize: '14px', fontWeight: 500, textAlign: 'left' }}>{product.name}</span>
                     <span style={{ fontSize: '13px', color: '#64748b', fontWeight: 600, textAlign: 'left' }}>{product.price} zł</span>
