@@ -186,16 +186,16 @@ const ProduktyWKoszyku: NextPage = () => {
               <div className={styles.frameItem} />
               
               {/* POPRAWIONA SEKCJA: Lista ulubionych jako link do /Liked */}
-              <Link href="/Liked" style={{ textDecoration: 'none', color: 'inherit' }}>
+              <Link href="/Liked" style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }}>
                 <div className={styles.listaUlubionychParent}>
                   <div className={styles.mojeDane}>Lista ulubionych</div>
                   <Image
-                    src={arrow}
-                    className={styles.tablerIconChevronCompactRi}
-                    width={24}
-                    height={24}
-                    sizes="100vw"
-                    alt=""
+                      src={arrow}
+                      className={styles.tablerIconChevronCompactRi}
+                      width={24}
+                      height={24}
+                      sizes="100vw"
+                      alt=""
                   />
                 </div>
               </Link>
