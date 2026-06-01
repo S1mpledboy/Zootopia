@@ -1,5 +1,5 @@
 "use client";
-
+import Link from 'next/link';
 import type { NextPage } from "next";
 import Image from "next/image";
 import { useState } from "react";
@@ -185,6 +185,7 @@ const ProduktyWKoszyku: NextPage = () => {
             <div className={styles.frameItem} />
 
             <div className={styles.listaUlubionychParent}>
+              <Link href={"/ListaUlubionych" }></Link>
               <div className={styles.mojeDane}>Lista ulubionych</div>
               <Image
                 src={arrow}
