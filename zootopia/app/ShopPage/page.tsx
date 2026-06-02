@@ -14,10 +14,9 @@ export default async function KategoriePage({
   await connectToDatabase();
 
   const resolvedSearchParams = await searchParams;
-  // Odczytujemy typ z URL ('pies', 'kot', 'male-zwierzeta')
   const urlType = resolvedSearchParams.type || 'pies'; 
 
-  // 1. Pobieramy wszystkie kategorie z bazy, by móc odtworzyć Twoje grupy z Excela
+  // 1. Pobieramy wszystkie kategorie z bazy
   const allCategoriesRaw = await Category.find({}).lean();
 
   const serializedCategories = allCategoriesRaw.map((cat: any) => ({
@@ -27,7 +26,7 @@ export default async function KategoriePage({
     parent: cat.parent ? cat.parent.toString() : null
   }));
 
-  // 2. Szukamy ID dokumentu głównego zwierzaka (np. slug: "pies" i parent: null)
+  // 2. Szukamy ID dokumentu głównego zwierzaka (np. slug: "pies")
   const currentAnimalCategory = serializedCategories.find(
     cat => cat.slug === urlType && cat.parent === null
   );
@@ -35,7 +34,7 @@ export default async function KategoriePage({
   let targetCategoryIds: string[] = [];
 
   if (currentAnimalCategory) {
-    // Pobieramy podkategorie, które bezpośrednio należą do tego zwierzaka (np. Karma mokra, Legowiska)
+    // Pobieramy podkategorie, które bezpośrednio należą do tego zwierzaka
     const childCategories = serializedCategories.filter(
       cat => cat.parent === currentAnimalCategory._id
     );
@@ -57,10 +56,13 @@ export default async function KategoriePage({
       productImage = product.images[0]; 
     }
 
-    // Bezpieczne pobieranie ID kategorii jako ciąg tekstowy
-    const catId = product.category 
-      ? (typeof product.category === 'object' && product.category._id ? product.category._id.toString() : product.category.toString())
-      : null;
+    // BEZPIECZNE I PEWNE KONWERTOWANIE ID KATEGORII DO STRINGA
+    let catId = null;
+    if (product.category) {
+      catId = product.category._id 
+        ? product.category._id.toString() 
+        : product.category.toString();
+    }
 
     return {
       _id: product._id.toString(),
@@ -69,7 +71,7 @@ export default async function KategoriePage({
       promoPrice: product.oldPrice || null, 
       image: productImage,
       companyName: product.company?.name || "Inna marka",
-      petCategoryId: catId,
+      petCategoryId: catId, // To musi idealnie pasować do sub._id w kliencie
       attributes: product.attributes || []
     };
   });

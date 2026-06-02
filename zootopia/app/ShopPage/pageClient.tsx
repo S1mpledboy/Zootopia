@@ -30,7 +30,7 @@ function Section({ id, title, children, openSections, toggleSection }: any) {
 }
 
 // =========================
-// INTERFEJSY
+// INTERFEJSY DANYCH
 // =========================
 interface DBAttribute {
   name: string;
@@ -44,7 +44,7 @@ interface ProductProps {
   promoPrice?: number | null;
   image: string;
   companyName: string;
-  petCategoryId: string | null; // ObjectId kategorii produktu przekazane z serwera
+  petCategoryId: string | null; 
   attributes: DBAttribute[];
 }
 
@@ -81,10 +81,10 @@ const KategorieClient = ({
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
   
-  // Przechowujemy aktywne ID podkategorii (ObjectId z bazy) zamiast stringa
+  // Stan przechowuje unikalne ID zaznaczonej podkategorii
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  // Resetowanie stanu przy zmianie głównego typu zwierzaka w URL
+  // Resetowanie wybranej kategorii i filtrów przy zmianie podstrony Pies -> Kot
   useEffect(() => {
     setActiveCategoryId(null);
     setFilters({});
@@ -103,26 +103,20 @@ const KategorieClient = ({
   };
 
   // ==========================================================
-  // 🧭 LOGIKA POWIĄZANIA RELACJI KATEGORII Z BAZY MONGO
+  // 🧭 RELACJA DRZEWA KATEGORII DLA MENU BOCZNEGO (2 poziomy)
   // ==========================================================
-  // 1. Szukamy dokumentu zwierzaka (np. Pies, parent: null)
   const currentAnimalObj = useMemo(() => {
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
 
-  // 2. Znajdujemy działy nadrzędne (Karma, LEGOWISKA itp.), których rodzicem jest ten zwierzak
-  const mainCategoriesForMenu = useMemo(() => {
+  const subCategoriesForMenu = useMemo(() => {
     if (!currentAnimalObj) return [];
     return allCategories.filter(cat => cat.parent === currentAnimalObj._id);
   }, [allCategories, currentAnimalObj]);
 
-  // 3. Pobieramy podkategorie przypisane do danego działu nadrzędnego
-  const getSubcategoriesByParent = (parentId: string) => {
-    return allCategories.filter(cat => cat.parent === parentId);
-  };
-
-  const activeCategoryObj = useMemo(() => allCategories.find(cat => cat._id === activeCategoryId), [activeCategoryId, allCategories]);
-  const parentCategoryObj = useMemo(() => activeCategoryObj ? allCategories.find(cat => cat._id === activeCategoryObj.parent) : null, [activeCategoryObj, allCategories]);
+  const activeCategoryObj = useMemo(() => {
+    return allCategories.find(cat => cat._id === activeCategoryId);
+  }, [activeCategoryId, allCategories]);
 
   // ===== TOGGLE LOGIC =====
   const toggleSection = (key: string) => {
@@ -143,7 +137,7 @@ const KategorieClient = ({
     setSort(value);
   };
 
-  // Prawidłowe przełączanie kategorii po kliknięciu
+  // Funkcja pojedynczego wyboru kategorii - zapisuje ID lub czyści jeśli kliknięto drugi raz
   const selectCategory = (id: string) => {
     setActiveCategoryId((prev) => (prev === id ? null : id));
   };
@@ -156,14 +150,21 @@ const KategorieClient = ({
   };
 
   // ==========================================
-  // 📊 DYNAMICZNE WYLICZANIE LICZBY PRODUKTÓW DLA FILTRÓW
+  // 📊 DYNAMICZNE WYLICZANIE LICZBY PRODUKTÓW DLA FILTRÓW (FACETS)
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (group: string, value: string) => {
       return initialProducts.filter(product => {
-        // Filtrowanie po podkategorii (nie odrzucamy kategorii samej przez siebie)
-        if (group !== 'category' && activeCategoryId && product.petCategoryId !== activeCategoryId) return false;
-        if (group === 'category' && product.petCategoryId !== value) return false;
+        // Jeśli produkt nie ma przypisanej kategorii, pomijamy go
+        if (!product.petCategoryId) return false;
+
+        // KATEGORIA: Podczas obliczania liczników dla menu bocznego nie odrzucamy produktów z powodu wybranej kategorii głównej
+        if (group !== 'category' && activeCategoryId) {
+          if (product.petCategoryId.toString().trim() !== activeCategoryId.toString().trim()) return false;
+        }
+        if (group === 'category') {
+          if (product.petCategoryId.toString().trim() !== value.toString().trim()) return false;
+        }
 
         // Marka
         if (group !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(product.companyName)) return false;
@@ -172,11 +173,10 @@ const KategorieClient = ({
         // Cena
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
-        if (product.price < minPrice || product.price > maxPrice) return false;
+        const actualPrice = product.price;
+        if (actualPrice < minPrice || actualPrice > maxPrice) return false;
 
-        const hasAttr = (name: string, val: string) => product.attributes.some(a => a.name === name && a.value === val);
-
-        // Atrybuty
+        // Przyszłe pola cech produktu (wiek, wielkość, potrzeby)
         if (group !== 'wielkosc' && filters.wielkosc && filters.wielkosc.length > 0 && !filters.wielkosc.includes((product as any).wielkosc)) return false;
         if (group === 'wielkosc' && (product as any).wielkosc !== value) return false;
 
@@ -201,9 +201,11 @@ const KategorieClient = ({
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
 
-    // Filtrowanie produktów po wybranym ObjectId podkategorii
+    // POJEDYNCZY WYBÓR KATEGORII: Bezpieczne porównywanie tekstowe stringów bez białych znaków
     if (activeCategoryId) {
-      result = result.filter(product => product.petCategoryId === activeCategoryId);
+      result = result.filter(product => {
+        return product.petCategoryId?.toString().trim() === activeCategoryId.toString().trim();
+      });
     }
 
     // Marka
@@ -214,6 +216,7 @@ const KategorieClient = ({
     // Cena
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
+    
     if (minPrice > 0 || maxPrice < Infinity) {
       result = result.filter(product => product.price >= minPrice && product.price <= maxPrice);
     }
@@ -308,7 +311,7 @@ const KategorieClient = ({
           <div className={styles.zastosujFiltry}>Resetuj filtry</div>
         </div>
 
-        {/* ===== DYNAMICZNE MENU KATEGORII Z MONGO ===== */}
+        {/* ===== KATEGORIE - MENU BOCZNE ===== */}
         <div className={styles.frameWrapper}>
           <div className={styles.filtrujWrapper}>
             <div className={styles.filtruj}>Kategorie</div>
@@ -316,61 +319,48 @@ const KategorieClient = ({
         </div>
         <Image src={line} width={216} height={1} alt="" />
 
-        {mainCategoriesForMenu.map((mainCat) => {
-          const subCategories = getSubcategoriesByParent(mainCat._id);
-          return (
-            <div key={mainCat._id} className={styles.frameGroup}>
-              {/* Tytuł główny sekcji (np. Karma, LEGOWISKA) */}
-              <div className={styles.tablerIconChevronCompactRiParent}>
-                <div className={styles.cena} style={{ fontWeight: 'bold' }}>{mainCat.name}</div>
-              </div>
+        <div className={styles.frameGroup}>
+          <div className={styles.tablerIconChevronCompactRiParent}>
+            <div className={styles.cena} style={{ fontWeight: 'bold' }}>{getTypeLabel(currentType)}</div>
+          </div>
+          
+          <div className={styles.frameDiv}>
+            {subCategoriesForMenu.map((sub) => {
+              const isActive = activeCategoryId === sub._id;
+              const count = facetCounts.get('category', sub._id);
               
-              {/* Tutaj jest Twoja oryginalna struktura pionowa z pliku CSS */}
-              <div className={styles.frameDiv}>
-                {subCategories.map((sub) => {
-                  const isActive = activeCategoryId === sub._id;
-                  // Dynamiczny licznik ilości produktów przypisanych do podkategorii
-                  const count = facetCounts.get('category', sub._id);
-                  
-                  return (
-                    <div
-                      key={sub._id}
-                      className={styles.karmaMokraWrapper}
-                      onClick={() => selectCategory(sub._id)}
-                      style={{
-                        cursor: 'pointer',
-                        backgroundColor: isActive ? '#f0f0f0' : 'transparent',
-                        borderRadius: '4px',
-                        padding: '2px 4px',
-                        display: 'flex',
-                        width: '100%',
-                        justifyContent: 'space-between',
-                        alignItems: 'center'
-                      }}
-                    >
-                      {/* Nazwa podkategorii - pogrubia się automatycznie po kliknięciu */}
-                      <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal' }}>
-                        {sub.name}
-                      </div>
-                      
-                      {/* Licznik produktów idealnie wyrównany do prawej w tej samej linii */}
-                      <span style={{ color: '#b0b0b0', fontSize: '13px', paddingLeft: '8px' }}>
-                        ({count})
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
+              return (
+                <div
+                  key={sub._id}
+                  className={styles.karmaMokraWrapper}
+                  onClick={() => selectCategory(sub._id)}
+                  style={{
+                    cursor: 'pointer',
+                    backgroundColor: isActive ? '#f0f0f0' : 'transparent',
+                    borderRadius: '4px',
+                    padding: '4px 6px',
+                    display: 'flex',
+                    width: '100%',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
+                  }}
+                >
+                  <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal' }}>
+                    {sub.name}
+                  </div>
+                  <span style={{ color: '#b0b0b0', fontSize: '13px', paddingLeft: '8px' }}>
+                    ({count})
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* ================= RIGHT (PRODUKTY) ================= */}
       <div className={styles.frameParent25}>
         <div className={styles.sortowanieParent}>
-          
-          {/* MAPA STRONY (BREADCRUMBS) */}
           <div className={styles.sortowanie}>
             <Link href="/" className={styles.stronaGwna} style={{ textDecoration: 'none', cursor: 'pointer' }}>
               Strona główna
@@ -383,12 +373,6 @@ const KategorieClient = ({
             >
               {getTypeLabel(currentType)}
             </div>
-            {parentCategoryObj && (
-              <>
-                <div className={styles.stronaGwna}>{'>'}</div>
-                <div className={styles.stronaGwna}>{parentCategoryObj.name}</div>
-              </>
-            )}
             {activeCategoryObj && (
               <>
                 <div className={styles.stronaGwna}>{'>'}</div>
@@ -420,7 +404,7 @@ const KategorieClient = ({
           </div>
         </div>
 
-        {/* PRODUKTY FILTROWANE NA ŻYWO */}
+        {/* STRUKTURA WYŚWIETLANIA PRODUKTÓW */}
         <div className={styles.produktPromocjaPiesParent}>
           {filteredAndSortedProducts.length > 0 ? (
             filteredAndSortedProducts.map((product) => (
