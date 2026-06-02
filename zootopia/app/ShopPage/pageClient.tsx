@@ -12,6 +12,9 @@ import line from '@/app/Public/Images/line.svg';
 
 import PromotionItem from '../ItemBlocks/promotionItem';
 
+// =========================
+// SECTION COMPONENT
+// =========================
 function Section({ id, title, children, openSections, toggleSection }: any) {
   const open = openSections[id];
   return (
@@ -25,6 +28,9 @@ function Section({ id, title, children, openSections, toggleSection }: any) {
   );
 }
 
+// =========================
+// INTERFEJSY DANYCH
+// =========================
 interface DBAttribute {
   name: string;
   value: string;
@@ -34,10 +40,10 @@ interface ProductProps {
   _id: string;
   name: string;
   price: number;
-  promoPrice?: number;
+  promoPrice?: number | null;
   image: string;
   companyName: string;
-  petCategoryId: string;
+  petCategoryId: string | null;
   attributes: DBAttribute[];
 }
 
@@ -48,6 +54,9 @@ interface CategoryProps {
   parent: string | null;
 }
 
+// =========================
+// PAGE CLIENT COMPONENT
+// =========================
 const KategorieClient = ({ 
   initialProducts, 
   allCategories 
@@ -56,7 +65,7 @@ const KategorieClient = ({
   allCategories: CategoryProps[];
 }) => {
   const searchParams = useSearchParams();
-  const currentType = searchParams.get('type') || 'pies'; // np. 'pies', 'kot'
+  const currentType = searchParams.get('type') || 'pies';
 
   // ===== STATE =====
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -64,12 +73,14 @@ const KategorieClient = ({
   });
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sort, setSort] = useState<string>('popularność');
+
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
   
-  // Przetrzymujemy teraz ID aktywnej podkategorii z bazy danych
+  // Przechowujemy ID aktywnej podkategorii z bazy MongoDB
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
+  // Reset filtrów i kategorii przy przełączaniu Pies -> Kot itp.
   useEffect(() => {
     setActiveCategoryId(null);
     setFilters({});
@@ -77,28 +88,39 @@ const KategorieClient = ({
     setPriceTo('');
   }, [currentType]);
 
-  // ===== FILTROWANIE DRZEWA KATEGORII Z BAZY =====
-  // 1. Znajdujemy główne działy (te z parent: null) zrobione skryptem (np. "Karma", "LEGOWISKA")
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case 'pies': return 'Pies';
+      case 'kot': return 'Kot';
+      case 'male-zwierzeta': return 'Małe zwierzęta';
+      case 'weterynaria': return 'Weterynaria';
+      case 'promocje': return 'Promocje';
+      default: return 'Pies';
+    }
+  };
+
+  // ===== DYNAMICZNE BUDOWANIE DRZEWA KATEGORII =====
+  // Pobieramy z bazy tylko główne działy nadrzędne (parent: null)
   const mainCategories = useMemo(() => {
     return allCategories.filter(cat => cat.parent === null);
   }, [allCategories]);
 
-  // 2. Mapowanie podkategorii przypisanych do poszczególnych rodziców
+  // Funkcja zwracająca dzieci dla danego działu głównego
   const getSubcategoriesByParent = (parentId: string) => {
     return allCategories.filter(cat => cat.parent === parentId);
   };
 
-  // Znajdź obiekt aktywnej kategorii do okruszków chleba (breadcrumbs)
+  // Wyciąganie obiektów do mapy strony (breadcrumbs)
   const activeCategoryObj = useMemo(() => {
     return allCategories.find(cat => cat._id === activeCategoryId);
   }, [activeCategoryId, allCategories]);
 
-  // Znajdź sekcję nadrzędną dla aktywnej podkategorii
   const parentCategoryObj = useMemo(() => {
     if (!activeCategoryObj) return null;
     return allCategories.find(cat => cat._id === activeCategoryObj.parent);
   }, [activeCategoryObj, allCategories]);
 
+  // ===== TOGGLE LOGIC =====
   const toggleSection = (key: string) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -127,15 +149,12 @@ const KategorieClient = ({
   };
 
   // ==========================================
-  // 📊 DYNAMICZNE WYLICZANIE FACETÓW (LICZBY PRODUKTÓW)
+  // 📊 DYNAMICZNE WYLICZANIE LICZBY PRODUKTÓW DLA FILTRÓW (FACETS)
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (group: string, value: string) => {
       return initialProducts.filter(product => {
-        // Główny filtr typu promocje
-        if (currentType === 'promocje' && !product.promoPrice) return false;
-
-        // 1. Sprawdzamy kategorię petCategory z bazy danych
+        // 1. Sprawdzamy kategorię główną/podkategorię z bazy
         if (group !== 'category' && activeCategoryId && product.petCategoryId !== activeCategoryId) return false;
         if (group === 'category' && product.petCategoryId !== value) return false;
 
@@ -146,25 +165,24 @@ const KategorieClient = ({
         // 3. Sprawdzamy cenę
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
-        const actualPrice = product.promoPrice || product.price;
-        if (actualPrice < minPrice || actualPrice > maxPrice) return false;
+        if (product.price < minPrice || product.price > maxPrice) return false;
 
-        // Helper do sprawdzania tablicy dynamicznych atrybutów bazy [ { name, value } ]
+        // Pomocnicza weryfikacja dynamicznych atrybutów [ { name, value } ]
         const hasAttr = (name: string, val: string) => product.attributes.some(a => a.name === name && a.value === val);
 
-        // 4. Pola atrybutów: wielkosc
+        // 4. Wielkość
         if (group !== 'wielkosc' && filters.wielkosc?.length > 0) {
           if (!product.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value))) return false;
         }
         if (group === 'wielkosc' && !hasAttr('breedSize', value)) return false;
 
-        // 5. Pola atrybutów: wiek
+        // 5. Wiek
         if (group !== 'wiek' && filters.wiek?.length > 0) {
           if (!product.attributes.some(a => a.name === 'dogAge' && filters.wiek.includes(a.value))) return false;
         }
         if (group === 'wiek' && !hasAttr('dogAge', value)) return false;
 
-        // 6. Pola atrybutów: potrzeby
+        // 6. Potrzeby
         if (group !== 'potrzeby' && filters.potrzeby?.length > 0) {
           if (!product.attributes.some(a => a.name === 'specialNeeds' && filters.potrzeby.includes(a.value))) return false;
         }
@@ -177,17 +195,13 @@ const KategorieClient = ({
     return {
       get: (group: string, value: string) => getCountForOption(group, value)
     };
-  }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo, currentType]);
+  }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo]);
 
   // ==========================================
-  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA PRODUKTÓW
+  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
-
-    if (currentType === 'promocje') {
-      result = result.filter(product => product.promoPrice && product.promoPrice > 0);
-    }
 
     // 1. Kategoria dolna z bazy danych
     if (activeCategoryId) {
@@ -199,7 +213,7 @@ const KategorieClient = ({
       result = result.filter(product => filters.marka.includes(product.companyName));
     }
 
-    // 3. Filtry atrybutów (wielkosc, wiek, potrzeby) z bazy [ { name, value } ]
+    // 3. Filtry atrybutów tablicowych
     if (filters.wielkosc && filters.wielkosc.length > 0) {
       result = result.filter(p => p.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value)));
     }
@@ -214,27 +228,24 @@ const KategorieClient = ({
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
     if (minPrice > 0 || maxPrice < Infinity) {
-      result = result.filter(product => {
-        const actualPrice = product.promoPrice || product.price;
-        return actualPrice >= minPrice && actualPrice <= maxPrice;
-      });
+      result = result.filter(product => product.price >= minPrice && product.price <= maxPrice);
     }
 
     // 5. Sortowanie
     result.sort((a, b) => {
-      const priceA = a.promoPrice || a.price;
-      const priceB = b.promoPrice || b.price;
       switch (sort) {
         case 'Nazwa rosnąco': return a.name.localeCompare(b.name);
         case 'Nazwa malejąco': return b.name.localeCompare(a.name);
-        case 'Cena rosnąco': return priceA - priceB;
-        case 'Cena malejąco': return priceB - priceA;
+        case 'Cena rosnąco': return a.price - b.price;
+        case 'Cena malejąco': return b.price - a.price;
         default: return 0;
       }
     });
 
     return result;
-  }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId, currentType]);
+  }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId]);
+
+  // ==========================================
 
   const Checkbox = ({ group, value, dbValue }: { group: string; value: string; dbValue?: string }) => {
     const internalVal = dbValue || value;
@@ -305,7 +316,7 @@ const KategorieClient = ({
           <div className={styles.zastosujFiltry}>Resetuj filtry</div>
         </div>
 
-        {/* ===== KATEGORIE Z BAZY DANYCH ===== */}
+        {/* ===== DYNAMICZNE KATEGORIE Z BAZY ===== */}
         <div className={styles.frameWrapper}>
           <div className={styles.filtrujWrapper}>
             <div className={styles.filtruj}>Kategorie</div>
@@ -313,7 +324,6 @@ const KategorieClient = ({
         </div>
         <Image src={line} width={216} height={1} alt="" />
 
-        {/* Dynamiczne mapowanie grup i podkategorii prosto z MongoDB */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
           {mainCategories.map((mainCat) => {
             const subCategories = getSubcategoriesByParent(mainCat._id);
@@ -373,7 +383,7 @@ const KategorieClient = ({
               onClick={handleResetToMainType}
               style={{ cursor: 'pointer', fontWeight: !activeCategoryId ? 'bold' : 'normal' }}
             >
-              {currentType === 'pies' ? 'Pies' : currentType === 'kot' ? 'Kot' : 'Sklep'}
+              {getTypeLabel(currentType)}
             </div>
             {parentCategoryObj && (
               <>
@@ -412,7 +422,7 @@ const KategorieClient = ({
           </div>
         </div>
 
-        {/* WYSWIETLAMY PRZEFILTROWANĄ TABLICĘ */}
+        {/* STRUKTURA WYŚWIETLANIA ELEMENTÓW */}
         <div className={styles.produktPromocjaPiesParent}>
           {filteredAndSortedProducts.length > 0 ? (
             filteredAndSortedProducts.map((product) => (
@@ -422,7 +432,7 @@ const KategorieClient = ({
                 brandName={product.companyName}
                 productName={product.name}
                 price={product.price}
-                promoPrice={product.promoPrice}
+                promoPrice={product.promoPrice || undefined}
                 image={product.image}
               />
             ))
