@@ -49,7 +49,7 @@ const ProductSchema = new mongoose.Schema(
     animalType: {
       type: String,
       enum: ["DOG", "CAT", "SMALL_ANIMALS", "VET", "PROMOTIONS"],
-      required: [true, "Animal type is required"],
+      required: [false, "Animal type is required"],
     },
 
     images: {
