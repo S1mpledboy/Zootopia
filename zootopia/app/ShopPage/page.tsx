@@ -14,10 +14,10 @@ export default async function KategoriePage({
   await connectToDatabase();
 
   const resolvedSearchParams = await searchParams;
-  // Parametr z URL: 'pies', 'kot', 'male-zwierzeta'
+  // Odczytujemy typ z URL ('pies', 'kot', 'male-zwierzeta')
   const urlType = resolvedSearchParams.type || 'pies'; 
 
-  // 1. Pobieramy WSZYSTKIE kategorie, będą nam potrzebne do zbudowania menu
+  // 1. Pobieramy wszystkie kategorie z bazy, by móc odtworzyć Twoje grupy z Excela
   const allCategoriesRaw = await Category.find({}).lean();
 
   const serializedCategories = allCategoriesRaw.map((cat: any) => ({
@@ -27,21 +27,25 @@ export default async function KategoriePage({
     parent: cat.parent ? cat.parent.toString() : null
   }));
 
-  // 2. Znajdujemy ID głównego zwierzęcia na podstawie sluga (np. slug: "pies")
-  const currentAnimalCategory = serializedCategories.find(cat => cat.slug === urlType && cat.parent === null);
+  // 2. Szukamy ID dokumentu głównego zwierzaka (np. slug: "pies" i parent: null)
+  const currentAnimalCategory = serializedCategories.find(
+    cat => cat.slug === urlType && cat.parent === null
+  );
 
   let targetCategoryIds: string[] = [];
 
   if (currentAnimalCategory) {
-    // Szukamy wszystkich podkategorii (dzieci), które należą do tego zwierzaka (np. Karma mokra, Zabawki)
-    const childCategories = serializedCategories.filter(cat => cat.parent === currentAnimalCategory._id);
+    // Pobieramy podkategorie, które bezpośrednio należą do tego zwierzaka (np. Karma mokra, Legowiska)
+    const childCategories = serializedCategories.filter(
+      cat => cat.parent === currentAnimalCategory._id
+    );
     targetCategoryIds = childCategories.map(cat => cat._id);
   }
 
-  // 3. Pobieramy produkty, które należą do podkategorii przypisanych do wybranego zwierzaka
+  // 3. Pobieramy produkty pasujące do wyciągniętych podkategorii
   const rawProducts = await Product.find({
     isActive: true,
-    category: { $in: targetCategoryIds } // Szuka produktów ze wszystkich podkategorii "Psa"
+    category: { $in: targetCategoryIds }
   })
     .populate("company")
     .sort({ updatedAt: -1 }) 
@@ -53,15 +57,20 @@ export default async function KategoriePage({
       productImage = product.images[0]; 
     }
 
+    // Bezpieczne pobieranie ID kategorii jako ciąg tekstowy
+    const catId = product.category 
+      ? (typeof product.category === 'object' && product.category._id ? product.category._id.toString() : product.category.toString())
+      : null;
+
     return {
       _id: product._id.toString(),
       name: product.name,
       price: product.price,
-      promoPrice: product.oldPrice, 
+      promoPrice: product.oldPrice || null, 
       image: productImage,
       companyName: product.company?.name || "Inna marka",
-      petCategoryId: product.category ? product.category.toString() : null,
-      attributes: (product as any).attributes || []
+      petCategoryId: catId,
+      attributes: product.attributes || []
     };
   });
 
