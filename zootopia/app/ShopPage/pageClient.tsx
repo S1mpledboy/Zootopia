@@ -37,6 +37,7 @@ interface ProductProps {
   promoPrice?: number;
   image: string;
   companyName: string;
+  category?: string; // Dodano pole kategorii do interfejsu
 }
 
 // =========================
@@ -52,6 +53,9 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
 
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
+  
+  // Stan dla aktywnej kategorii (tylko jedna jednocześnie)
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // ===== TOGGLE LOGIC =====
   const toggleSection = (key: string) => {
@@ -72,6 +76,11 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
     setSort(value);
   };
 
+  // Funkcja do obsługi kliknięcia w kategorię
+  const selectCategory = (value: string) => {
+    setActiveCategory((prev) => (prev === value ? null : value));
+  };
+
   // ==========================================
   // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA
   // ==========================================
@@ -79,12 +88,17 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
     // 1. Klonujemy oryginalną listę, aby jej nie zepsuć
     let result = [...initialProducts];
 
-    // 2. FILTROWANIE: Marka
+    // 2. FILTROWANIE: Kategoria (jeśli jest wybrana)
+    if (activeCategory) {
+      result = result.filter(product => product.category === activeCategory);
+    }
+
+    // 3. FILTROWANIE: Marka
     if (filters.marka && filters.marka.length > 0) {
       result = result.filter(product => filters.marka.includes(product.companyName));
     }
 
-    // 3. FILTROWANIE: Cena (bierzemy pod uwagę cenę promocyjną, jeśli istnieje, w przeciwnym razie zwykłą)
+    // 4. FILTROWANIE: Cena (bierzemy pod uwagę cenę promocyjną, jeśli istnieje, w przeciwnym razie zwykłą)
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
     
@@ -100,7 +114,7 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
     //   result = result.filter(product => filters.wiek.includes(product.ageGroup));
     // }
 
-    // 4. SORTOWANIE
+    // 5. SORTOWANIE
     result.sort((a, b) => {
       const priceA = a.promoPrice || a.price;
       const priceB = b.promoPrice || b.price;
@@ -121,7 +135,7 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
     });
 
     return result;
-  }, [initialProducts, filters, priceFrom, priceTo, sort]);
+  }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategory]);
 
   // ==========================================
 
@@ -183,8 +197,44 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
         </Section>
 
         {/* Zastosuj filtry można usunąć, bo filtry działają w czasie rzeczywistym! Zostawiłem tylko do wizualnego efektu resetu */}
-        <div className={styles.zastosujFiltryWrapper} onClick={() => { setFilters({}); setPriceFrom(''); setPriceTo(''); }} style={{ cursor: 'pointer' }}>
+        <div 
+          className={styles.zastosujFiltryWrapper} 
+          onClick={() => { setFilters({}); setPriceFrom(''); setPriceTo(''); setActiveCategory(null); }} 
+          style={{ cursor: 'pointer' }}
+        >
           <div className={styles.zastosujFiltry}>Resetuj filtry</div>
+        </div>
+
+        {/* ===== KATEGORIE ===== */}
+        <div className={styles.frameWrapper}>
+          <div className={styles.filtrujWrapper}>
+            <div className={styles.filtruj}>Kategorie</div>
+          </div>
+        </div>
+        <Image src={line} width={216} height={1} alt="" />
+
+        <div className={styles.frameGroup}>
+          <div className={styles.cena}>Pies</div>
+          <div className={styles.frameDiv}>
+            {['Karma mokra', 'Karma sucha', 'Przysmaki i gryzaki', 'Spacer i podróż', 'Legowiska i dom'].map((c) => {
+              const isActive = activeCategory === c;
+              return (
+                <div 
+                  key={c} 
+                  className={styles.karmaMokraWrapper} 
+                  onClick={() => selectCategory(c)}
+                  style={{ 
+                    cursor: 'pointer',
+                    backgroundColor: isActive ? '#f0f0f0' : 'transparent', // Delikatne wyróżnienie tła
+                    borderRadius: '4px',
+                    padding: '2px 4px'
+                  }}
+                >
+                  <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{c}</div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </div>
 
@@ -195,6 +245,12 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
             <div className={styles.stronaGwna}>Strona główna</div>
             <div className={styles.stronaGwna}>{'>'}</div>
             <div className={styles.stronaGwna}>Pies</div>
+            {activeCategory && (
+              <>
+                <div className={styles.stronaGwna}>{'>'}</div>
+                <div className={styles.stronaGwna}>{activeCategory}</div>
+              </>
+            )}
           </div>
 
           <div className={styles.sortujPoParent}>
