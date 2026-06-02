@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import styles from './shopPage.module.css';
+import styles from './shopPage.module.css'; // Upewnij się, że używasz poprawnej ścieżki do CSS
 import { useState, useMemo, useEffect } from 'react';
 
 import arrowDown from '@/app/Public/Images/arrowDown.svg';
@@ -85,19 +85,21 @@ const KategorieClient = ({
     }
   };
 
-  // ===== FILTROWANIE MENU KATEGORII POD KONTEM AKTUALNEGO TYPU (RODZICA) =====
-  // 1. Znajdujemy dokument głównego zwierzaka (np. Pies, parent: null)
+  // ==========================================================
+  // 🧭 LOGIKA DRZEWA KATEGORII (POWIĄZANIE Z URL: pies, kot itp.)
+  // ==========================================================
+  // 1. Znajdujemy główną kategorię zwierzaka (np. Pies, który ma parent: null)
   const currentAnimalObj = useMemo(() => {
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
 
-  // 2. Znajdujemy główne działy z Excela (Karma, LEGOWISKA), które jako parent mają ID zwierzaka
+  // 2. Znajdujemy działy główne z Excela (Karma, LEGOWISKA), które jako parent mają ID tego zwierzaka
   const mainCategoriesForMenu = useMemo(() => {
     if (!currentAnimalObj) return [];
     return allCategories.filter(cat => cat.parent === currentAnimalObj._id);
   }, [allCategories, currentAnimalObj]);
 
-  // 3. Pobieramy podkategorie (dzieci karmy, dzieci legowisk)
+  // 3. Pobieramy podkategorie (Karma mokra, Karma sucha), które należą do danego działu głównego
   const getSubcategoriesByParent = (parentId: string) => {
     return allCategories.filter(cat => cat.parent === parentId);
   };
@@ -125,17 +127,20 @@ const KategorieClient = ({
   };
 
   // ==========================================
-  // 📊 DYNAMICZNE WYLICZANIE LICZBY PRODUKTÓW DLA FILTRÓW
+  // 📊 LICZNIKI PRODUKTÓW DLA FILTRÓW I PODKATEGORII
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (group: string, value: string) => {
       return initialProducts.filter(product => {
+        // Filtrowanie po kategorii w licznikach bocznych
         if (group !== 'category' && activeCategoryId && product.petCategoryId !== activeCategoryId) return false;
         if (group === 'category' && product.petCategoryId !== value) return false;
 
+        // Filtrowanie po marce
         if (group !== 'marka' && filters.marka?.length > 0 && !filters.marka.includes(product.companyName)) return false;
         if (group === 'marka' && product.companyName !== value) return false;
 
+        // Filtrowanie po cenie
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
         if (product.price < minPrice || product.price > maxPrice) return false;
@@ -165,7 +170,7 @@ const KategorieClient = ({
   }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo]);
 
   // ==========================================
-  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA
+  // 🔥 GŁÓWNA LOGIKA FILTROWANIA PRODUKTÓW
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
@@ -262,32 +267,38 @@ const KategorieClient = ({
 
         <div className={styles.zastosujFiltryWrapper} onClick={handleResetToMainType} style={{ cursor: 'pointer' }}><div className={styles.zastosujFiltry}>Resetuj filtry</div></div>
 
-        {/* ===== MAPOWANIE KATEGORII DLA WYBRANEGO ZWIERZAKA ===== */}
+        {/* ===== PRZYWRÓCONE ORYGINALNE MAPOWANIE KATEGORII JAKO LINIE (ZGODNIE ZE ZDJĘCIEM) ===== */}
         <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Kategorie</div></div></div>
         <Image src={line} width={216} height={1} alt="" />
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
-          {mainCategoriesForMenu.map((mainCat) => {
-            const subCategories = getSubcategoriesByParent(mainCat._id);
-            return (
-              <div key={mainCat._id} className={styles.frameGroup} style={{ gap: '6px' }}>
-                <div className={styles.cena} style={{ fontWeight: 'bold', color: '#333', textTransform: 'uppercase', fontSize: '13px' }}>{mainCat.name}</div>
-                <div className={styles.frameDiv} style={{ paddingLeft: '4px', gap: '4px' }}>
-                  {subCategories.map((sub) => {
-                    const isActive = activeCategoryId === sub._id;
-                    const count = facetCounts.get('category', sub._id);
-                    return (
-                      <div key={sub._id} onClick={() => selectCategory(sub._id)} style={{ cursor: 'pointer', backgroundColor: isActive ? '#f0f0f0' : 'transparent', borderRadius: '4px', padding: '3px 6px', display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal', fontSize: '14px' }}>{sub.name}</div>
-                        <span style={{ color: '#b0b0b0', fontSize: '12px' }}>({count})</span>
-                      </div>
-                    );
-                  })}
-                </div>
+        {mainCategoriesForMenu.map((mainCat) => {
+          const subCategories = getSubcategoriesByParent(mainCat._id);
+          return (
+            <div key={mainCat._id} className={styles.frameGroup}>
+              <div className={styles.tablerIconChevronCompactRiParent}>
+                <div className={styles.cena} style={{ fontWeight: 'bold' }}>{mainCat.name}</div>
               </div>
-            );
-          })}
-        </div>
+              <div className={styles.frameDiv}>
+                {subCategories.map((sub) => {
+                  const isActive = activeCategoryId === sub._id;
+                  const count = facetCounts.get('category', sub._id);
+                  return (
+                    // WYKORZYSTANIE TWOJEGO ORYGINALNEGO STYLU LINII (piesWrapper / pies / promocjeWrapper) DO KAFELKÓW
+                    <div 
+                      key={sub._id} 
+                      onClick={() => selectCategory(sub._id)} 
+                      className={isActive ? styles.promocjeWrapper : styles.piesWrapper} 
+                      style={{ cursor: 'pointer', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                    >
+                      <b className={styles.pies}>{sub.name}</b>
+                      <span className={styles.pies} style={{ opacity: 0.6, fontSize: '12px' }}>({count})</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* ================= RIGHT (PRODUKTY) ================= */}
