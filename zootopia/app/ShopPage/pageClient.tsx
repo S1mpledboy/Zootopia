@@ -1,8 +1,9 @@
 'use client';
 
+import type { NextPage } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import styles from './shopPage.module.css';
 import { useState, useMemo, useEffect } from 'react';
 
@@ -43,7 +44,7 @@ interface ProductProps {
   promoPrice?: number | null;
   image: string;
   companyName: string;
-  petCategoryId: string | null; // Identyfikator ObjectId kategorii produktu
+  petCategoryId: string | null; // Odpowiednik product.category (ObjectId z bazy)
   attributes: DBAttribute[];
 }
 
@@ -55,7 +56,7 @@ interface CategoryProps {
 }
 
 // =========================
-// MAIN COMPONENT
+// PAGE CLIENT COMPONENT
 // =========================
 const KategorieClient = ({ 
   initialProducts, 
@@ -65,6 +66,9 @@ const KategorieClient = ({
   allCategories: CategoryProps[];
 }) => {
   const searchParams = useSearchParams();
+  const router = useRouter();
+
+  // Odczytujemy typ z URL (np. 'pies', 'kot', 'male-zwierzeta', 'promocje'). Domyślnie 'pies'.
   const currentType = searchParams.get('type') || 'pies';
 
   // ===== STATE =====
@@ -73,13 +77,14 @@ const KategorieClient = ({
   });
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sort, setSort] = useState<string>('popularność');
+
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
   
-  // Przetrzymuje zaznaczone ID podkategorii (np. ID "Karma mokra")
+  // Przechowujemy zaznaczone ID podkategorii z MongoDB (zamiast starego stringa tekstowego)
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  // Reset filtrów przy zmianie głównego typu zwierzaka w URL
+  // Resetowanie podkategorii w przypadku zmiany głównego typu w URL
   useEffect(() => {
     setActiveCategoryId(null);
     setFilters({});
@@ -87,6 +92,7 @@ const KategorieClient = ({
     setPriceTo('');
   }, [currentType]);
 
+  // Pomocnicza funkcja do ładnego formatowania tekstu w mapie strony
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'pies': return 'Pies';
@@ -98,7 +104,7 @@ const KategorieClient = ({
   };
 
   // ==========================================================
-  // 🧭 POWIĄZANIE DRZEWA KATEGORII (Pies -> Karma -> Karma mokra)
+  // 🧭 DYNAMICZNA LOGIKA DRZEWA KATEGORII Z MONGO
   // ==========================================================
   // 1. Znajdujemy dokument zwierzaka (np. Pies, parent: null)
   const currentAnimalObj = useMemo(() => {
@@ -119,23 +125,31 @@ const KategorieClient = ({
   const activeCategoryObj = useMemo(() => allCategories.find(cat => cat._id === activeCategoryId), [activeCategoryId, allCategories]);
   const parentCategoryObj = useMemo(() => activeCategoryObj ? allCategories.find(cat => cat._id === activeCategoryObj.parent) : null, [activeCategoryObj, allCategories]);
 
-  // ===== AKCJE =====
-  const toggleSection = (key: string) => setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
-  const selectSort = (value: string) => setSort(value);
-  
-  // Naprawiona funkcja wyboru kategorii: klika na ID i poprawnie je przełącza
-  const selectCategory = (id: string) => {
-    setActiveCategoryId((prev) => (prev === id ? null : id));
+  // ===== TOGGLE LOGIC =====
+  const toggleSection = (key: string) => {
+    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
-  
+
   const toggleFilter = (group: string, value: string) => {
     setFilters((prev) => {
       const current = prev[group] || [];
-      const updated = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
+      const updated = current.includes(value)
+        ? current.filter((v) => v !== value)
+        : [...current, value];
       return { ...prev, [group]: updated };
     });
   };
 
+  const selectSort = (value: string) => {
+    setSort(value);
+  };
+
+  // Naprawiona funkcja przełączania kategorii po ID z bazy danych
+  const selectCategory = (id: string) => {
+    setActiveCategoryId((prev) => (prev === id ? null : id));
+  };
+
+  // Funkcja resetująca filtry i cofająca mapę strony do poziomu głównego zwierzęcia
   const handleResetToMainType = () => {
     setActiveCategoryId(null);
     setFilters({});
@@ -143,39 +157,40 @@ const KategorieClient = ({
     setPriceTo('');
   };
 
-  // ==========================================================
-  // 📊 DYNAMICZNE LICZNIKI DLA FILTRÓW I PODKATEGORII (FACETS)
-  // ==========================================================
+  // ==========================================
+  // 📊 DYNAMICZNE WYLICZANIE LICZBY PRODUKTÓW DLA FILTRÓW
+  // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (group: string, value: string) => {
       return initialProducts.filter(product => {
-        // Obliczanie liczników dla podkategorii (nie filtrujemy kategorii samej przez siebie)
+        // 1. Sprawdzamy kategorię po ID z bazy danych
         if (group !== 'category' && activeCategoryId && product.petCategoryId !== activeCategoryId) return false;
         if (group === 'category' && product.petCategoryId !== value) return false;
 
-        // Marka
-        if (group !== 'marka' && filters.marka?.length > 0 && !filters.marka.includes(product.companyName)) return false;
+        // 2. Sprawdzamy markę
+        if (group !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(product.companyName)) return false;
         if (group === 'marka' && product.companyName !== value) return false;
 
-        // Cena
+        // 3. Sprawdzamy cenę
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
-        if (product.price < minPrice || product.price > maxPrice) return false;
+        const actualPrice = product.price;
+        if (actualPrice < minPrice || actualPrice > maxPrice) return false;
 
         const hasAttr = (name: string, val: string) => product.attributes.some(a => a.name === name && a.value === val);
 
-        // Atrybuty
-        if (group !== 'wielkosc' && filters.wielkosc?.length > 0) {
+        // 4. Pola atrybutów tablicowych
+        if (group !== 'wielkosc' && filters.wielkosc && filters.wielkosc.length > 0) {
           if (!product.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value))) return false;
         }
         if (group === 'wielkosc' && !hasAttr('breedSize', value)) return false;
 
-        if (group !== 'wiek' && filters.wiek?.length > 0) {
+        if (group !== 'wiek' && filters.wiek && filters.wiek.length > 0) {
           if (!product.attributes.some(a => a.name === 'dogAge' && filters.wiek.includes(a.value))) return false;
         }
         if (group === 'wiek' && !hasAttr('dogAge', value)) return false;
 
-        if (group !== 'potrzeby' && filters.potrzeby?.length > 0) {
+        if (group !== 'potrzeby' && filters.potrzeby && filters.potrzeby.length > 0) {
           if (!product.attributes.some(a => a.name === 'specialNeeds' && filters.potrzeby.includes(a.value))) return false;
         }
         if (group === 'potrzeby' && !hasAttr('specialNeeds', value)) return false;
@@ -184,22 +199,28 @@ const KategorieClient = ({
       }).length;
     };
 
-    return { get: (group: string, value: string) => getCountForOption(group, value) };
+    return {
+      get: (group: string, value: string) => getCountForOption(group, value)
+    };
   }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo]);
 
   // ==========================================
-  // 🔥 GŁÓWNA LOGIKA FILTROWANIA PRODUKTÓW
+  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
 
-    // Dokładne filtrowanie po wybranym ObjectId podkategorii
+    // 1. Kategoria dolna przefiltrowana po ObjectId
     if (activeCategoryId) {
       result = result.filter(product => product.petCategoryId === activeCategoryId);
     }
+
+    // 2. Marka
     if (filters.marka && filters.marka.length > 0) {
       result = result.filter(product => filters.marka.includes(product.companyName));
     }
+
+    // 3. Atrybuty
     if (filters.wielkosc && filters.wielkosc.length > 0) {
       result = result.filter(p => p.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value)));
     }
@@ -210,12 +231,15 @@ const KategorieClient = ({
       result = result.filter(p => p.attributes.some(a => a.name === 'specialNeeds' && filters.potrzeby.includes(a.value)));
     }
 
+    // 4. Cena
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
+    
     if (minPrice > 0 || maxPrice < Infinity) {
       result = result.filter(product => product.price >= minPrice && product.price <= maxPrice);
     }
 
+    // 5. Sortowanie
     result.sort((a, b) => {
       switch (sort) {
         case 'Nazwa rosnąco': return a.name.localeCompare(b.name);
@@ -229,13 +253,18 @@ const KategorieClient = ({
     return result;
   }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId]);
 
-  const Checkbox = ({ group, value, dbValue }: { group: string; value: string; dbValue?: string }) => {
-    const internalVal = dbValue || value;
-    const checked = filters[group]?.includes(internalVal);
-    const count = facetCounts.get(group, internalVal);
+  // ==========================================
+
+  const Checkbox = ({ group, value }: { group: string; value: string }) => {
+    const checked = filters[group]?.includes(value);
+    const count = facetCounts.get(group, value);
     
     return (
-      <div className={styles.frameParent2} onClick={() => toggleFilter(group, internalVal)} style={{ cursor: 'pointer', display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        className={styles.frameParent2}
+        onClick={() => toggleFilter(group, value)}
+        style={{ cursor: 'pointer', display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}
+      >
         <div style={{ display: 'flex', alignItems: 'center' }}>
           <div className={styles.tablerIconSquareWrapper}>
             <input type="checkbox" readOnly checked={!!checked} style={{ pointerEvents: 'none' }} />
@@ -249,9 +278,13 @@ const KategorieClient = ({
 
   return (
     <div className={styles.kategorie}>
-      {/* ================= LEFT (FILTRY + KATEGORIE) ================= */}
+      {/* ================= LEFT (FILTRY) ================= */}
       <div className={styles.frameParent}>
-        <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Filtruj</div></div></div>
+        <div className={styles.frameWrapper}>
+          <div className={styles.filtrujWrapper}>
+            <div className={styles.filtruj}>Filtruj</div>
+          </div>
+        </div>
         <Image src={line} width={216} height={1} alt="" />
 
         <Section id="cena" title="Cena" openSections={openSections} toggleSection={toggleSection}>
@@ -262,126 +295,166 @@ const KategorieClient = ({
         </Section>
 
         <Section id="marka" title="Marka" openSections={openSections} toggleSection={toggleSection}>
-          {["AlphaWolf", "Brit", "Royal Canin", "Trixie", "NatureBite"].map(brand => <Checkbox key={brand} group="marka" value={brand} />)}
+          <Checkbox group="marka" value="AlphaWolf" />
+          <Checkbox group="marka" value="Brit" />
+          <Checkbox group="marka" value="Royal Canin" />
+          <Checkbox group="marka" value="Trixie" />
+          <Checkbox group="marka" value="NatureBite" />
         </Section>
 
         <Section id="wielkosc" title="Wielkość rasy" openSections={openSections} toggleSection={toggleSection}>
-          <Checkbox group="wielkosc" value="Mini/Mała <10kg" dbValue="mini" />
-          <Checkbox group="wielkosc" value="Średnia 10-25kg" dbValue="medium" />
-          <Checkbox group="wielkosc" value="Duża >25kg" dbValue="large" />
+          <Checkbox group="wielkosc" value="Mini/Mała <10kg" />
+          <Checkbox group="wielkosc" value="Średnia 10-25kg" />
+          <Checkbox group="wielkosc" value="Duża >25kg" />
         </Section>
 
         <Section id="wiek" title="Wiek psa" openSections={openSections} toggleSection={toggleSection}>
-          <Checkbox group="wiek" value="Szczenię" dbValue="puppy" />
-          <Checkbox group="wiek" value="Dorosły" dbValue="adult" />
-          <Checkbox group="wiek" value="Senior" dbValue="senior" />
+          <Checkbox group="wiek" value="Szczenię" />
+          <Checkbox group="wiek" value="Dorosły" />
+          <Checkbox group="wiek" value="Senior" />
         </Section>
 
         <Section id="potrzeby" title="Specjalne potrzeby" openSections={openSections} toggleSection={toggleSection}>
-          <Checkbox group="potrzeby" value="Bezzbożowa" dbValue="grainFree" />
-          <Checkbox group="potrzeby" value="Dla alergików" dbValue="hypoallergenic" />
-          <Checkbox group="potrzeby" value="Nadwaga" dbValue="overweight" />
-          <Checkbox group="potrzeby" value="Wysoka aktywność" dbValue="active" />
+          <Checkbox group="potrzeby" value="Bezzbożowa" />
+          <Checkbox group="potrzeby" value="Dla alergików" />
+          <Checkbox group="potrzeby" value="Nadwaga" />
+          <Checkbox group="potrzeby" value="Wysoka aktywność" />
         </Section>
 
-        <div className={styles.zastosujFiltryWrapper} onClick={handleResetToMainType} style={{ cursor: 'pointer' }}><div className={styles.zastosujFiltry}>Resetuj filtry</div></div>
+        <div
+          className={styles.zastosujFiltryWrapper}
+          onClick={handleResetToMainType}
+          style={{ cursor: 'pointer' }}
+        >
+          <div className={styles.zastosujFiltry}>Resetuj filtry</div>
+        </div>
 
-        {/* ===== PANEL BOCZNY: KATEGORIE ZGODNIE Z TWOIM DESIGNEM ===== */}
-        <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Kategorie</div></div></div>
+        {/* ===== KATEGORIE - ORYGINALNY WYGLĄD ZACHOWUJĄCY KLASY Z PLIKU CSS ===== */}
+        <div className={styles.frameWrapper}>
+          <div className={styles.filtrujWrapper}>
+            <div className={styles.filtruj}>Kategorie</div>
+          </div>
+        </div>
         <Image src={line} width={216} height={1} alt="" />
 
-        {/* Kontener wymuszający pionowy, czysty układ bez wpływu wadliwego flexa z CSS */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', width: '100%', marginTop: '10px' }}>
-          {mainCategoriesForMenu.map((mainCat) => {
-            const subCategories = getSubcategoriesByParent(mainCat._id);
-            return (
-              <div key={mainCat._id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                
-                {/* Tytuł Działu Główny (np. Karma, LEGOWISKA) */}
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
-                  <div className={styles.cena} style={{ fontWeight: 'bold', fontSize: '15px', color: '#000' }}>
-                    {mainCat.name}
-                  </div>
-                </div>
-                
-                {/* Lista podkategorii - sztywny pion, ładne wcięcie w prawo */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '14px', width: '100%' }}>
-                  {subCategories.map((sub) => {
-                    const isActive = activeCategoryId === sub._id;
-                    // Wyciągamy dynamiczną liczbę produktów przypisanych do tej podkategorii
-                    const count = facetCounts.get('category', sub._id);
-                    
-                    return (
+        {mainCategoriesForMenu.map((mainCat) => {
+          const subCategories = getSubcategoriesByParent(mainCat._id);
+          return (
+            <div key={mainCat._id} className={styles.frameGroup}>
+              {/* Nagłówek Sekcji Głównej (np. Karma, LEGOWISKA) z zachowaniem klasy i ikonki zwijania */}
+              <div className={styles.tablerIconChevronCompactRiParent}>
+                <div className={styles.cena} style={{ fontWeight: 'bold' }}>{mainCat.name}</div>
+              </div>
+              
+              {/* Blok z podkategoriami ułożonymi pionowo z wcięciem (paddingLeft) */}
+              <div className={styles.frameDiv} style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '14px', width: '100%' }}>
+                {subCategories.map((sub) => {
+                  const isActive = activeCategoryId === sub._id;
+                  // Dynamiczny licznik produktów wyciągany dla konkretnego ID podkategorii
+                  const count = facetCounts.get('category', sub._id);
+                  
+                  return (
+                    <div
+                      key={sub._id}
+                      onClick={() => selectCategory(sub._id)}
+                      style={{
+                        cursor: 'pointer',
+                        display: 'flex',
+                        width: '100%',
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      {/* Nazwa podkategorii - pogrubia się automatycznie po kliknięciu */}
                       <div 
-                        key={sub._id} 
-                        onClick={() => selectCategory(sub._id)}
+                        className={styles.cena} 
                         style={{ 
-                          cursor: 'pointer', 
-                          display: 'flex', 
-                          width: '100%', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center' 
+                          fontWeight: isActive ? 'bold' : 'normal',
+                          color: isActive ? '#000000' : '#444444'
                         }}
                       >
-                        {/* Tekst - pogrubia się, gdy kategoria jest aktywna */}
-                        <div 
-                          className={styles.cena} 
-                          style={{ 
-                            fontWeight: isActive ? 'bold' : 'normal', 
-                            color: isActive ? '#000000' : '#444444',
-                            fontSize: '14px'
-                          }}
-                        >
-                          {sub.name}
-                        </div>
-                        
-                        {/* Prawidłowy licznik ilości produktów po prawej stronie */}
-                        <span style={{ color: '#b0b0b0', fontSize: '13px' }}>
-                          ({count})
-                        </span>
+                        {sub.name}
                       </div>
-                    );
-                  })}
-                </div>
+                      
+                      {/* Licznik produktów po prawej stronie w tej samej linii */}
+                      <span style={{ color: '#b0b0b0', fontSize: '13px' }}>
+                        ({count})
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* ================= RIGHT (PRODUKTY) ================= */}
       <div className={styles.frameParent25}>
         <div className={styles.sortowanieParent}>
+          
+          {/* MAPA STRONY (BREADCRUMBS) */}
           <div className={styles.sortowanie}>
-            <Link href="/" className={styles.stronaGwna} style={{ textDecoration: 'none' }}>Strona główna</Link>
+            <Link href="/" className={styles.stronaGwna} style={{ textDecoration: 'none', cursor: 'pointer' }}>
+              Strona główna
+            </Link>
             <div className={styles.stronaGwna}>{'>'}</div>
-            <div className={styles.stronaGwna} onClick={handleResetToMainType} style={{ cursor: 'pointer', fontWeight: !activeCategoryId ? 'bold' : 'normal' }}>{getTypeLabel(currentType)}</div>
-            {parentCategoryObj && <><div className={styles.stronaGwna}>{'>'}</div><div className={styles.stronaGwna}>{parentCategoryObj.name}</div></>}
-            {activeCategoryObj && <><div className={styles.stronaGwna}>{'>'}</div><div className={styles.stronaGwna} style={{ fontWeight: 'bold' }}>{activeCategoryObj.name}</div></>}
+            <div
+              className={styles.stronaGwna}
+              onClick={handleResetToMainType}
+              style={{ cursor: 'pointer', fontWeight: !activeCategoryId ? 'bold' : 'normal' }}
+            >
+              {getTypeLabel(currentType)}
+            </div>
+            {parentCategoryObj && (
+              <>
+                <div className={styles.stronaGwna}>{'>'}</div>
+                <div className={styles.stronaGwna}>{parentCategoryObj.name}</div>
+              </>
+            )}
+            {activeCategoryObj && (
+              <>
+                <div className={styles.stronaGwna}>{'>'}</div>
+                <div className={styles.stronaGwna} style={{ fontWeight: 'bold' }}>{activeCategoryObj.name}</div>
+              </>
+            )}
           </div>
 
           <div className={styles.sortujPoParent}>
             <div className={styles.sortujPo}>Sortuj po</div>
             <div className={styles.sortowanie2}>
               {['Nazwa rosnąco', 'Nazwa malejąco', 'Cena rosnąco', 'Cena malejąco', 'popularność'].map((s) => (
-                <div key={s} className={styles.opcjaSortowania} onClick={() => selectSort(s)} style={{ cursor: 'pointer', opacity: sort === s ? 1 : 0.6 }}><b className={styles.nazwaRosnco}>{s}</b></div>
+                <div
+                  key={s}
+                  className={styles.opcjaSortowania}
+                  onClick={() => selectSort(s)}
+                  style={{ cursor: 'pointer', opacity: sort === s ? 1 : 0.6 }}
+                >
+                  <b className={styles.nazwaRosnco}>{s}</b>
+                </div>
               ))}
             </div>
           </div>
-          <div className={styles.sortowanie3}><div className={styles.stronaGwna}>{filteredAndSortedProducts.length} produktów • sort: {sort}</div></div>
+
+          <div className={styles.sortowanie3}>
+            <div className={styles.stronaGwna}>
+              {filteredAndSortedProducts.length} produktów • sort: {sort}
+            </div>
+          </div>
         </div>
 
+        {/* WYSWIETLAMY PRZEFILTROWANĄ TABLICĘ PRODUKTÓW */}
         <div className={styles.produktPromocjaPiesParent}>
           {filteredAndSortedProducts.length > 0 ? (
             filteredAndSortedProducts.map((product) => (
-              <PromotionItem 
-                key={product._id} 
-                id={product._id} 
-                brandName={product.companyName} 
-                productName={product.name} 
-                price={product.price} 
-                promoPrice={product.promoPrice || undefined} 
-                image={product.image} 
+              <PromotionItem
+                key={product._id}
+                id={product._id}
+                brandName={product.companyName}
+                productName={product.name}
+                price={product.price}
+                promoPrice={product.promoPrice || undefined}
+                image={product.image}
               />
             ))
           ) : (
