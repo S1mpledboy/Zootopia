@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import styles from './shopPage.module.css'; // Upewnij się, że używasz poprawnej ścieżki do CSS
+import styles from './shopPage.module.css';
 import { useState, useMemo, useEffect } from 'react';
 
 import arrowDown from '@/app/Public/Images/arrowDown.svg';
@@ -86,20 +86,17 @@ const KategorieClient = ({
   };
 
   // ==========================================================
-  // 🧭 LOGIKA DRZEWA KATEGORII (POWIĄZANIE Z URL: pies, kot itp.)
+  // 🧭 LOGIKA POWIĄZANIA DRZEWA KATEGORII Z URL (Pies/Kot)
   // ==========================================================
-  // 1. Znajdujemy główną kategorię zwierzaka (np. Pies, który ma parent: null)
   const currentAnimalObj = useMemo(() => {
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
 
-  // 2. Znajdujemy działy główne z Excela (Karma, LEGOWISKA), które jako parent mają ID tego zwierzaka
   const mainCategoriesForMenu = useMemo(() => {
     if (!currentAnimalObj) return [];
     return allCategories.filter(cat => cat.parent === currentAnimalObj._id);
   }, [allCategories, currentAnimalObj]);
 
-  // 3. Pobieramy podkategorie (Karma mokra, Karma sucha), które należą do danego działu głównego
   const getSubcategoriesByParent = (parentId: string) => {
     return allCategories.filter(cat => cat.parent === parentId);
   };
@@ -127,20 +124,17 @@ const KategorieClient = ({
   };
 
   // ==========================================
-  // 📊 LICZNIKI PRODUKTÓW DLA FILTRÓW I PODKATEGORII
+  // 📊 LICZNIKI PRODUKTÓW (FACETS)
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (group: string, value: string) => {
       return initialProducts.filter(product => {
-        // Filtrowanie po kategorii w licznikach bocznych
         if (group !== 'category' && activeCategoryId && product.petCategoryId !== activeCategoryId) return false;
         if (group === 'category' && product.petCategoryId !== value) return false;
 
-        // Filtrowanie po marce
         if (group !== 'marka' && filters.marka?.length > 0 && !filters.marka.includes(product.companyName)) return false;
         if (group === 'marka' && product.companyName !== value) return false;
 
-        // Filtrowanie po cenie
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
         if (product.price < minPrice || product.price > maxPrice) return false;
@@ -170,7 +164,7 @@ const KategorieClient = ({
   }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo]);
 
   // ==========================================
-  // 🔥 GŁÓWNA LOGIKA FILTROWANIA PRODUKTÓW
+  // 🔥 FILTROWANIE I SORTOWANIE
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
@@ -267,7 +261,7 @@ const KategorieClient = ({
 
         <div className={styles.zastosujFiltryWrapper} onClick={handleResetToMainType} style={{ cursor: 'pointer' }}><div className={styles.zastosujFiltry}>Resetuj filtry</div></div>
 
-        {/* ===== PRZYWRÓCONE ORYGINALNE MAPOWANIE KATEGORII JAKO LINIE (ZGODNIE ZE ZDJĘCIEM) ===== */}
+        {/* ===== NAPRAWIONE PASUJĄCE WIDOKIEM MENU DLA KATEGORII TEXTOWYCH PIONOWYCH ===== */}
         <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Kategorie</div></div></div>
         <Image src={line} width={216} height={1} alt="" />
 
@@ -275,23 +269,33 @@ const KategorieClient = ({
           const subCategories = getSubcategoriesByParent(mainCat._id);
           return (
             <div key={mainCat._id} className={styles.frameGroup}>
+              {/* Sekcja Nadrzędna (np. Karma / LEGOWISKA) */}
               <div className={styles.tablerIconChevronCompactRiParent}>
                 <div className={styles.cena} style={{ fontWeight: 'bold' }}>{mainCat.name}</div>
               </div>
-              <div className={styles.frameDiv}>
+              
+              {/* Lista podkategorii - czysty, pionowy układ tekstu */}
+              <div className={styles.frameDiv} style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '12px', width: '100%' }}>
                 {subCategories.map((sub) => {
                   const isActive = activeCategoryId === sub._id;
                   const count = facetCounts.get('category', sub._id);
                   return (
-                    // WYKORZYSTANIE TWOJEGO ORYGINALNEGO STYLU LINII (piesWrapper / pies / promocjeWrapper) DO KAFELKÓW
                     <div 
                       key={sub._id} 
-                      onClick={() => selectCategory(sub._id)} 
-                      className={isActive ? styles.promocjeWrapper : styles.piesWrapper} 
-                      style={{ cursor: 'pointer', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                      onClick={() => selectCategory(sub._id)}
+                      style={{ 
+                        cursor: 'pointer', 
+                        display: 'flex', 
+                        width: '100%', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center' 
+                      }}
                     >
-                      <b className={styles.pies}>{sub.name}</b>
-                      <span className={styles.pies} style={{ opacity: 0.6, fontSize: '12px' }}>({count})</span>
+                      {/* Tekst pogrubia się, gdy kategoria jest wybrana */}
+                      <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal', color: isActive ? '#000' : '#444' }}>
+                        {sub.name}
+                      </div>
+                      <span style={{ color: '#b0b0b0', fontSize: '13px', paddingLeft: '8px' }}>({count})</span>
                     </div>
                   );
                 })}
