@@ -12,6 +12,9 @@ import line from '@/app/Public/Images/line.svg';
 
 import PromotionItem from '../ItemBlocks/promotionItem';
 
+// =========================
+// SECTION COMPONENT
+// =========================
 function Section({ id, title, children, openSections, toggleSection }: any) {
   const open = openSections[id];
   return (
@@ -25,6 +28,9 @@ function Section({ id, title, children, openSections, toggleSection }: any) {
   );
 }
 
+// =========================
+// INTERFEJSY
+// =========================
 interface DBAttribute {
   name: string;
   value: string;
@@ -37,7 +43,7 @@ interface ProductProps {
   promoPrice?: number | null;
   image: string;
   companyName: string;
-  petCategoryId: string | null;
+  petCategoryId: string | null; // Identyfikator ObjectId kategorii produktu
   attributes: DBAttribute[];
 }
 
@@ -48,6 +54,9 @@ interface CategoryProps {
   parent: string | null;
 }
 
+// =========================
+// MAIN COMPONENT
+// =========================
 const KategorieClient = ({ 
   initialProducts, 
   allCategories 
@@ -66,8 +75,11 @@ const KategorieClient = ({
   const [sort, setSort] = useState<string>('popularność');
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
+  
+  // Przetrzymuje zaznaczone ID podkategorii (np. ID "Karma mokra")
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
+  // Reset filtrów przy zmianie głównego typu zwierzaka w URL
   useEffect(() => {
     setActiveCategoryId(null);
     setFilters({});
@@ -86,17 +98,20 @@ const KategorieClient = ({
   };
 
   // ==========================================================
-  // 🧭 LOGIKA POWIĄZANIA DRZEWA KATEGORII Z URL (Pies/Kot)
+  // 🧭 POWIĄZANIE DRZEWA KATEGORII (Pies -> Karma -> Karma mokra)
   // ==========================================================
+  // 1. Znajdujemy dokument zwierzaka (np. Pies, parent: null)
   const currentAnimalObj = useMemo(() => {
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
 
+  // 2. Znajdujemy działy nadrzędne (Karma, LEGOWISKA itp.), których rodzicem jest ten zwierzak
   const mainCategoriesForMenu = useMemo(() => {
     if (!currentAnimalObj) return [];
     return allCategories.filter(cat => cat.parent === currentAnimalObj._id);
   }, [allCategories, currentAnimalObj]);
 
+  // 3. Pobieramy podkategorie przypisane bezpośrednio do danego działu nadrzędnego
   const getSubcategoriesByParent = (parentId: string) => {
     return allCategories.filter(cat => cat.parent === parentId);
   };
@@ -104,9 +119,14 @@ const KategorieClient = ({
   const activeCategoryObj = useMemo(() => allCategories.find(cat => cat._id === activeCategoryId), [activeCategoryId, allCategories]);
   const parentCategoryObj = useMemo(() => activeCategoryObj ? allCategories.find(cat => cat._id === activeCategoryObj.parent) : null, [activeCategoryObj, allCategories]);
 
+  // ===== AKCJE =====
   const toggleSection = (key: string) => setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   const selectSort = (value: string) => setSort(value);
-  const selectCategory = (id: string) => setActiveCategoryId((prev) => (prev === id ? null : id));
+  
+  // Naprawiona funkcja wyboru kategorii: klika na ID i poprawnie je przełącza
+  const selectCategory = (id: string) => {
+    setActiveCategoryId((prev) => (prev === id ? null : id));
+  };
   
   const toggleFilter = (group: string, value: string) => {
     setFilters((prev) => {
@@ -123,24 +143,28 @@ const KategorieClient = ({
     setPriceTo('');
   };
 
-  // ==========================================
-  // 📊 LICZNIKI PRODUKTÓW (FACETS)
-  // ==========================================
+  // ==========================================================
+  // 📊 DYNAMICZNE LICZNIKI DLA FILTRÓW I PODKATEGORII (FACETS)
+  // ==========================================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (group: string, value: string) => {
       return initialProducts.filter(product => {
+        // Obliczanie liczników dla podkategorii (nie filtrujemy kategorii samej przez siebie)
         if (group !== 'category' && activeCategoryId && product.petCategoryId !== activeCategoryId) return false;
         if (group === 'category' && product.petCategoryId !== value) return false;
 
+        // Marka
         if (group !== 'marka' && filters.marka?.length > 0 && !filters.marka.includes(product.companyName)) return false;
         if (group === 'marka' && product.companyName !== value) return false;
 
+        // Cena
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
         if (product.price < minPrice || product.price > maxPrice) return false;
 
         const hasAttr = (name: string, val: string) => product.attributes.some(a => a.name === name && a.value === val);
 
+        // Atrybuty
         if (group !== 'wielkosc' && filters.wielkosc?.length > 0) {
           if (!product.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value))) return false;
         }
@@ -164,11 +188,12 @@ const KategorieClient = ({
   }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo]);
 
   // ==========================================
-  // 🔥 FILTROWANIE I SORTOWANIE
+  // 🔥 GŁÓWNA LOGIKA FILTROWANIA PRODUKTÓW
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
 
+    // Dokładne filtrowanie po wybranym ObjectId podkategorii
     if (activeCategoryId) {
       result = result.filter(product => product.petCategoryId === activeCategoryId);
     }
@@ -224,7 +249,7 @@ const KategorieClient = ({
 
   return (
     <div className={styles.kategorie}>
-      {/* ================= LEFT (FILTRY) ================= */}
+      {/* ================= LEFT (FILTRY + KATEGORIE) ================= */}
       <div className={styles.frameParent}>
         <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Filtruj</div></div></div>
         <Image src={line} width={216} height={1} alt="" />
@@ -261,48 +286,67 @@ const KategorieClient = ({
 
         <div className={styles.zastosujFiltryWrapper} onClick={handleResetToMainType} style={{ cursor: 'pointer' }}><div className={styles.zastosujFiltry}>Resetuj filtry</div></div>
 
-        {/* ===== NAPRAWIONE PASUJĄCE WIDOKIEM MENU DLA KATEGORII TEXTOWYCH PIONOWYCH ===== */}
+        {/* ===== PANEL BOCZNY: KATEGORIE ZGODNIE Z TWOIM DESIGNEM ===== */}
         <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Kategorie</div></div></div>
         <Image src={line} width={216} height={1} alt="" />
 
-        {mainCategoriesForMenu.map((mainCat) => {
-          const subCategories = getSubcategoriesByParent(mainCat._id);
-          return (
-            <div key={mainCat._id} className={styles.frameGroup}>
-              {/* Sekcja Nadrzędna (np. Karma / LEGOWISKA) */}
-              <div className={styles.tablerIconChevronCompactRiParent}>
-                <div className={styles.cena} style={{ fontWeight: 'bold' }}>{mainCat.name}</div>
-              </div>
-              
-              {/* Lista podkategorii - czysty, pionowy układ tekstu */}
-              <div className={styles.frameDiv} style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '12px', width: '100%' }}>
-                {subCategories.map((sub) => {
-                  const isActive = activeCategoryId === sub._id;
-                  const count = facetCounts.get('category', sub._id);
-                  return (
-                    <div 
-                      key={sub._id} 
-                      onClick={() => selectCategory(sub._id)}
-                      style={{ 
-                        cursor: 'pointer', 
-                        display: 'flex', 
-                        width: '100%', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center' 
-                      }}
-                    >
-                      {/* Tekst pogrubia się, gdy kategoria jest wybrana */}
-                      <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal', color: isActive ? '#000' : '#444' }}>
-                        {sub.name}
+        {/* Kontener wymuszający pionowy, czysty układ bez wpływu wadliwego flexa z CSS */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', width: '100%', marginTop: '10px' }}>
+          {mainCategoriesForMenu.map((mainCat) => {
+            const subCategories = getSubcategoriesByParent(mainCat._id);
+            return (
+              <div key={mainCat._id} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
+                
+                {/* Tytuł Działu Główny (np. Karma, LEGOWISKA) */}
+                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '6px' }}>
+                  <div className={styles.cena} style={{ fontWeight: 'bold', fontSize: '15px', color: '#000' }}>
+                    {mainCat.name}
+                  </div>
+                </div>
+                
+                {/* Lista podkategorii - sztywny pion, ładne wcięcie w prawo */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '14px', width: '100%' }}>
+                  {subCategories.map((sub) => {
+                    const isActive = activeCategoryId === sub._id;
+                    // Wyciągamy dynamiczną liczbę produktów przypisanych do tej podkategorii
+                    const count = facetCounts.get('category', sub._id);
+                    
+                    return (
+                      <div 
+                        key={sub._id} 
+                        onClick={() => selectCategory(sub._id)}
+                        style={{ 
+                          cursor: 'pointer', 
+                          display: 'flex', 
+                          width: '100%', 
+                          justifyContent: 'space-between', 
+                          alignItems: 'center' 
+                        }}
+                      >
+                        {/* Tekst - pogrubia się, gdy kategoria jest aktywna */}
+                        <div 
+                          className={styles.cena} 
+                          style={{ 
+                            fontWeight: isActive ? 'bold' : 'normal', 
+                            color: isActive ? '#000000' : '#444444',
+                            fontSize: '14px'
+                          }}
+                        >
+                          {sub.name}
+                        </div>
+                        
+                        {/* Prawidłowy licznik ilości produktów po prawej stronie */}
+                        <span style={{ color: '#b0b0b0', fontSize: '13px' }}>
+                          ({count})
+                        </span>
                       </div>
-                      <span style={{ color: '#b0b0b0', fontSize: '13px', paddingLeft: '8px' }}>({count})</span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* ================= RIGHT (PRODUKTY) ================= */}
@@ -330,10 +374,18 @@ const KategorieClient = ({
         <div className={styles.produktPromocjaPiesParent}>
           {filteredAndSortedProducts.length > 0 ? (
             filteredAndSortedProducts.map((product) => (
-              <PromotionItem key={product._id} id={product._id} brandName={product.companyName} productName={product.name} price={product.price} promoPrice={product.promoPrice || undefined} image={product.image} />
+              <PromotionItem 
+                key={product._id} 
+                id={product._id} 
+                brandName={product.companyName} 
+                productName={product.name} 
+                price={product.price} 
+                promoPrice={product.promoPrice || undefined} 
+                image={product.image} 
+              />
             ))
           ) : (
-            <div style={{ padding: '20px', fontSize: '18px' }}>Brak produktów do wyświetlenia.</div>
+            <div style={{ padding: '20px', fontSize: '18px' }}>Brak produktów spełniających kryteria.</div>
           )}
         </div>
       </div>
