@@ -37,7 +37,7 @@ interface ProductProps {
   promoPrice?: number;
   image: string;
   companyName: string;
-  category?: string; // Dodano pole kategorii do interfejsu
+  category?: string;
 }
 
 // =========================
@@ -54,7 +54,6 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
   
-  // Stan dla aktywnej kategorii (tylko jedna jednocześnie)
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
 
   // ===== TOGGLE LOGIC =====
@@ -76,29 +75,63 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
     setSort(value);
   };
 
-  // Funkcja do obsługi kliknięcia w kategorię
   const selectCategory = (value: string) => {
     setActiveCategory((prev) => (prev === value ? null : value));
   };
 
   // ==========================================
-  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA
+  // 📊 DYNAMICZNE WYLICZANIE LICZBY PRODUKTÓW DLA FILTRÓW
+  // ==========================================
+  const facetCounts = useMemo(() => {
+    const getCountForOption = (group: string, value: string) => {
+      return initialProducts.filter(product => {
+        // 1. Sprawdzamy kategorię (jeśli liczymy dla innej grupy, uwzględniamy aktywną kategorię)
+        if (group !== 'category' && activeCategory && product.category !== activeCategory) return false;
+        if (group === 'category' && product.category !== value) return false;
+
+        // 2. Sprawdzamy markę
+        if (group !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(product.companyName)) return false;
+        if (group === 'marka' && product.companyName !== value) return false;
+
+        // 3. Sprawdzamy cenę (zawsze uwzględniana)
+        const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
+        const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
+        const actualPrice = product.promoPrice || product.price;
+        if (actualPrice < minPrice || actualPrice > maxPrice) return false;
+
+        // 4. Bezpieczna weryfikacja przyszłych pól (wiek, wielkość, potrzeby)
+        if (group !== 'wielkosc' && filters.wielkosc && filters.wielkosc.length > 0 && !filters.wielkosc.includes((product as any).wielkosc)) return false;
+        if (group === 'wielkosc' && (product as any).wielkosc !== value) return false;
+
+        if (group !== 'wiek' && filters.wiek && filters.wiek.length > 0 && !filters.wiek.includes((product as any).wiek)) return false;
+        if (group === 'wiek' && (product as any).wiek !== value) return false;
+
+        if (group !== 'potrzeby' && filters.potrzeby && filters.potrzeby.length > 0 && !((product as any).potrzeby?.some((r: string) => filters.potrzeby.includes(r)))) return false;
+        if (group === 'potrzeby' && !((product as any).potrzeby?.includes(value))) return false;
+
+        return true;
+      }).length;
+    };
+
+    return {
+      get: (group: string, value: string) => getCountForOption(group, value)
+    };
+  }, [initialProducts, filters, activeCategory, priceFrom, priceTo]);
+
+  // ==========================================
+  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA (WYNIK KOŃCOWY)
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
-    // 1. Klonujemy oryginalną listę, aby jej nie zepsuć
     let result = [...initialProducts];
 
-    // 2. FILTROWANIE: Kategoria (jeśli jest wybrana)
     if (activeCategory) {
       result = result.filter(product => product.category === activeCategory);
     }
 
-    // 3. FILTROWANIE: Marka
     if (filters.marka && filters.marka.length > 0) {
       result = result.filter(product => filters.marka.includes(product.companyName));
     }
 
-    // 4. FILTROWANIE: Cena (bierzemy pod uwagę cenę promocyjną, jeśli istnieje, w przeciwnym razie zwykłą)
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
     
@@ -109,28 +142,16 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
       });
     }
 
-    // TUTAJ W PRZYSZŁOŚCI DODASZ FILTROWANIE PO WIEKU / WIELKOŚCI RASY
-    // if (filters.wiek && filters.wiek.length > 0) {
-    //   result = result.filter(product => filters.wiek.includes(product.ageGroup));
-    // }
-
-    // 5. SORTOWANIE
     result.sort((a, b) => {
       const priceA = a.promoPrice || a.price;
       const priceB = b.promoPrice || b.price;
 
       switch (sort) {
-        case 'Nazwa rosnąco':
-          return a.name.localeCompare(b.name);
-        case 'Nazwa malejąco':
-          return b.name.localeCompare(a.name);
-        case 'Cena rosnąco':
-          return priceA - priceB;
-        case 'Cena malejąco':
-          return priceB - priceA;
-        case 'popularność':
-        default:
-          return 0; // Zostawia domyślną kolejność z bazy
+        case 'Nazwa rosnąco': return a.name.localeCompare(b.name);
+        case 'Nazwa malejąco': return b.name.localeCompare(a.name);
+        case 'Cena rosnąco': return priceA - priceB;
+        case 'Cena malejąco': return priceB - priceA;
+        default: return 0;
       }
     });
 
@@ -141,12 +162,21 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
 
   const Checkbox = ({ group, value }: { group: string; value: string }) => {
     const checked = filters[group]?.includes(value);
+    const count = facetCounts.get(group, value); // Pobranie liczby produktów dla tego checkboxa
+    
     return (
-      <div className={styles.frameParent2} onClick={() => toggleFilter(group, value)} style={{ cursor: 'pointer' }}>
-        <div className={styles.tablerIconSquareWrapper}>
-          <input type="checkbox" readOnly checked={!!checked} style={{ pointerEvents: 'none' }} />
+      <div 
+        className={styles.frameParent2} 
+        onClick={() => toggleFilter(group, value)} 
+        style={{ cursor: 'pointer', display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <div className={styles.tablerIconSquareWrapper}>
+            <input type="checkbox" readOnly checked={!!checked} style={{ pointerEvents: 'none' }} />
+          </div>
+          <div className={styles.cena}>{value}</div>
         </div>
-        <div className={styles.cena}>{value}</div>
+        <span style={{ color: '#b0b0b0', fontSize: '13px', paddingLeft: '8px' }}>({count})</span>
       </div>
     );
   };
@@ -196,7 +226,6 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
           <Checkbox group="potrzeby" value="Wysoka aktywność" />
         </Section>
 
-        {/* Zastosuj filtry można usunąć, bo filtry działają w czasie rzeczywistym! Zostawiłem tylko do wizualnego efektu resetu */}
         <div 
           className={styles.zastosujFiltryWrapper} 
           onClick={() => { setFilters({}); setPriceFrom(''); setPriceTo(''); setActiveCategory(null); }} 
@@ -218,6 +247,8 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
           <div className={styles.frameDiv}>
             {['Karma mokra', 'Karma sucha', 'Przysmaki i gryzaki', 'Spacer i podróż', 'Legowiska i dom'].map((c) => {
               const isActive = activeCategory === c;
+              const count = facetCounts.get('category', c); // Pobranie liczby produktów dla tej kategorii
+              
               return (
                 <div 
                   key={c} 
@@ -225,12 +256,17 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
                   onClick={() => selectCategory(c)}
                   style={{ 
                     cursor: 'pointer',
-                    backgroundColor: isActive ? '#f0f0f0' : 'transparent', // Delikatne wyróżnienie tła
+                    backgroundColor: isActive ? '#f0f0f0' : 'transparent',
                     borderRadius: '4px',
-                    padding: '2px 4px'
+                    padding: '2px 4px',
+                    display: 'flex',
+                    width: '100%',
+                    justifyContent: 'space-between',
+                    alignItems: 'center'
                   }}
                 >
                   <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{c}</div>
+                  <span style={{ color: '#b0b0b0', fontSize: '13px', paddingLeft: '8px' }}>({count})</span>
                 </div>
               );
             })}
