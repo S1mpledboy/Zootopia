@@ -44,7 +44,7 @@ interface ProductProps {
   promoPrice?: number | null;
   image: string;
   companyName: string;
-  petCategoryId: string | null; // Odpowiednik product.category (ObjectId z bazy)
+  petCategoryId: string | null; // ObjectId kategorii produktu przekazane z serwera
   attributes: DBAttribute[];
 }
 
@@ -68,7 +68,7 @@ const KategorieClient = ({
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  // Odczytujemy typ z URL (np. 'pies', 'kot', 'male-zwierzeta', 'promocje'). Domyślnie 'pies'.
+  // Odczytujemy typ z URL (np. 'pies', 'kot', 'male-zwierzeta'). Domyślnie 'pies'.
   const currentType = searchParams.get('type') || 'pies';
 
   // ===== STATE =====
@@ -81,10 +81,10 @@ const KategorieClient = ({
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
   
-  // Przechowujemy zaznaczone ID podkategorii z MongoDB (zamiast starego stringa tekstowego)
+  // Przechowujemy aktywne ID podkategorii (ObjectId z bazy) zamiast stringa
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  // Resetowanie podkategorii w przypadku zmiany głównego typu w URL
+  // Resetowanie stanu przy zmianie głównego typu zwierzaka w URL
   useEffect(() => {
     setActiveCategoryId(null);
     setFilters({});
@@ -92,7 +92,6 @@ const KategorieClient = ({
     setPriceTo('');
   }, [currentType]);
 
-  // Pomocnicza funkcja do ładnego formatowania tekstu w mapie strony
   const getTypeLabel = (type: string) => {
     switch (type) {
       case 'pies': return 'Pies';
@@ -104,9 +103,9 @@ const KategorieClient = ({
   };
 
   // ==========================================================
-  // 🧭 DYNAMICZNA LOGIKA DRZEWA KATEGORII Z MONGO
+  // 🧭 LOGIKA POWIĄZANIA RELACJI KATEGORII Z BAZY MONGO
   // ==========================================================
-  // 1. Znajdujemy dokument zwierzaka (np. Pies, parent: null)
+  // 1. Szukamy dokumentu zwierzaka (np. Pies, parent: null)
   const currentAnimalObj = useMemo(() => {
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
@@ -117,7 +116,7 @@ const KategorieClient = ({
     return allCategories.filter(cat => cat.parent === currentAnimalObj._id);
   }, [allCategories, currentAnimalObj]);
 
-  // 3. Pobieramy podkategorie przypisane bezpośrednio do danego działu nadrzędnego
+  // 3. Pobieramy podkategorie przypisane do danego działu nadrzędnego
   const getSubcategoriesByParent = (parentId: string) => {
     return allCategories.filter(cat => cat.parent === parentId);
   };
@@ -144,12 +143,11 @@ const KategorieClient = ({
     setSort(value);
   };
 
-  // Naprawiona funkcja przełączania kategorii po ID z bazy danych
+  // Prawidłowe przełączanie kategorii po kliknięciu
   const selectCategory = (id: string) => {
     setActiveCategoryId((prev) => (prev === id ? null : id));
   };
 
-  // Funkcja resetująca filtry i cofająca mapę strony do poziomu głównego zwierzęcia
   const handleResetToMainType = () => {
     setActiveCategoryId(null);
     setFilters({});
@@ -163,37 +161,30 @@ const KategorieClient = ({
   const facetCounts = useMemo(() => {
     const getCountForOption = (group: string, value: string) => {
       return initialProducts.filter(product => {
-        // 1. Sprawdzamy kategorię po ID z bazy danych
+        // Filtrowanie po podkategorii (nie odrzucamy kategorii samej przez siebie)
         if (group !== 'category' && activeCategoryId && product.petCategoryId !== activeCategoryId) return false;
         if (group === 'category' && product.petCategoryId !== value) return false;
 
-        // 2. Sprawdzamy markę
+        // Marka
         if (group !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(product.companyName)) return false;
         if (group === 'marka' && product.companyName !== value) return false;
 
-        // 3. Sprawdzamy cenę
+        // Cena
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
-        const actualPrice = product.price;
-        if (actualPrice < minPrice || actualPrice > maxPrice) return false;
+        if (product.price < minPrice || product.price > maxPrice) return false;
 
         const hasAttr = (name: string, val: string) => product.attributes.some(a => a.name === name && a.value === val);
 
-        // 4. Pola atrybutów tablicowych
-        if (group !== 'wielkosc' && filters.wielkosc && filters.wielkosc.length > 0) {
-          if (!product.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value))) return false;
-        }
-        if (group === 'wielkosc' && !hasAttr('breedSize', value)) return false;
+        // Atrybuty
+        if (group !== 'wielkosc' && filters.wielkosc && filters.wielkosc.length > 0 && !filters.wielkosc.includes((product as any).wielkosc)) return false;
+        if (group === 'wielkosc' && (product as any).wielkosc !== value) return false;
 
-        if (group !== 'wiek' && filters.wiek && filters.wiek.length > 0) {
-          if (!product.attributes.some(a => a.name === 'dogAge' && filters.wiek.includes(a.value))) return false;
-        }
-        if (group === 'wiek' && !hasAttr('dogAge', value)) return false;
+        if (group !== 'wiek' && filters.wiek && filters.wiek.length > 0 && !filters.wiek.includes((product as any).wiek)) return false;
+        if (group === 'wiek' && (product as any).wiek !== value) return false;
 
-        if (group !== 'potrzeby' && filters.potrzeby && filters.potrzeby.length > 0) {
-          if (!product.attributes.some(a => a.name === 'specialNeeds' && filters.potrzeby.includes(a.value))) return false;
-        }
-        if (group === 'potrzeby' && !hasAttr('specialNeeds', value)) return false;
+        if (group !== 'potrzeby' && filters.potrzeby && filters.potrzeby.length > 0 && !((product as any).potrzeby?.some((r: string) => filters.potrzeby.includes(r)))) return false;
+        if (group === 'potrzeby' && !((product as any).potrzeby?.includes(value))) return false;
 
         return true;
       }).length;
@@ -210,36 +201,24 @@ const KategorieClient = ({
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
 
-    // 1. Kategoria dolna przefiltrowana po ObjectId
+    // Filtrowanie produktów po wybranym ObjectId podkategorii
     if (activeCategoryId) {
       result = result.filter(product => product.petCategoryId === activeCategoryId);
     }
 
-    // 2. Marka
+    // Marka
     if (filters.marka && filters.marka.length > 0) {
       result = result.filter(product => filters.marka.includes(product.companyName));
     }
 
-    // 3. Atrybuty
-    if (filters.wielkosc && filters.wielkosc.length > 0) {
-      result = result.filter(p => p.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value)));
-    }
-    if (filters.wiek && filters.wiek.length > 0) {
-      result = result.filter(p => p.attributes.some(a => a.name === 'dogAge' && filters.wiek.includes(a.value)));
-    }
-    if (filters.potrzeby && filters.potrzeby.length > 0) {
-      result = result.filter(p => p.attributes.some(a => a.name === 'specialNeeds' && filters.potrzeby.includes(a.value)));
-    }
-
-    // 4. Cena
+    // Cena
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
-    
     if (minPrice > 0 || maxPrice < Infinity) {
       result = result.filter(product => product.price >= minPrice && product.price <= maxPrice);
     }
 
-    // 5. Sortowanie
+    // Sortowanie
     result.sort((a, b) => {
       switch (sort) {
         case 'Nazwa rosnąco': return a.name.localeCompare(b.name);
@@ -329,7 +308,7 @@ const KategorieClient = ({
           <div className={styles.zastosujFiltry}>Resetuj filtry</div>
         </div>
 
-        {/* ===== KATEGORIE - ORYGINALNY WYGLĄD ZACHOWUJĄCY KLASY Z PLIKU CSS ===== */}
+        {/* ===== DYNAMICZNE MENU KATEGORII Z MONGO ===== */}
         <div className={styles.frameWrapper}>
           <div className={styles.filtrujWrapper}>
             <div className={styles.filtruj}>Kategorie</div>
@@ -341,24 +320,28 @@ const KategorieClient = ({
           const subCategories = getSubcategoriesByParent(mainCat._id);
           return (
             <div key={mainCat._id} className={styles.frameGroup}>
-              {/* Nagłówek Sekcji Głównej (np. Karma, LEGOWISKA) z zachowaniem klasy i ikonki zwijania */}
+              {/* Tytuł główny sekcji (np. Karma, LEGOWISKA) */}
               <div className={styles.tablerIconChevronCompactRiParent}>
                 <div className={styles.cena} style={{ fontWeight: 'bold' }}>{mainCat.name}</div>
               </div>
               
-              {/* Blok z podkategoriami ułożonymi pionowo z wcięciem (paddingLeft) */}
-              <div className={styles.frameDiv} style={{ display: 'flex', flexDirection: 'column', gap: '8px', paddingLeft: '14px', width: '100%' }}>
+              {/* Tutaj jest Twoja oryginalna struktura pionowa z pliku CSS */}
+              <div className={styles.frameDiv}>
                 {subCategories.map((sub) => {
                   const isActive = activeCategoryId === sub._id;
-                  // Dynamiczny licznik produktów wyciągany dla konkretnego ID podkategorii
+                  // Dynamiczny licznik ilości produktów przypisanych do podkategorii
                   const count = facetCounts.get('category', sub._id);
                   
                   return (
                     <div
                       key={sub._id}
+                      className={styles.karmaMokraWrapper}
                       onClick={() => selectCategory(sub._id)}
                       style={{
                         cursor: 'pointer',
+                        backgroundColor: isActive ? '#f0f0f0' : 'transparent',
+                        borderRadius: '4px',
+                        padding: '2px 4px',
                         display: 'flex',
                         width: '100%',
                         justifyContent: 'space-between',
@@ -366,18 +349,12 @@ const KategorieClient = ({
                       }}
                     >
                       {/* Nazwa podkategorii - pogrubia się automatycznie po kliknięciu */}
-                      <div 
-                        className={styles.cena} 
-                        style={{ 
-                          fontWeight: isActive ? 'bold' : 'normal',
-                          color: isActive ? '#000000' : '#444444'
-                        }}
-                      >
+                      <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal' }}>
                         {sub.name}
                       </div>
                       
-                      {/* Licznik produktów po prawej stronie w tej samej linii */}
-                      <span style={{ color: '#b0b0b0', fontSize: '13px' }}>
+                      {/* Licznik produktów idealnie wyrównany do prawej w tej samej linii */}
+                      <span style={{ color: '#b0b0b0', fontSize: '13px', paddingLeft: '8px' }}>
                         ({count})
                       </span>
                     </div>
@@ -443,7 +420,7 @@ const KategorieClient = ({
           </div>
         </div>
 
-        {/* WYSWIETLAMY PRZEFILTROWANĄ TABLICĘ PRODUKTÓW */}
+        {/* PRODUKTY FILTROWANE NA ŻYWO */}
         <div className={styles.produktPromocjaPiesParent}>
           {filteredAndSortedProducts.length > 0 ? (
             filteredAndSortedProducts.map((product) => (
