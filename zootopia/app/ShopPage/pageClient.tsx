@@ -1,9 +1,8 @@
 'use client';
 
-import type { NextPage } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import styles from './shopPage.module.css';
 import { useState, useMemo, useEffect } from 'react';
 
@@ -13,9 +12,6 @@ import line from '@/app/Public/Images/line.svg';
 
 import PromotionItem from '../ItemBlocks/promotionItem';
 
-// =========================
-// SECTION COMPONENT
-// =========================
 function Section({ id, title, children, openSections, toggleSection }: any) {
   const open = openSections[id];
   return (
@@ -29,9 +25,11 @@ function Section({ id, title, children, openSections, toggleSection }: any) {
   );
 }
 
-// =========================
-// INTERFEJS PRODUKTU
-// =========================
+interface DBAttribute {
+  name: string;
+  value: string;
+}
+
 interface ProductProps {
   _id: string;
   name: string;
@@ -39,19 +37,26 @@ interface ProductProps {
   promoPrice?: number;
   image: string;
   companyName: string;
-  category?: string;
-  animalType?: string; // Dodane pole rozróżniające np. 'pies', 'kot', 'male-zwierzeta' w bazie danych
+  petCategoryId: string;
+  attributes: DBAttribute[];
 }
 
-// =========================
-// PAGE CLIENT COMPONENT
-// =========================
-const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] }) => {
-  const searchParams = useSearchParams();
-  const router = useRouter();
+interface CategoryProps {
+  _id: string;
+  name: string;
+  slug: string;
+  parent: string | null;
+}
 
-  // Odczytujemy typ z URL (np. 'pies', 'kot', 'male-zwierzeta', 'promocje'). Domyślnie 'pies'.
-  const currentType = searchParams.get('type') || 'pies';
+const KategorieClient = ({ 
+  initialProducts, 
+  allCategories 
+}: { 
+  initialProducts: ProductProps[]; 
+  allCategories: CategoryProps[];
+}) => {
+  const searchParams = useSearchParams();
+  const currentType = searchParams.get('type') || 'pies'; // np. 'pies', 'kot'
 
   // ===== STATE =====
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -59,32 +64,41 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
   });
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sort, setSort] = useState<string>('popularność');
-
   const [priceFrom, setPriceFrom] = useState<string>('');
   const [priceTo, setPriceTo] = useState<string>('');
   
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  // Przetrzymujemy teraz ID aktywnej podkategorii z bazy danych
+  const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  // Resetowanie podkategorii w przypadku zmiany głównego typu w URL
   useEffect(() => {
-    setActiveCategory(null);
+    setActiveCategoryId(null);
     setFilters({});
     setPriceFrom('');
     setPriceTo('');
   }, [currentType]);
 
-  // Pomocnicza funkcja do ładnego formatowania tekstu w mapie strony
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case 'pies': return 'Pies';
-      case 'kot': return 'Kot';
-      case 'male-zwierzeta': return 'Małe zwierzęta';
-      case 'promocje': return 'Promocje';
-      default: return 'Pies';
-    }
+  // ===== FILTROWANIE DRZEWA KATEGORII Z BAZY =====
+  // 1. Znajdujemy główne działy (te z parent: null) zrobione skryptem (np. "Karma", "LEGOWISKA")
+  const mainCategories = useMemo(() => {
+    return allCategories.filter(cat => cat.parent === null);
+  }, [allCategories]);
+
+  // 2. Mapowanie podkategorii przypisanych do poszczególnych rodziców
+  const getSubcategoriesByParent = (parentId: string) => {
+    return allCategories.filter(cat => cat.parent === parentId);
   };
 
-  // ===== TOGGLE LOGIC =====
+  // Znajdź obiekt aktywnej kategorii do okruszków chleba (breadcrumbs)
+  const activeCategoryObj = useMemo(() => {
+    return allCategories.find(cat => cat._id === activeCategoryId);
+  }, [activeCategoryId, allCategories]);
+
+  // Znajdź sekcję nadrzędną dla aktywnej podkategorii
+  const parentCategoryObj = useMemo(() => {
+    if (!activeCategoryObj) return null;
+    return allCategories.find(cat => cat._id === activeCategoryObj.parent);
+  }, [activeCategoryObj, allCategories]);
+
   const toggleSection = (key: string) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -99,41 +113,34 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
     });
   };
 
-  const selectSort = (value: string) => {
-    setSort(value);
+  const selectSort = (value: string) => setSort(value);
+
+  const selectCategory = (id: string) => {
+    setActiveCategoryId((prev) => (prev === id ? null : id));
   };
 
-  const selectCategory = (value: string) => {
-    setActiveCategory((prev) => (prev === value ? null : value));
-  };
-
-  // Funkcja resetująca filtry i cofająca mapę strony do poziomu głównego zwierzęcia
   const handleResetToMainType = () => {
-    setActiveCategory(null);
+    setActiveCategoryId(null);
     setFilters({});
     setPriceFrom('');
     setPriceTo('');
   };
 
   // ==========================================
-  // 📊 DYNAMICZNE WYLICZANIE LICZBY PRODUKTÓW DLA FILTRÓW
+  // 📊 DYNAMICZNE WYLICZANIE FACETÓW (LICZBY PRODUKTÓW)
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (group: string, value: string) => {
       return initialProducts.filter(product => {
-        // Główny filtr nadrzędny z paska nawigacji (Pies / Kot / Małe Zwierzęta / Promocje)
-        if (currentType === 'promocje') {
-          if (!product.promoPrice) return false;
-        } else {
-          if (product.animalType !== currentType) return false;
-        }
+        // Główny filtr typu promocje
+        if (currentType === 'promocje' && !product.promoPrice) return false;
 
-        // 1. Sprawdzamy kategorię
-        if (group !== 'category' && activeCategory && product.category !== activeCategory) return false;
-        if (group === 'category' && product.category !== value) return false;
+        // 1. Sprawdzamy kategorię petCategory z bazy danych
+        if (group !== 'category' && activeCategoryId && product.petCategoryId !== activeCategoryId) return false;
+        if (group === 'category' && product.petCategoryId !== value) return false;
 
         // 2. Sprawdzamy markę
-        if (group !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(product.companyName)) return false;
+        if (group !== 'marka' && filters.marka?.length > 0 && !filters.marka.includes(product.companyName)) return false;
         if (group === 'marka' && product.companyName !== value) return false;
 
         // 3. Sprawdzamy cenę
@@ -142,15 +149,26 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
         const actualPrice = product.promoPrice || product.price;
         if (actualPrice < minPrice || actualPrice > maxPrice) return false;
 
-        // 4. Przyszłe pola (wiek, wielkość, potrzeby)
-        if (group !== 'wielkosc' && filters.wielkosc && filters.wielkosc.length > 0 && !filters.wielkosc.includes((product as any).wielkosc)) return false;
-        if (group === 'wielkosc' && (product as any).wielkosc !== value) return false;
+        // Helper do sprawdzania tablicy dynamicznych atrybutów bazy [ { name, value } ]
+        const hasAttr = (name: string, val: string) => product.attributes.some(a => a.name === name && a.value === val);
 
-        if (group !== 'wiek' && filters.wiek && filters.wiek.length > 0 && !filters.wiek.includes((product as any).wiek)) return false;
-        if (group === 'wiek' && (product as any).wiek !== value) return false;
+        // 4. Pola atrybutów: wielkosc
+        if (group !== 'wielkosc' && filters.wielkosc?.length > 0) {
+          if (!product.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value))) return false;
+        }
+        if (group === 'wielkosc' && !hasAttr('breedSize', value)) return false;
 
-        if (group !== 'potrzeby' && filters.potrzeby && filters.potrzeby.length > 0 && !((product as any).potrzeby?.some((r: string) => filters.potrzeby.includes(r)))) return false;
-        if (group === 'potrzeby' && !((product as any).potrzeby?.includes(value))) return false;
+        // 5. Pola atrybutów: wiek
+        if (group !== 'wiek' && filters.wiek?.length > 0) {
+          if (!product.attributes.some(a => a.name === 'dogAge' && filters.wiek.includes(a.value))) return false;
+        }
+        if (group === 'wiek' && !hasAttr('dogAge', value)) return false;
+
+        // 6. Pola atrybutów: potrzeby
+        if (group !== 'potrzeby' && filters.potrzeby?.length > 0) {
+          if (!product.attributes.some(a => a.name === 'specialNeeds' && filters.potrzeby.includes(a.value))) return false;
+        }
+        if (group === 'potrzeby' && !hasAttr('specialNeeds', value)) return false;
 
         return true;
       }).length;
@@ -159,24 +177,21 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
     return {
       get: (group: string, value: string) => getCountForOption(group, value)
     };
-  }, [initialProducts, filters, activeCategory, priceFrom, priceTo, currentType]);
+  }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo, currentType]);
 
   // ==========================================
-  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA
+  // 🔥 GŁÓWNA LOGIKA FILTROWANIA I SORTOWANIA PRODUKTÓW
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
 
-    // FILTR 0: Główna selekcja z górnego paska (Pies/Kot/Małe zwierzęta/Promocje)
     if (currentType === 'promocje') {
       result = result.filter(product => product.promoPrice && product.promoPrice > 0);
-    } else {
-      result = result.filter(product => product.animalType === currentType);
     }
 
-    // 1. Kategoria dolna
-    if (activeCategory) {
-      result = result.filter(product => product.category === activeCategory);
+    // 1. Kategoria dolna z bazy danych
+    if (activeCategoryId) {
+      result = result.filter(product => product.petCategoryId === activeCategoryId);
     }
 
     // 2. Marka
@@ -184,10 +199,20 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
       result = result.filter(product => filters.marka.includes(product.companyName));
     }
 
-    // 3. Cena
+    // 3. Filtry atrybutów (wielkosc, wiek, potrzeby) z bazy [ { name, value } ]
+    if (filters.wielkosc && filters.wielkosc.length > 0) {
+      result = result.filter(p => p.attributes.some(a => a.name === 'breedSize' && filters.wielkosc.includes(a.value)));
+    }
+    if (filters.wiek && filters.wiek.length > 0) {
+      result = result.filter(p => p.attributes.some(a => a.name === 'dogAge' && filters.wiek.includes(a.value)));
+    }
+    if (filters.potrzeby && filters.potrzeby.length > 0) {
+      result = result.filter(p => p.attributes.some(a => a.name === 'specialNeeds' && filters.potrzeby.includes(a.value)));
+    }
+
+    // 4. Cena
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
-    
     if (minPrice > 0 || maxPrice < Infinity) {
       result = result.filter(product => {
         const actualPrice = product.promoPrice || product.price;
@@ -195,11 +220,10 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
       });
     }
 
-    // 4. Sortowanie
+    // 5. Sortowanie
     result.sort((a, b) => {
       const priceA = a.promoPrice || a.price;
       const priceB = b.promoPrice || b.price;
-
       switch (sort) {
         case 'Nazwa rosnąco': return a.name.localeCompare(b.name);
         case 'Nazwa malejąco': return b.name.localeCompare(a.name);
@@ -210,18 +234,17 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
     });
 
     return result;
-  }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategory, currentType]);
+  }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId, currentType]);
 
-  // ==========================================
-
-  const Checkbox = ({ group, value }: { group: string; value: string }) => {
-    const checked = filters[group]?.includes(value);
-    const count = facetCounts.get(group, value);
+  const Checkbox = ({ group, value, dbValue }: { group: string; value: string; dbValue?: string }) => {
+    const internalVal = dbValue || value;
+    const checked = filters[group]?.includes(internalVal);
+    const count = facetCounts.get(group, internalVal);
     
     return (
       <div 
         className={styles.frameParent2} 
-        onClick={() => toggleFilter(group, value)} 
+        onClick={() => toggleFilter(group, internalVal)} 
         style={{ cursor: 'pointer', display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}
       >
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -254,41 +277,35 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
         </Section>
 
         <Section id="marka" title="Marka" openSections={openSections} toggleSection={toggleSection}>
-          <Checkbox group="marka" value="AlphaWolf" />
-          <Checkbox group="marka" value="Brit" />
-          <Checkbox group="marka" value="Royal Canin" />
-          <Checkbox group="marka" value="Trixie" />
-          <Checkbox group="marka" value="NatureBite" />
+          {["AlphaWolf", "Brit", "Royal Canin", "Trixie", "NatureBite"].map(brand => (
+            <Checkbox key={brand} group="marka" value={brand} />
+          ))}
         </Section>
 
         <Section id="wielkosc" title="Wielkość rasy" openSections={openSections} toggleSection={toggleSection}>
-          <Checkbox group="wielkosc" value="Mini/Mała <10kg" />
-          <Checkbox group="wielkosc" value="Średnia 10-25kg" />
-          <Checkbox group="wielkosc" value="Duża >25kg" />
+          <Checkbox group="wielkosc" value="Mini/Mała <10kg" dbValue="mini" />
+          <Checkbox group="wielkosc" value="Średnia 10-25kg" dbValue="medium" />
+          <Checkbox group="wielkosc" value="Duża >25kg" dbValue="large" />
         </Section>
 
         <Section id="wiek" title="Wiek psa" openSections={openSections} toggleSection={toggleSection}>
-          <Checkbox group="wiek" value="Szczenię" />
-          <Checkbox group="wiek" value="Dorosły" />
-          <Checkbox group="wiek" value="Senior" />
+          <Checkbox group="wiek" value="Szczenię" dbValue="puppy" />
+          <Checkbox group="wiek" value="Dorosły" dbValue="adult" />
+          <Checkbox group="wiek" value="Senior" dbValue="senior" />
         </Section>
 
         <Section id="potrzeby" title="Specjalne potrzeby" openSections={openSections} toggleSection={toggleSection}>
-          <Checkbox group="potrzeby" value="Bezzbożowa" />
-          <Checkbox group="potrzeby" value="Dla alergików" />
-          <Checkbox group="potrzeby" value="Nadwaga" />
-          <Checkbox group="potrzeby" value="Wysoka aktywność" />
+          <Checkbox group="potrzeby" value="Bezzbożowa" dbValue="grainFree" />
+          <Checkbox group="potrzeby" value="Dla alergików" dbValue="hypoallergenic" />
+          <Checkbox group="potrzeby" value="Nadwaga" dbValue="overweight" />
+          <Checkbox group="potrzeby" value="Wysoka aktywność" dbValue="active" />
         </Section>
 
-        <div 
-          className={styles.zastosujFiltryWrapper} 
-          onClick={() => { setFilters({}); setPriceFrom(''); setPriceTo(''); setActiveCategory(null); }} 
-          style={{ cursor: 'pointer' }}
-        >
+        <div className={styles.zastosujFiltryWrapper} onClick={handleResetToMainType} style={{ cursor: 'pointer' }}>
           <div className={styles.zastosujFiltry}>Resetuj filtry</div>
         </div>
 
-        {/* ===== KATEGORIE ===== */}
+        {/* ===== KATEGORIE Z BAZY DANYCH ===== */}
         <div className={styles.frameWrapper}>
           <div className={styles.filtrujWrapper}>
             <div className={styles.filtruj}>Kategorie</div>
@@ -296,35 +313,48 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
         </div>
         <Image src={line} width={216} height={1} alt="" />
 
-        <div className={styles.frameGroup}>
-          <div className={styles.cena}>{getTypeLabel(currentType)}</div>
-          <div className={styles.frameDiv}>
-            {['Karma mokra', 'Karma sucha', 'Przysmaki i gryzaki', 'Spacer i podróż', 'Legowiska i dom'].map((c) => {
-              const isActive = activeCategory === c;
-              const count = facetCounts.get('category', c);
-              
-              return (
-                <div 
-                  key={c} 
-                  className={styles.karmaMokraWrapper} 
-                  onClick={() => selectCategory(c)}
-                  style={{ 
-                    cursor: 'pointer',
-                    backgroundColor: isActive ? '#f0f0f0' : 'transparent',
-                    borderRadius: '4px',
-                    padding: '2px 4px',
-                    display: 'flex',
-                    width: '100%',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal' }}>{c}</div>
-                  <span style={{ color: '#b0b0b0', fontSize: '13px', paddingLeft: '8px' }}>({count})</span>
+        {/* Dynamiczne mapowanie grup i podkategorii prosto z MongoDB */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', width: '100%' }}>
+          {mainCategories.map((mainCat) => {
+            const subCategories = getSubcategoriesByParent(mainCat._id);
+            if (subCategories.length === 0) return null;
+
+            return (
+              <div key={mainCat._id} className={styles.frameGroup} style={{ gap: '6px' }}>
+                <div className={styles.cena} style={{ fontWeight: 'bold', color: '#333', textTransform: 'uppercase', fontSize: '13px' }}>
+                  {mainCat.name}
                 </div>
-              );
-            })}
-          </div>
+                <div className={styles.frameDiv} style={{ paddingLeft: '4px', gap: '4px' }}>
+                  {subCategories.map((sub) => {
+                    const isActive = activeCategoryId === sub._id;
+                    const count = facetCounts.get('category', sub._id);
+
+                    return (
+                      <div 
+                        key={sub._id} 
+                        onClick={() => selectCategory(sub._id)}
+                        style={{ 
+                          cursor: 'pointer',
+                          backgroundColor: isActive ? '#f0f0f0' : 'transparent',
+                          borderRadius: '4px',
+                          padding: '3px 6px',
+                          display: 'flex',
+                          width: '100%',
+                          justifyContent: 'space-between',
+                          alignItems: 'center'
+                        }}
+                      >
+                        <div className={styles.cena} style={{ fontWeight: isActive ? 'bold' : 'normal', fontSize: '14px' }}>
+                          {sub.name}
+                        </div>
+                        <span style={{ color: '#b0b0b0', fontSize: '12px' }}>({count})</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
 
@@ -341,14 +371,20 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
             <div 
               className={styles.stronaGwna} 
               onClick={handleResetToMainType}
-              style={{ cursor: 'pointer', fontWeight: !activeCategory ? 'bold' : 'normal' }}
+              style={{ cursor: 'pointer', fontWeight: !activeCategoryId ? 'bold' : 'normal' }}
             >
-              {getTypeLabel(currentType)}
+              {currentType === 'pies' ? 'Pies' : currentType === 'kot' ? 'Kot' : 'Sklep'}
             </div>
-            {activeCategory && (
+            {parentCategoryObj && (
               <>
                 <div className={styles.stronaGwna}>{'>'}</div>
-                <div className={styles.stronaGwna} style={{ fontWeight: 'bold' }}>{activeCategory}</div>
+                <div className={styles.stronaGwna}>{parentCategoryObj.name}</div>
+              </>
+            )}
+            {activeCategoryObj && (
+              <>
+                <div className={styles.stronaGwna}>{'>'}</div>
+                <div className={styles.stronaGwna} style={{ fontWeight: 'bold' }}>{activeCategoryObj.name}</div>
               </>
             )}
           </div>
@@ -376,7 +412,7 @@ const KategorieClient = ({ initialProducts }: { initialProducts: ProductProps[] 
           </div>
         </div>
 
-        {/* WYSWIETLAMY PRZEFILTROWANA TABLICE */}
+        {/* WYSWIETLAMY PRZEFILTROWANĄ TABLICĘ */}
         <div className={styles.produktPromocjaPiesParent}>
           {filteredAndSortedProducts.length > 0 ? (
             filteredAndSortedProducts.map((product) => (

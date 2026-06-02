@@ -1,7 +1,8 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
+import PetCategory from "@/models/Category";
 import "@/models/Company"; 
-import KategorieClient from "./pageClient"; // Zmień ścieżkę jeśli plik nazywa się inaczej lub jest w innym folderze
+import KategorieClient from "./pageClient";
 
 export const revalidate = 0;
 
@@ -10,19 +11,24 @@ export default async function KategoriePage() {
   await connectToDatabase();
 
   // 2. Pobieramy produkty z bazy
-  const rawProducts = await Product.find({
-    isActive: true,
-    //promoPrice: { $ne: null, $exists: true }
-  })
+  const rawProducts = await Product.find({ isActive: true })
     .populate("company")
     .sort({ updatedAt: -1 }) 
     .lean();
 
-  // 3. Formatyzujemy dane, aby móc je przekazać do Client Component 
-  // (Next.js wymaga prostych obiektów, nie możemy przekazać całego modelu Mongoose)
+  // 3. Pobieramy wszystkie kategorie zwierzaków, by dynamicznie zbudować menu na froncie
+  const rawCategories = await PetCategory.find({}).lean();
+
+  // 4. Serializacja kategorii dla Next.js
+  const serializedCategories = rawCategories.map((cat: any) => ({
+    _id: cat._id.toString(),
+    name: cat.name,
+    slug: cat.slug,
+    parent: cat.parent ? cat.parent.toString() : null
+  }));
+
+  // 5. Formatujemy dane produktów
   const serializedProducts = rawProducts.map((product: any) => {
-    
-    // Bezpieczne wyciąganie pierwszego zdjęcia
     let productImage = "/fallback-image.png";
     if (product.images && product.images.length > 0) {
       const innerImages = product.images[0];
@@ -39,10 +45,17 @@ export default async function KategoriePage() {
       price: product.price,
       promoPrice: product.promoPrice,
       image: productImage,
-      companyName: product.company?.name || "Zootopia"
+      companyName: product.company?.name || "Zootopia",
+      // Mapujemy pole petCategory i atrybuty z nowego schematu bazy danych
+      petCategoryId: product.petCategory ? product.petCategory.toString() : null,
+      attributes: product.attributes || []
     };
   });
 
-  // Renderujemy Client Component przekazując sformatowane produkty jako prop
-  return <KategorieClient initialProducts={serializedProducts} />;
+  return (
+    <KategorieClient 
+      initialProducts={serializedProducts} 
+      allCategories={serializedCategories} 
+    />
+  );
 }
