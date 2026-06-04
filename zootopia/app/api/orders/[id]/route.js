@@ -6,14 +6,15 @@ import { getAuthUser } from "@/middleware/auth";
 export async function GET(req, { params }) {
   try {
     await connectToDatabase();
-    const { id } = params;
+
+    // Next.js App Router: params mogą być Promise w nowszych wersjach
+    const { id } = await params;
 
     const user = await getAuthUser(req);
-    if (!user) {
+    if (!user || !user._id) {
       return NextResponse.json({ message: "Brak autoryzacji" }, { status: 401 });
     }
 
-    // Szukamy zamówienia po ID i pilnujemy, by należało do zalogowanego użytkownika
     const order = await Order.findOne({ _id: id, userId: user._id });
 
     if (!order) {
@@ -22,6 +23,7 @@ export async function GET(req, { params }) {
 
     return NextResponse.json(order, { status: 200 });
   } catch (error) {
+    console.error("Błąd pobierania zamówienia:", error);
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 }
