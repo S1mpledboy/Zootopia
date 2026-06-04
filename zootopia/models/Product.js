@@ -28,6 +28,13 @@ const ProductSchema = new mongoose.Schema(
       min: 0,
     },
 
+    // 🔥 DODANE: pole promoPrice które istnieje w bazie
+    promoPrice: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+
     stock: {
       type: Number,
       default: 0,

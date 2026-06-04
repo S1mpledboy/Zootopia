@@ -25,7 +25,7 @@ export default async function KategoriePage({
     parent: cat.parent ? cat.parent.toString() : null
   }));
 
-  // 🔥 HELPER: identyczne rozpakowywanie obrazka jak na stronie głównej
+  // 🔥 HELPER: rozpakowywanie obrazka (tablicа w tablicy)
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
     const first = images[0];
@@ -34,7 +34,7 @@ export default async function KategoriePage({
     return "/fallback-image.png";
   };
 
-  // 🔥 HELPER: serializacja produktu (jedno miejsce, brak duplikacji)
+  // 🔥 HELPER: serializacja produktu
   const serializeProduct = (product: any) => {
     let catId = null;
     if (product.category) {
@@ -47,7 +47,7 @@ export default async function KategoriePage({
       _id: product._id.toString(),
       name: product.name,
       price: product.price,
-      promoPrice: product.oldPrice ?? null, // 🔥 oldPrice z modelu → promoPrice dla komponentu
+      promoPrice: product.promoPrice ?? null, // 🔥 promoPrice z bazy
       image: extractImage(product.images),
       companyName: product.company?.name || "Inna marka",
       petCategoryId: catId,
@@ -56,12 +56,12 @@ export default async function KategoriePage({
   };
 
   // ============================================================
-  // PROMOCJE: filtrujemy po oldPrice (nie po kategorii)
+  // PROMOCJE: filtrujemy po promoPrice
   // ============================================================
   if (urlType === 'promocje') {
     const rawProducts = await Product.find({
       isActive: true,
-      oldPrice: { $ne: null, $exists: true, $gt: 0 } // 🔥 oldPrice, nie promoPrice
+      promoPrice: { $ne: null, $exists: true, $gt: 0 } // 🔥 promoPrice
     })
       .populate("company")
       .sort({ updatedAt: -1 })
