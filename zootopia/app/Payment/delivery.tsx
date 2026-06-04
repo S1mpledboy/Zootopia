@@ -3,7 +3,7 @@
 import type { NextPage } from 'next';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; // 🔥 1. DODANY IMPORT
+import { useRouter } from 'next/navigation';
 import styles from './delivery.module.css';
 
 import circleIcon from "@/app/Public/Images/Ellipse6.svg"; 
@@ -20,14 +20,26 @@ interface CartItemFromServer {
   };
 }
 
+interface AppliedDiscount {
+  code: string;
+  type: 'percentage' | 'fixed';
+  value: number;
+}
+
 const WyborDostawyIPlatnosci: NextPage = () => {
-  const router = useRouter(); // 🔥 2. INICJALIZACJA ROUTERA
+  const router = useRouter(); 
   
   const [deliveryMethod, setDeliveryMethod] = useState<string>('paczkomat'); 
   const [paymentMethod, setPaymentMethod] = useState<string>('blik');     
   const [cartItems, setCartItems] = useState<CartItemFromServer[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // NOWE STANY DLA KODU RABATOWEGO
+  const [promoCode, setPromoCode] = useState<string>('');
+  const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
+  const [discountError, setDiscountError] = useState<string>('');
+  const [isApplyingDiscount, setIsApplyingDiscount] = useState<boolean>(false);
 
   const fetchCartData = useCallback(async () => {
     const token = localStorage.getItem('token');
@@ -58,6 +70,17 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     return total + (finalPrice * item.quantity);
   }, 0);
 
+  // OBLICZANIE WARTOŚCI ZNIŻKI (Działa na całą wartość produktów w koszyku)
+  const getDiscountAmount = () => {
+    if (!appliedDiscount) return 0;
+    if (appliedDiscount.type === 'percentage') {
+      return (basePrice * appliedDiscount.value) / 100;
+    } else if (appliedDiscount.type === 'fixed') {
+      return Math.min(appliedDiscount.value, basePrice); // Zniżka kwotowa nie może przewyższyć wartości koszyka
+    }
+    return 0;
+  };
+
   const getDeliveryCost = () => {
     switch (deliveryMethod) {
       case 'inpost': return 9.99;
@@ -71,10 +94,41 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     return paymentMethod === 'odbior' ? 5.99 : 0.00;
   };
 
-  const totalSum = basePrice + getDeliveryCost() + getAdditionalCost();
+  // CAŁKOWITA SUMA POMNIEJSZONA O ZNIŻKĘ
+  const discountAmount = getDiscountAmount();
+  const totalSum = Math.max(0, basePrice - discountAmount + getDeliveryCost() + getAdditionalCost());
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(value);
+  };
+
+  // OBSŁUGA ZATWIERDZANIA KODU RABATOWEGO
+  const handleApplyDiscount = async () => {
+    if (!promoCode.trim()) return;
+    setIsApplyingDiscount(true);
+    setDiscountError('');
+
+    try {
+      const response = await fetch('/api/discount/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: promoCode })
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setAppliedDiscount(data);
+        setDiscountError('');
+      } else {
+        setDiscountError(data.message || 'Niepoprawny kod.');
+        setAppliedDiscount(null);
+      }
+    } catch (err) {
+      console.error(err);
+      setDiscountError('Błąd połączenia z serwerem.');
+    } finally {
+      setIsApplyingDiscount(false);
+    }
   };
 
   const handlePlaceOrder = async () => {
@@ -133,6 +187,8 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           postalCode: formData.shippingPostalCode
         } : undefined,
         notes: formData.notes,
+        discountCode: appliedDiscount ? appliedDiscount.code : undefined, // DOPISANE DO ZAMÓWIENIA
+        discountValue: discountAmount, // DOPISANE DO ZAMÓWIENIA
         totalAmount: totalSum
       };
 
@@ -148,9 +204,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // 🔥 3. TUTAJ WKLEJAMY PRZEJŚCIE DO NOWEJ STRONY
-        // Przekierowujemy pod adres folderu Twojej nowej strony sukcesu (np. /order-success)
-        // i przekazujemy wygenerowany przez bazę numer zamówienia jako parametr 'number'
         router.push(`/Order-success?number=${result.orderNumber}`);
       } else {
         alert(`Błąd składania zamówienia: ${result.message}`);
@@ -256,6 +309,15 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             <div className={styles.kurierInpost}>Suma częściowa:</div>
             <div className={styles.kurierInpost}>{formatCurrency(basePrice)}</div>
           </div>
+
+          {/* SEKCOWANE WYŚWIETLANIE ZNIŻKI */}
+          {appliedDiscount && (
+            <div className={styles.frameDivSummary} style={{ color: '#2e7d32', fontWeight: '500' }}>
+              <div className={styles.kurierInpost}>Rabat ({appliedDiscount.code}):</div>
+              <div className={styles.kurierInpost}>-{formatCurrency(discountAmount)}</div>
+            </div>
+          )}
+
           <div className={styles.frameDivSummary}>
             <div className={styles.kurierInpost}>Dostawa:</div>
             <div className={styles.kurierInpost}>{getDeliveryCost() === 0 ? 'darmowa' : formatCurrency(getDeliveryCost())}</div>
@@ -265,6 +327,57 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             <div className={styles.kurierInpost}>{getAdditionalCost() === 0 ? 'brak' : formatCurrency(getAdditionalCost())}</div>
           </div>
         </div>
+
+        {/* --- OKIENKO NA KOD RABATOWY --- */}
+        <div style={{ marginTop: '20px', marginBottom: '10px' }}>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <input 
+              type="text"
+              placeholder="Kod rabatowy"
+              value={promoCode}
+              onChange={(e) => setPromoCode(e.target.value)}
+              disabled={!!appliedDiscount}
+              style={{
+                flex: 1,
+                padding: '12px',
+                border: '1px solid #ccc',
+                borderRadius: '6px',
+                fontSize: '14px',
+                fontFamily: 'Poppins, sans-serif',
+                textTransform: 'uppercase'
+              }}
+            />
+            <button
+              type="button"
+              onClick={appliedDiscount ? () => { setAppliedDiscount(null); setPromoCode(''); } : handleApplyDiscount}
+              disabled={isApplyingDiscount || (!promoCode && !appliedDiscount)}
+              style={{
+                padding: '12px 20px',
+                backgroundColor: appliedDiscount ? '#757575' : '#1e1e1e',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                fontFamily: 'Poppins, sans-serif',
+              }}
+            >
+              {isApplyingDiscount ? '...' : appliedDiscount ? 'Usuń' : 'Zastosuj'}
+            </button>
+          </div>
+          {discountError && (
+  <p style={{ color: '#fc5773', fontSize: '13px', marginTop: '5px', marginLeft: '2px', marginRight: '2px' }}>
+    {discountError}
+  </p>
+)}
+{appliedDiscount && (
+  <p style={{ color: '#2e7d32', fontSize: '13px', marginTop: '5px', marginLeft: '2px', marginRight: '2px' }}>
+    Kod zaakceptowany!
+  </p>
+)}
+</div>
+        {/* ------------------------------- */}
         
         <div className={styles.metodyDostawyParentTotal}>
           <div className={styles.lineDivider} />
