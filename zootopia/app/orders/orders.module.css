@@ -13,80 +13,126 @@
   align-items: flex-start;
 }
 
-/* ── SIDEBAR (identyczne z mojeKonto) ────────────────── */
+/* ── SIDEBAR ────────────────────────────────────────── */
 .sidebar {
   flex-shrink: 0;
-  width: 240px;
+  width: 300px;
+  padding: 20px 0;
+  box-sizing: border-box;
+  align-self: stretch;
 }
 
 .sidebarInner {
-  border: 1px solid #e0e0e0;
   border-radius: 12px;
-  padding: 20px 16px;
+  background-color: #fff;
+  border: 1px solid #565e64;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.sidebarHeader {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .sidebarTitle {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 12px;
+  position: relative;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+  font-size: 29px;
+  color: #000;
+  font-family: Poppins, sans-serif;
 }
 
 .sidebarDivider {
+  align-self: stretch;
   height: 1px;
-  background: #e0e0e0;
-  margin-bottom: 12px;
+  position: relative;
+  border-top: 1px solid #000;
+  box-sizing: border-box;
 }
 
+/* ── MENU LIST ───────────────────────────────────────── */
 .menuList {
+  align-self: stretch;
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  font-size: 16px;
+  font-family: Poppins, sans-serif;
 }
 
 .menuItem {
+  align-self: stretch;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 4px;
-  font-size: 14px;
-  color: #333;
+  gap: 20px;
+  color: #000;
   text-decoration: none;
-  cursor: default;
-  transition: color 0.15s;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  line-height: 140%;
 }
 
 .menuItem:hover {
-  color: #2d7a2d;
+  color: #fc5773;
 }
 
 .menuItemActive {
-  color: #c0392b;
-  font-weight: 600;
+  color: #fc5773 !important;
 }
 
 .menuDivider {
+  align-self: stretch;
   height: 1px;
-  background: #f0f0f0;
+  position: relative;
+  border-top: 1px solid #565e64;
+  box-sizing: border-box;
 }
 
 /* ── CONTENT ─────────────────────────────────────────── */
 .content {
   flex: 1;
   min-width: 0;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 0px 64px;
+  box-sizing: border-box;
+  font-family: Poppins, sans-serif;
 }
 
 .breadcrumb {
+  align-self: stretch;
+  background-color: #fff;
+  overflow: hidden;
   display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  color: #888;
-  margin-bottom: 16px;
+  align-items: flex-start;
+  padding: 4px 0px;
+  gap: 8px;
+  font-size: 12px;
+  color: #366f15;
+  margin-bottom: 6px;
 }
 
 .breadcrumbLink {
-  color: #888;
+  color: #366f15;
   text-decoration: none;
+  letter-spacing: 0.02em;
+  line-height: 140%;
 }
 
 .breadcrumbLink:hover {
@@ -94,27 +140,36 @@
 }
 
 .breadcrumbSep {
-  color: #bbb;
+  color: #366f15;
 }
 
 .pageTitle {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a1a1a;
+  position: relative;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+  font-size: 29px;
+  color: #000;
   margin: 0 0 12px;
 }
 
 .titleDivider {
+  align-self: stretch;
   height: 1px;
-  background: #e0e0e0;
+  position: relative;
+  border-top: 1px solid #000;
+  box-sizing: border-box;
   margin-bottom: 24px;
+  width: 100%;
 }
 
 /* ── ORDER LIST ──────────────────────────────────────── */
 .orderList {
+  align-self: stretch;
   display: flex;
   flex-direction: column;
   gap: 0;
+  width: 100%;
 }
 
 .orderRow {
@@ -180,23 +235,24 @@
 
 /* ── DETAILS BUTTON ──────────────────────────────────── */
 .detailsBtn {
-  background: none;
-  border: none;
+  background: #fc5773;
+  border: 2px solid #fc5773;
   cursor: pointer;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: #1a1a1a;
-  padding: 6px 12px;
-  border: 1px solid #ddd;
+  color: #fff;
+  padding: 6px 16px;
   border-radius: 6px;
-  transition: background 0.15s, color 0.15s;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
   white-space: nowrap;
+  font-family: Poppins, sans-serif;
 }
 
 .detailsBtn:hover {
-  background: #1a1a1a;
-  color: #fff;
+  background: #fff;
+  color: #fc5773;
+  border-color: #fc5773;
 }
 
 .detailsBtn:disabled {
@@ -210,6 +266,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px 0;
+  width: 100%;
 }
 
 .skeleton {
@@ -244,6 +301,7 @@
 .emptyBox {
   padding: 40px 0;
   text-align: center;
+  width: 100%;
 }
 
 .emptyTitle {
