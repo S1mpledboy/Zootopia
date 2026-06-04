@@ -35,7 +35,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // NOWE STANY DLA KODU RABATOWEGO
+  // Stany obsługi kodu rabatowego
   const [promoCode, setPromoCode] = useState<string>('');
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const [discountError, setDiscountError] = useState<string>('');
@@ -70,13 +70,12 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     return total + (finalPrice * item.quantity);
   }, 0);
 
-  // OBLICZANIE WARTOŚCI ZNIŻKI (Działa na całą wartość produktów w koszyku)
   const getDiscountAmount = () => {
     if (!appliedDiscount) return 0;
     if (appliedDiscount.type === 'percentage') {
       return (basePrice * appliedDiscount.value) / 100;
     } else if (appliedDiscount.type === 'fixed') {
-      return Math.min(appliedDiscount.value, basePrice); // Zniżka kwotowa nie może przewyższyć wartości koszyka
+      return Math.min(appliedDiscount.value, basePrice);
     }
     return 0;
   };
@@ -94,7 +93,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     return paymentMethod === 'odbior' ? 5.99 : 0.00;
   };
 
-  // CAŁKOWITA SUMA POMNIEJSZONA O ZNIŻKĘ
   const discountAmount = getDiscountAmount();
   const totalSum = Math.max(0, basePrice - discountAmount + getDeliveryCost() + getAdditionalCost());
 
@@ -102,7 +100,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(value);
   };
 
-  // OBSŁUGA ZATWIERDZANIA KODU RABATOWEGO
   const handleApplyDiscount = async () => {
     if (!promoCode.trim()) return;
     setIsApplyingDiscount(true);
@@ -187,8 +184,8 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           postalCode: formData.shippingPostalCode
         } : undefined,
         notes: formData.notes,
-        discountCode: appliedDiscount ? appliedDiscount.code : undefined, // DOPISANE DO ZAMÓWIENIA
-        discountValue: discountAmount, // DOPISANE DO ZAMÓWIENIA
+        discountCode: appliedDiscount ? appliedDiscount.code : undefined, 
+        discountValue: discountAmount, 
         totalAmount: totalSum
       };
 
@@ -204,6 +201,12 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       const result = await response.json();
 
       if (response.ok) {
+        // 🔥 CZYSZCZENIE STANU FRONTENDU (Wszystko znika z widoku użytkownika)
+        setCartItems([]);
+        setAppliedDiscount(null);
+        setPromoCode('');
+
+        // Przekierowanie na podsumowanie
         router.push(`/Order-success?number=${result.orderNumber}`);
       } else {
         alert(`Błąd składania zamówienia: ${result.message}`);
@@ -310,7 +313,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             <div className={styles.kurierInpost}>{formatCurrency(basePrice)}</div>
           </div>
 
-          {/* SEKCOWANE WYŚWIETLANIE ZNIŻKI */}
           {appliedDiscount && (
             <div className={styles.frameDivSummary} style={{ color: '#2e7d32', fontWeight: '500' }}>
               <div className={styles.kurierInpost}>Rabat ({appliedDiscount.code}):</div>
@@ -328,7 +330,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           </div>
         </div>
 
-        {/* --- OKIENKO NA KOD RABATOWY --- */}
+        {/* OKIENKO NA KOD RABATOWY (Z POPRAWIONYM STYLEM MARGINALNYM) */}
         <div style={{ marginTop: '20px', marginBottom: '10px' }}>
           <div style={{ display: 'flex', gap: '10px' }}>
             <input 
@@ -367,17 +369,16 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             </button>
           </div>
           {discountError && (
-  <p style={{ color: '#fc5773', fontSize: '13px', marginTop: '5px', marginLeft: '2px', marginRight: '2px' }}>
-    {discountError}
-  </p>
-)}
-{appliedDiscount && (
-  <p style={{ color: '#2e7d32', fontSize: '13px', marginTop: '5px', marginLeft: '2px', marginRight: '2px' }}>
-    Kod zaakceptowany!
-  </p>
-)}
-</div>
-        {/* ------------------------------- */}
+            <p style={{ color: '#fc5773', fontSize: '13px', marginTop: '5px', marginLeft: '2px', marginRight: '2px' }}>
+              {discountError}
+            </p>
+          )}
+          {appliedDiscount && (
+            <p style={{ color: '#2e7d32', fontSize: '13px', marginTop: '5px', marginLeft: '2px', marginRight: '2px' }}>
+              Kod zaakceptowany!
+            </p>
+          )}
+        </div>
         
         <div className={styles.metodyDostawyParentTotal}>
           <div className={styles.lineDivider} />
