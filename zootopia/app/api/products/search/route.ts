@@ -20,37 +20,33 @@ export async function GET(request: Request) {
 
     const cleanQuery = query.trim();
 
-    // 1. Połączenie z bazą danych
     await connectToDatabase();
 
-    // Bezpieczne przypisanie modeli
     const Product = mongoose.models.Product || ProductModel;
     const Company = mongoose.models.Company || CompanyModel;
 
-    // 2. KROK 1: Szukamy firm, których nazwa pasuje do zapytania
     const matchingCompanies = await Company.find({
       name: { $regex: cleanQuery, $options: "i" }
     }).select("_id").lean();
 
-    // Wyciągamy same ID znalezionych firm do tablicy
     const companyIds = matchingCompanies.map(company => company._id);
 
-    // 3. KROK 2: Szukamy produktów, które pasują po NAZWIE lub po ID FIRMY
     const products = await Product.find({
       $or: [
-        { name: { $regex: cleanQuery, $options: "i" } },       // Dopasowanie po nazwie produktu
-        { company: { $in: companyIds } }                      // Dopasowanie po firmie (produconcie)
+        { name: { $regex: cleanQuery, $options: "i" } },
+        { company: { $in: companyIds } }
       ],
-      isActive: true // Przywracamy produkcyjne zabezpieczenie aktywności
+      isActive: true
     })
-      .select("name price images")
+      .select("name price promoPrice images")  // ← dodane promoPrice
       .limit(6)
       .lean();
 
-    // 4. Konwersja obiektów na czysty JSON (stringowanie ObjectId dla frontendu)
     const serializedProducts = products.map((prod: any) => ({
       ...prod,
       _id: prod._id.toString(),
+      price: prod.promoPrice ?? prod.price,
+      originalPrice: prod.promoPrice ? prod.price : undefined,
     }));
 
     return NextResponse.json(serializedProducts);
