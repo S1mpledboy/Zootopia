@@ -126,13 +126,12 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get("productId");
 
-    // Jeśli brak parametru URL 'productId' -> czyścimy CAŁY koszyk użytkownika
+    // Jeśli do endpointu nie dołączono id produktu -> czyścimy cały koszyk dla zalogowanego użytkownika
     if (!productId) {
       await Cart.deleteMany({ user: user._id });
       return NextResponse.json({ message: "Cart cleared successfully" });
     }
 
-    // Jeśli podano productId -> usuwamy tylko ten jeden produkt
     const deletedItem = await Cart.findOneAndDelete({ user: user._id, product: productId });
 
     if (!deletedItem) {

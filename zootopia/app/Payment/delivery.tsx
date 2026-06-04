@@ -158,10 +158,14 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       const paymentNames: Record<string, string> = { blik: "BLIK", p24: "Przelewy24", odbior: "Przy odbiorze" };
 
       const orderData = {
+        // 🔥 ZMIENIONE: Wysyłamy koszyk zachowując podobiekt product dla backendu
         cartItems: cartItems.map(item => ({
-          productId: item.product._id,
-          name: item.product.name,
-          price: item.product.promoPrice ?? item.product.price,
+          product: {
+            _id: item.product._id,
+            name: item.product.name,
+            price: item.product.price,
+            promoPrice: item.product.promoPrice
+          },
           quantity: item.quantity
         })),
         deliveryAddress: {
@@ -201,7 +205,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // 🔥 NATYCHMIASTOWE CZYSZCZENIE STANU FRONTENDU
+        // Czyścimy widok lokalny na ekranie
         setCartItems([]);
         setAppliedDiscount(null);
         setPromoCode('');
@@ -312,7 +316,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             <div className={styles.kurierInpost}>{formatCurrency(basePrice)}</div>
           </div>
 
-          {/* Aktywny rabat na liście podsumowania */}
           {appliedDiscount && (
             <div className={styles.frameDivSummary} style={{ color: '#2e7d32', fontWeight: '500' }}>
               <div className={styles.kurierInpost}>Rabat ({appliedDiscount.code}):</div>
@@ -330,7 +333,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           </div>
         </div>
 
-        {/* --- OKIENKO NA KOD RABATOWY --- */}
+        {/* OKIENKO NA KOD RABATOWY */}
         <div style={{ marginTop: '20px', marginBottom: '10px' }}>
           <div style={{ display: 'flex', gap: '10px' }}>
             <input 
@@ -379,7 +382,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             </p>
           )}
         </div>
-        {/* ------------------------------- */}
         
         <div className={styles.metodyDostawyParentTotal}>
           <div className={styles.lineDivider} />

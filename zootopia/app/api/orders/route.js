@@ -18,7 +18,6 @@ export async function GET(req) {
     }
 
     const userOrders = await Order.find({ userId: user._id }).sort({ createdAt: -1 });
-
     return NextResponse.json(userOrders, { status: 200 });
   } catch (error) {
     console.error("Błąd podczas pobierania zamówień:", error);
@@ -62,14 +61,24 @@ export async function POST(req) {
 
     const orderNumber = `ZOOTOPIA-${Date.now().toString().slice(-6)}`;
 
-    // Mapowanie elementów na strukturę ObjectId akceptowaną przez model Order
+    // 🔥 POPRAWIONE I BEZPIECZNE MAPOWANIE: Nie wywoła błędu 'toString' of undefined
     const mappedItems = cartItems.map((item) => {
-      const prodInfo = item.product ? item.product : item;
+      const prodId = item.product?._id || item._id || item.productId;
+
+      if (!prodId) {
+        throw new Error("Błąd struktury: Brak poprawnego identyfikatora ID dla przedmiotu.");
+      }
+
+      const name = item.product?.name || item.name || "Produkt bez nazwy";
+      const price = item.product?.promoPrice !== undefined && item.product?.promoPrice !== null
+        ? item.product.promoPrice
+        : (item.product?.price || item.price || 0);
+
       return {
-        productId: new mongoose.Types.ObjectId(prodInfo._id.toString()),
-        name: prodInfo.name,
-        price: prodInfo.promoPrice !== undefined && prodInfo.promoPrice !== null ? prodInfo.promoPrice : prodInfo.price,
-        quantity: item.quantity
+        productId: new mongoose.Types.ObjectId(prodId.toString()),
+        name: name,
+        price: price,
+        quantity: item.quantity || 1
       };
     });
 
@@ -101,13 +110,13 @@ export async function POST(req) {
     await newOrder.save();
 
     // ==========================================================================
-    // 🔥 CZYSZCZENIE BAZY DANYCH (Model koszyka używa klucza "user")
+    // 🔥 CZYSZCZENIE KOSZYKA W BAZIE MONGODB (Usunięcie dokumentów)
     // ==========================================================================
     try {
       const result = await Cart.deleteMany({ user: user._id });
-      console.log(`[MongoDB] Wyczyszczono koszyk dla ${user._id}. Skasowano dokumentów: ${result.deletedCount}`);
+      console.log(`[MongoDB] Pomyślnie wyczyszczono koszyk bazy danych dla ${user._id}. Skasowano: ${result.deletedCount}`);
     } catch (cartError) {
-      console.error("[MongoDB Error] Nie udało się wyczyścić koszyka z bazy:", cartError);
+      console.error("[MongoDB Error] Błąd podczas automatycznego kasowania koszyka:", cartError);
     }
     // ==========================================================================
 
