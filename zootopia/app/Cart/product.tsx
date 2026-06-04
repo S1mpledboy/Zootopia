@@ -9,22 +9,24 @@ interface CartItemProps {
   id: string;        
   name: string;
   price: number;
-  promoPrice?: number | null; // 🔥 DODANE DO TYPÓW
+  promoPrice?: number | null;
   companyName: string;
   images: any;       
   quantity: number;
-  onCartChanged: () => void; 
+  onCartChanged: () => void;
+  hasStockError?: boolean; // 🔥 DODANE
 }
 
 const Property1Koszyk: React.FC<CartItemProps> = ({
   id,
   name,
   price,
-  promoPrice, // 🔥 ODBIERAMY PROMO CENE
+  promoPrice,
   companyName,
   images,
   quantity,
-  onCartChanged
+  onCartChanged,
+  hasStockError = false // 🔥 DODANE (domyślnie false)
 }) => {
   
   const getAuthHeaders = () => {
@@ -41,7 +43,13 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
       headers: getAuthHeaders(),
       body: JSON.stringify({ productId: id, action: 'increase' })
     });
-    if (res.ok) onCartChanged(); 
+    if (res.ok) {
+      onCartChanged();
+    } else {
+      // 🔥 Pokaż komunikat jeśli backend zablokował zwiększenie (brak stocku)
+      const data = await res.json();
+      alert(data.message || 'Nie można zwiększyć ilości.');
+    }
   };
 
   const handleDecrease = async () => {
@@ -63,10 +71,7 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
 
   const handleAddToFavorites = () => {};
 
-  // 🔥 LOGIKA WYŚWIETLANIA CENY PROMOCYJNEJ
   const hasValidPromo = promoPrice !== undefined && promoPrice !== null;
-  const displayPrice = hasValidPromo ? promoPrice : price;
-
   const formattedRegularPrice = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(price);
   const formattedPromoPrice = new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN' }).format(Number(promoPrice));
 
@@ -81,7 +86,11 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
   }
 
   return (
-    <div className={styles.property1koszyk}>
+    // 🔥 Czerwona ramka wokół karty jeśli stock niewystarczający
+    <div
+      className={styles.property1koszyk}
+      style={hasStockError ? { border: '1.5px solid #fc5773', borderRadius: '8px' } : {}}
+    >
       <Image className={styles.imgProduktuIcon} src={mainImage} width={100} height={100} alt={name} unoptimized={true} />
       <div className={styles.frameParent}>
         <div className={styles.frameGroup}>
@@ -89,10 +98,20 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
             <div className={styles.krainaNoteciParent}>
               <b className={styles.krainaNoteci}>{companyName.toUpperCase()}</b>
               <div className={styles.karmaLoremIpsum}>{name}</div>
+              {/* 🔥 Komunikat bezpośrednio przy produkcie */}
+              {hasStockError && (
+                <div style={{
+                  color: '#fc5773',
+                  fontSize: '12px',
+                  fontFamily: 'Poppins, sans-serif',
+                  marginTop: '4px'
+                }}>
+                  Niewystarczający stan magazynowy
+                </div>
+              )}
             </div>
           </div>
           
-          {/* 🔥 POPRAWIONA SEKCJA CENY W KOSZYKU */}
           <div className={styles.zWrapper} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
             <div className={`${styles.z} ${hasValidPromo ? styles.przekreslona : ""}`} style={{ fontSize: hasValidPromo ? '14px' : 'inherit' }}>
               {formattedRegularPrice}
@@ -103,8 +122,8 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
               </b>
             )}
           </div>
-
         </div>
+
         <div className={styles.frameContainer}>
           <div className={styles.parent}>
             <div className={styles.div} onClick={handleDecrease} style={{ cursor: 'pointer', userSelect: 'none' }}>-</div>
