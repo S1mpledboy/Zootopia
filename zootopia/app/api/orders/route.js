@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import Order from "@/models/Order";
+import Cart from "@/models/Cart"; // 🔥 DODANY IMPORT: Zaimportuj swój model koszyka
 import { getAuthUser } from "@/middleware/auth";
 
 // ==========================================================================
@@ -46,7 +47,9 @@ export async function POST(req) {
       invoiceData, 
       alternativeShippingAddress, 
       notes, 
-      totalAmount 
+      totalAmount,
+      discountCode, // 🔥 NOWE: Odebranie kodu z frontendu
+      discountValue // 🔥 NOWE: Odebranie kwoty zniżki
     } = body;
 
     // Walidacja koszyka
@@ -94,10 +97,24 @@ export async function POST(req) {
       paymentMethod,
       invoiceData: invoiceData || { companyName: "", nip: "" },
       alternativeShippingAddress: alternativeShippingAddress || { country: "", street: "", city: "", postalCode: "" },
-      notes: notes || ""
+      notes: notes || "",
+      discountCode: discountCode || null,   // 🔥 NOWE: Zapis do bazy (upewnij się, że Twój model Order ma te pola)
+      discountValue: discountValue || 0     // 🔥 NOWE: Zapis do bazy
     });
 
     await newOrder.save();
+
+    // ==========================================================================
+    // 🔥 AUTOMATYCZNE CZYSZCZENIE KOSZYKA W BAZIE MONGODB PO ZAPISIE ZAMÓWIENIA
+    // ==========================================================================
+    try {
+      // Usuwamy wszystkie pozycje z koszyka przypisane do ID tego zalogowanego użytkownika
+      await Cart.deleteMany({ userId: user._id }); 
+    } catch (cartError) {
+      // Logujemy błąd, ale nie przerywamy procesu, bo zamówienie już pomyślnie się zapisało
+      console.error("Zamówienie złożone, ale nie udało się wyczyścić koszyka w bazie:", cartError);
+    }
+    // ==========================================================================
 
     return NextResponse.json({ 
       success: true, 
