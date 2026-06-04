@@ -1,0 +1,109 @@
+.page {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 40px 16px 80px;
+  font-family: Poppins, sans-serif;
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid #000;
+  padding-bottom: 16px;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.count {
+  font-size: 13px;
+  color: #6c757d;
+  letter-spacing: 0.05em;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Skeleton loader */
+.stateContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.skeleton {
+  height: 155px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Error state */
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 24px;
+  border: 1px solid #fc5773;
+  font-size: 14px;
+  color: #fc5773;
+  margin-top: 24px;
+}
+
+.errorIcon {
+  font-size: 20px;
+  font-weight: 700;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #fc5773;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Empty state */
+.emptyBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 60px 24px;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 40px;
+  color: #ccc;
+  margin-bottom: 8px;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.emptyDesc {
+  font-size: 14px;
+  color: #6c757d;
+  margin: 0;
+}
