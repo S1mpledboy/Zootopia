@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import Order from "@/models/Order";
-import Cart from "@/models/Cart"; 
+import Cart from "@/models/Cart";
+import Product from "@/models/Product";
 import { getAuthUser } from "@/middleware/auth";
 import mongoose from "mongoose";
 
@@ -38,14 +39,14 @@ export async function POST(req) {
     }
 
     const body = await req.json();
-    const { 
-      cartItems, 
-      deliveryAddress, 
-      shippingMethod, 
-      paymentMethod, 
-      invoiceData, 
-      alternativeShippingAddress, 
-      notes, 
+    const {
+      cartItems,
+      deliveryAddress,
+      shippingMethod,
+      paymentMethod,
+      invoiceData,
+      alternativeShippingAddress,
+      notes,
       totalAmount,
       discountCode,
       discountValue
@@ -61,7 +62,6 @@ export async function POST(req) {
 
     const orderNumber = `ZOOTOPIA-${Date.now().toString().slice(-6)}`;
 
-    // 🔥 POPRAWIONE I BEZPIECZNE MAPOWANIE: Nie wywoła błędu 'toString' of undefined
     const mappedItems = cartItems.map((item) => {
       const prodId = item.product?._id || item._id || item.productId;
 
@@ -110,21 +110,38 @@ export async function POST(req) {
     await newOrder.save();
 
     // ==========================================================================
-    // 🔥 CZYSZCZENIE KOSZYKA W BAZIE MONGODB (Usunięcie dokumentów)
+    // 🔥 ODEJMOWANIE STOCKU DLA KAŻDEGO PRODUKTU
     // ==========================================================================
     try {
-      const result = await Cart.deleteMany({ user: user._id });
-      console.log(`[MongoDB] Pomyślnie wyczyszczono koszyk bazy danych dla ${user._id}. Skasowano: ${result.deletedCount}`);
-    } catch (cartError) {
-      console.error("[MongoDB Error] Błąd podczas automatycznego kasowania koszyka:", cartError);
+      const stockUpdates = mappedItems.map((item) =>
+        Product.findByIdAndUpdate(
+          item.productId,
+          { $inc: { stock: -item.quantity } },
+          { new: true }
+        )
+      );
+      await Promise.all(stockUpdates);
+      console.log(`[MongoDB] Pomyślnie zaktualizowano stock dla ${mappedItems.length} produktów.`);
+    } catch (stockError) {
+      console.error("[MongoDB Error] Błąd podczas aktualizacji stocku:", stockError);
     }
-    // ==========================================================================
 
-    return NextResponse.json({ 
-      success: true, 
-      message: "Zamówienie zostało pomyślnie zapisane w bazie!", 
+    // ==========================================================================
+    // 🔥 CZYSZCZENIE KOSZYKA W BAZIE MONGODB
+    // ==========================================================================
+    try {
+      const userId = new mongoose.Types.ObjectId(user._id.toString());
+      const result = await Cart.deleteMany({ user: userId });
+      console.log(`[MongoDB] Pomyślnie wyczyszczono koszyk dla ${userId}. Skasowano: ${result.deletedCount}`);
+    } catch (cartError) {
+      console.error("[MongoDB Error] Błąd podczas kasowania koszyka:", cartError);
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: "Zamówienie zostało pomyślnie zapisane w bazie!",
       orderNumber,
-      orderId: newOrder._id 
+      orderId: newOrder._id
     }, { status: 201 });
 
   } catch (error) {

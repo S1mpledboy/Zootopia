@@ -3,20 +3,20 @@
 import type { NextPage } from 'next';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation'; 
+import { useRouter } from 'next/navigation';
 import styles from './delivery.module.css';
 
-import circleIcon from "@/app/Public/Images/Ellipse6.svg"; 
-import checkedCircleIcon from "@/app/Public/Images/Ellipse7.svg"; 
+import circleIcon from "@/app/Public/Images/Ellipse6.svg";
+import checkedCircleIcon from "@/app/Public/Images/Ellipse7.svg";
 
 interface CartItemFromServer {
   _id: string;
   quantity: number;
-  product: { 
-    _id: string; 
-    name: string; 
-    price: number; 
-    promoPrice?: number | null; 
+  product: {
+    _id: string;
+    name: string;
+    price: number;
+    promoPrice?: number | null;
   };
 }
 
@@ -27,15 +27,14 @@ interface AppliedDiscount {
 }
 
 const WyborDostawyIPlatnosci: NextPage = () => {
-  const router = useRouter(); 
-  
-  const [deliveryMethod, setDeliveryMethod] = useState<string>('paczkomat'); 
-  const [paymentMethod, setPaymentMethod] = useState<string>('blik');     
+  const router = useRouter();
+
+  const [deliveryMethod, setDeliveryMethod] = useState<string>('paczkomat');
+  const [paymentMethod, setPaymentMethod] = useState<string>('blik');
   const [cartItems, setCartItems] = useState<CartItemFromServer[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Stany kodu rabatowego
   const [promoCode, setPromoCode] = useState<string>('');
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const [discountError, setDiscountError] = useState<string>('');
@@ -44,8 +43,8 @@ const WyborDostawyIPlatnosci: NextPage = () => {
   const fetchCartData = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch('/api/cart', { 
-        headers: { 'Authorization': `Bearer ${token}` } 
+      const res = await fetch('/api/cart', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
@@ -53,13 +52,13 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       }
     } catch (err) {
       console.error("Błąd podczas pobierania kwoty koszyka:", err);
-    } finally { 
-      setIsLoading(false); 
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
-  useEffect(() => { 
-    fetchCartData(); 
+  useEffect(() => {
+    fetchCartData();
   }, [fetchCartData]);
 
   const basePrice = cartItems.reduce((total, item) => {
@@ -128,6 +127,22 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     }
   };
 
+  // ==========================================================================
+  // 🔥 CZYSZCZENIE KOSZYKA PO STRONIE FRONTENDU (safety net)
+  // ==========================================================================
+  const clearCartOnFrontend = async () => {
+    const token = localStorage.getItem('token');
+    try {
+      await fetch('/api/cart', {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      console.log('[Frontend] Koszyk wyczyszczony przez frontend.');
+    } catch (err) {
+      console.error('[Frontend] Błąd podczas czyszczenia koszyka:', err);
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) {
       alert("Twój koszyk jest pusty!");
@@ -154,11 +169,18 @@ const WyborDostawyIPlatnosci: NextPage = () => {
 
       const { formData, showInvoice, showOtherAddress } = customerData;
 
-      const deliveryNames: Record<string, string> = { paczkomat: "Paczkomat InPost", inpost: "Kurier InPost", dhl: "Kurier DHL" };
-      const paymentNames: Record<string, string> = { blik: "BLIK", p24: "Przelewy24", odbior: "Przy odbiorze" };
+      const deliveryNames: Record<string, string> = {
+        paczkomat: "Paczkomat InPost",
+        inpost: "Kurier InPost",
+        dhl: "Kurier DHL"
+      };
+      const paymentNames: Record<string, string> = {
+        blik: "BLIK",
+        p24: "Przelewy24",
+        odbior: "Przy odbiorze"
+      };
 
       const orderData = {
-        // 🔥 ZMIENIONE: Wysyłamy koszyk zachowując podobiekt product dla backendu
         cartItems: cartItems.map(item => ({
           product: {
             _id: item.product._id,
@@ -205,7 +227,10 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // Czyścimy widok lokalny na ekranie
+        // 🔥 Safety net: wyczyść koszyk również przez frontend
+        await clearCartOnFrontend();
+
+        // Wyczyść lokalny stan
         setCartItems([]);
         setAppliedDiscount(null);
         setPromoCode('');
@@ -223,20 +248,20 @@ const WyborDostawyIPlatnosci: NextPage = () => {
   };
 
   if (isLoading) {
-    return <div className={styles.produktyWKoszyku} style={{textAlign: 'center'}}>Obliczanie kwoty zamówienia...</div>;
+    return <div className={styles.produktyWKoszyku} style={{ textAlign: 'center' }}>Obliczanie kwoty zamówienia...</div>;
   }
 
   return (
     <div className={styles.frameParent}>
       <div className={styles.produktyWKoszykuParent}>
-        
+
         {/* DOSTAWA */}
         <div className={styles.produktyWKoszyku}>
           <div className={styles.metodyDostawyParent}>
             <div className={styles.metodyDostawy}>Metody dostawy:</div>
             <div className={styles.lineDivider} />
           </div>
-          
+
           <div className={styles.frameGroup}>
             <div className={styles.frameContainer}>
               <div className={styles.frameDiv} onClick={() => setDeliveryMethod('inpost')}>
@@ -272,7 +297,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             <div className={styles.metodyDostawy}>Metody płatności:</div>
             <div className={styles.lineDivider} />
           </div>
-          
+
           <div className={styles.produktyWKoszykuInner}>
             <div className={styles.frameContainer}>
               <div className={styles.frameDiv} onClick={() => setPaymentMethod('blik')}>
@@ -309,7 +334,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           <div className={styles.metodyDostawy}>Podsumowanie:</div>
           <div className={styles.lineDivider} />
         </div>
-        
+
         <div className={styles.frameParent9}>
           <div className={styles.frameDivSummary}>
             <div className={styles.kurierInpost}>Suma częściowa:</div>
@@ -333,10 +358,10 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           </div>
         </div>
 
-        {/* OKIENKO NA KOD RABATOWY */}
+        {/* KOD RABATOWY */}
         <div style={{ marginTop: '20px', marginBottom: '10px' }}>
           <div style={{ display: 'flex', gap: '10px' }}>
-            <input 
+            <input
               type="text"
               placeholder="Kod rabatowy"
               value={promoCode}
@@ -382,7 +407,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             </p>
           )}
         </div>
-        
+
         <div className={styles.metodyDostawyParentTotal}>
           <div className={styles.lineDivider} />
           <div className={styles.frameDivSummaryTotal}>
@@ -394,8 +419,8 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           </div>
         </div>
 
-        <button 
-          onClick={handlePlaceOrder} 
+        <button
+          onClick={handlePlaceOrder}
           disabled={isSubmitting}
           style={{
             width: '100%',
@@ -414,7 +439,6 @@ const WyborDostawyIPlatnosci: NextPage = () => {
         >
           {isSubmitting ? "Przetwarzanie..." : "Kupuję i płacę"}
         </button>
-
       </div>
     </div>
   );
