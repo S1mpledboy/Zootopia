@@ -3,7 +3,7 @@
 import type { NextPage } from 'next';
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'; 
 import styles from './delivery.module.css';
 
 import circleIcon from "@/app/Public/Images/Ellipse6.svg"; 
@@ -35,7 +35,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Stany obsługi kodu rabatowego
+  // Stany kodu rabatowego
   const [promoCode, setPromoCode] = useState<string>('');
   const [appliedDiscount, setAppliedDiscount] = useState<AppliedDiscount | null>(null);
   const [discountError, setDiscountError] = useState<string>('');
@@ -184,8 +184,8 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           postalCode: formData.shippingPostalCode
         } : undefined,
         notes: formData.notes,
-        discountCode: appliedDiscount ? appliedDiscount.code : undefined, 
-        discountValue: discountAmount, 
+        discountCode: appliedDiscount ? appliedDiscount.code : undefined,
+        discountValue: discountAmount,
         totalAmount: totalSum
       };
 
@@ -201,12 +201,11 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // 🔥 CZYSZCZENIE STANU FRONTENDU (Wszystko znika z widoku użytkownika)
+        // 🔥 NATYCHMIASTOWE CZYSZCZENIE STANU FRONTENDU
         setCartItems([]);
         setAppliedDiscount(null);
         setPromoCode('');
 
-        // Przekierowanie na podsumowanie
         router.push(`/Order-success?number=${result.orderNumber}`);
       } else {
         alert(`Błąd składania zamówienia: ${result.message}`);
@@ -313,6 +312,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
             <div className={styles.kurierInpost}>{formatCurrency(basePrice)}</div>
           </div>
 
+          {/* Aktywny rabat na liście podsumowania */}
           {appliedDiscount && (
             <div className={styles.frameDivSummary} style={{ color: '#2e7d32', fontWeight: '500' }}>
               <div className={styles.kurierInpost}>Rabat ({appliedDiscount.code}):</div>
@@ -330,7 +330,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           </div>
         </div>
 
-        {/* OKIENKO NA KOD RABATOWY (Z POPRAWIONYM STYLEM MARGINALNYM) */}
+        {/* --- OKIENKO NA KOD RABATOWY --- */}
         <div style={{ marginTop: '20px', marginBottom: '10px' }}>
           <div style={{ display: 'flex', gap: '10px' }}>
             <input 
@@ -375,10 +375,11 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           )}
           {appliedDiscount && (
             <p style={{ color: '#2e7d32', fontSize: '13px', marginTop: '5px', marginLeft: '2px', marginRight: '2px' }}>
-              Kod zaakceptowany!
+              Kod dołączony pomyślnie!
             </p>
           )}
         </div>
+        {/* ------------------------------- */}
         
         <div className={styles.metodyDostawyParentTotal}>
           <div className={styles.lineDivider} />

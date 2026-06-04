@@ -5,6 +5,7 @@ import Product from "@/models/Product";
 import { getAuthUser } from "@/middleware/auth";
 import "@/models/Company";
 import "@/models/Category";
+
 // 1. POBIERANIE ZAWARTOŚCI KOSZYKA
 export async function GET(req: Request) {
   try {
@@ -15,19 +16,16 @@ export async function GET(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // Pobieramy wpisy z koszyka, automatycznie wyciągając dane produktu 
-    // oraz nazwę firmy (company), czyli dokładnie to, czego wymaga nasz komponent!
-// Zmodyfikuj tylko sekcję .populate w metodzie GET pliku app/api/cart/route.ts:
-const cartItems = await Cart.find({ user: user._id })
-  .populate({
-    path: "product",
-    select: "name price promoPrice images company stock", // 🔥 DOPISANE: promoPrice
-    populate: {
-      path: "company",
-      select: "name",
-    },
-  })
-  .sort({ createdAt: -1 });
+    const cartItems = await Cart.find({ user: user._id })
+      .populate({
+        path: "product",
+        select: "name price promoPrice images company stock", 
+        populate: {
+          path: "company",
+          select: "name",
+        },
+      })
+      .sort({ createdAt: -1 });
 
     return NextResponse.json(cartItems);
   } catch (error: any) {
@@ -35,7 +33,7 @@ const cartItems = await Cart.find({ user: user._id })
   }
 }
 
-// 2. DODAWANIE PRODUKTU DO KOSZYKA (np. z poziomu karty produktu)
+// 2. DODAWANIE PRODUKTU DO KOSZYKA
 export async function POST(req: Request) {
   try {
     await connectToDatabase();
@@ -51,13 +49,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Missing productId" }, { status: 400 });
     }
 
-    // Sprawdzamy czy produkt w ogóle istnieje
     const product = await Product.findById(productId);
     if (!product) {
       return NextResponse.json({ message: "Product not found" }, { status: 404 });
     }
 
-    // Jeśli produkt już jest w koszyku, po prostu zwiększamy jego ilość
     const existingItem = await Cart.findOne({ user: user._id, product: productId });
 
     if (existingItem) {
@@ -66,7 +62,6 @@ export async function POST(req: Request) {
       return NextResponse.json(existingItem);
     }
 
-    // Jeśli go nie ma, tworzymy nowy wpis
     const newItem = await Cart.create({
       user: user._id,
       product: productId,
@@ -79,7 +74,7 @@ export async function POST(req: Request) {
   }
 }
 
-// 3. AKTUALIZACJA ILOŚCI (Uruchamiane przy kliknięciu + / - w koszyku)
+// 3. AKTUALIZACJA ILOŚCI
 export async function PATCH(req: Request) {
   try {
     await connectToDatabase();
@@ -89,7 +84,7 @@ export async function PATCH(req: Request) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    const { productId, action } = await req.json(); // action może być 'increase' lub 'decrease'
+    const { productId, action } = await req.json(); 
 
     if (!productId || !action) {
       return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
@@ -104,8 +99,6 @@ export async function PATCH(req: Request) {
     if (action === "increase") {
       cartItem.quantity += 1;
     } else if (action === "decrease") {
-      // Jeśli użytkownik odejmuje, a ma już tylko 1 sztukę – nie pozwalamy zejść poniżej 1 
-      // (do usuwania służy metoda DELETE)
       if (cartItem.quantity > 1) {
         cartItem.quantity -= 1;
       }
@@ -120,7 +113,7 @@ export async function PATCH(req: Request) {
   }
 }
 
-// 4. USUNIĘCIE PRODUKTU Z KOSZYKA (Kliknięcie ikony kosza)
+// 4. USUNIĘCIE PRODUKTU LUB CAŁEGO KOSZYKA
 export async function DELETE(req: Request) {
   try {
     await connectToDatabase();
@@ -133,10 +126,13 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get("productId");
 
+    // Jeśli brak parametru URL 'productId' -> czyścimy CAŁY koszyk użytkownika
     if (!productId) {
-      return NextResponse.json({ message: "Missing productId" }, { status: 400 });
+      await Cart.deleteMany({ user: user._id });
+      return NextResponse.json({ message: "Cart cleared successfully" });
     }
 
+    // Jeśli podano productId -> usuwamy tylko ten jeden produkt
     const deletedItem = await Cart.findOneAndDelete({ user: user._id, product: productId });
 
     if (!deletedItem) {

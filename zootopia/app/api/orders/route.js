@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import Order from "@/models/Order";
-import Cart from "@/models/Cart"; // 🔥 DODANY IMPORT: Zaimportuj swój model koszyka
+import Cart from "@/models/Cart"; 
 import { getAuthUser } from "@/middleware/auth";
+import mongoose from "mongoose";
 
 // ==========================================================================
 // 1. POBIERANIE HISTORII ZAMÓWIEŃ (Metoda GET)
@@ -16,7 +17,6 @@ export async function GET(req) {
       return NextResponse.json({ message: "Brak autoryzacji" }, { status: 401 });
     }
 
-    // Pobieramy zamówienia danego użytkownika, od najnowszego
     const userOrders = await Order.find({ userId: user._id }).sort({ createdAt: -1 });
 
     return NextResponse.json(userOrders, { status: 200 });
@@ -48,37 +48,33 @@ export async function POST(req) {
       alternativeShippingAddress, 
       notes, 
       totalAmount,
-      discountCode, // 🔥 NOWE: Odebranie kodu z frontendu
-      discountValue // 🔥 NOWE: Odebranie kwoty zniżki
+      discountCode,
+      discountValue
     } = body;
 
-    // Walidacja koszyka
     if (!cartItems || cartItems.length === 0) {
       return NextResponse.json({ message: "Koszyk jest pusty." }, { status: 400 });
     }
 
-    // Walidacja danych adresowych
     if (!deliveryAddress || !deliveryAddress.firstName || !deliveryAddress.street || !deliveryAddress.city) {
       return NextResponse.json({ message: "Brakujące podstawowe dane adresowe." }, { status: 400 });
     }
 
-    // Generowanie unikalnego numeru zamówienia
     const orderNumber = `ZOOTOPIA-${Date.now().toString().slice(-6)}`;
 
-    // Mapowanie produktów z koszyka, aby zamrozić ceny w momencie zakupu
+    // Mapowanie elementów na strukturę ObjectId akceptowaną przez model Order
     const mappedItems = cartItems.map((item) => {
       const prodInfo = item.product ? item.product : item;
       return {
-        productId: prodInfo._id || item.productId,
+        productId: new mongoose.Types.ObjectId(prodInfo._id.toString()),
         name: prodInfo.name,
         price: prodInfo.promoPrice !== undefined && prodInfo.promoPrice !== null ? prodInfo.promoPrice : prodInfo.price,
         quantity: item.quantity
       };
     });
 
-    // Tworzenie zamówienia w bazie
     const newOrder = new Order({
-      userId: user._id,
+      userId: new mongoose.Types.ObjectId(user._id.toString()),
       orderNumber,
       items: mappedItems,
       totalAmount,
@@ -98,21 +94,20 @@ export async function POST(req) {
       invoiceData: invoiceData || { companyName: "", nip: "" },
       alternativeShippingAddress: alternativeShippingAddress || { country: "", street: "", city: "", postalCode: "" },
       notes: notes || "",
-      discountCode: discountCode || null,   // 🔥 NOWE: Zapis do bazy (upewnij się, że Twój model Order ma te pola)
-      discountValue: discountValue || 0     // 🔥 NOWE: Zapis do bazy
+      discountCode: discountCode || null,
+      discountValue: discountValue || 0
     });
 
     await newOrder.save();
 
     // ==========================================================================
-    // 🔥 AUTOMATYCZNE CZYSZCZENIE KOSZYKA W BAZIE MONGODB PO ZAPISIE ZAMÓWIENIA
+    // 🔥 CZYSZCZENIE BAZY DANYCH (Model koszyka używa klucza "user")
     // ==========================================================================
     try {
-      // Usuwamy wszystkie pozycje z koszyka przypisane do ID tego zalogowanego użytkownika
-      await Cart.deleteMany({ userId: user._id }); 
+      const result = await Cart.deleteMany({ user: user._id });
+      console.log(`[MongoDB] Wyczyszczono koszyk dla ${user._id}. Skasowano dokumentów: ${result.deletedCount}`);
     } catch (cartError) {
-      // Logujemy błąd, ale nie przerywamy procesu, bo zamówienie już pomyślnie się zapisało
-      console.error("Zamówienie złożone, ale nie udało się wyczyścić koszyka w bazie:", cartError);
+      console.error("[MongoDB Error] Nie udało się wyczyścić koszyka z bazy:", cartError);
     }
     // ==========================================================================
 
