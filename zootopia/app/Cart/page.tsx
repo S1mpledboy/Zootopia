@@ -2,7 +2,7 @@
 
 import type { NextPage } from 'next';
 import { useCallback, useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // 👇 KROK 1: Importujemy useRouter
+import { useRouter } from 'next/navigation'; 
 import Image from "next/image";
 import styles from './cart.module.css';
 import Property1Koszyk from './product'; 
@@ -24,7 +24,7 @@ interface CartItemFromServer {
 }
 
 const ProduktyWKoszyku: NextPage = () => {
-  const router = useRouter(); // 👇 KROK 2: Inicjalizujemy router
+  const router = useRouter(); 
   const [cartItems, setCartItems] = useState<CartItemFromServer[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -59,24 +59,28 @@ const ProduktyWKoszyku: NextPage = () => {
     currency: 'PLN' 
   }).format(totalCartPrice);
 
-  // 👇 KROK 3: Akcja dla przycisku "Kontynuuj zakupy" (powrót na stronę główną)
   const onContinueShoppingClick = useCallback(() => {
     router.push('/');
   }, [router]);
 
-  // 👇 KROK 4: Akcja dla przycisku "Do kasy" (przejście do formularza płatności)
+  // 👇 ZMIANA: Blokada przejścia, jeśli koszyk jest pusty
   const onCheckoutClick = useCallback(() => {
-    router.push('/Payment'); // Przekierowanie do folderu payment
-  }, [router]);
+    if (cartItems.length === 0) {
+      return; // Przerywa funkcję i nie pozwala przejść dalej
+    }
+    router.push('/Payment'); 
+  }, [router, cartItems]); // Dodano cartItems do tablicy zależności
 
   if (loading) return <div className={styles.produktyWKoszyku}>Ładowanie koszyka...</div>;
+
+  const isCartEmpty = cartItems.length === 0;
 
   return (
     <div className={styles.produktyWKoszyku}>
       <Etapy currentStep={1} />
 
       <div className={styles.wszystkieProdukty}>
-        {cartItems.length === 0 ? (
+        {isCartEmpty ? (
           <div style={{ padding: '40px', textAlign: 'center' }}>Twój koszyk jest pusty.</div>
         ) : (
           cartItems.map((item) => item.product && (
@@ -102,7 +106,6 @@ const ProduktyWKoszyku: NextPage = () => {
       </div>
       
       <div className={styles.frameParent7}>
-        {/* Podpięte onContinueShoppingClick */}
         <div className={styles.tablerIconChevronCompactLeParent} onClick={onContinueShoppingClick}>
           <Image 
             className={styles.tablerIconChevronCompactLe} 
@@ -115,8 +118,12 @@ const ProduktyWKoszyku: NextPage = () => {
           <div className={styles.kontynuujZakupy}>Kontynuuj zakupy</div>
         </div>
         
-        {/* 👇 Podpięte onCheckoutClick pod przycisk "Do kasy" */}
-        <div className={styles.doKasy} onClick={onCheckoutClick}>
+        {/* 👇 ZMIANA: Dynamiczna klasa (opcjonalnie dla CSS) oraz blokada onClick */}
+        <div 
+          className={`${styles.doKasy} ${isCartEmpty ? styles.doKasyDisabled : ''}`} 
+          onClick={onCheckoutClick}
+          style={isCartEmpty ? { opacity: 0.5, cursor: 'not-allowed' } : {}} // Szybki styl inline, jeśli nie chcesz zmieniać CSS
+        >
           <div className={styles.doKasy2}>Do kasy</div>
         </div>
       </div>
