@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
-import Category from "@/models/Category"; 
-import "@/models/Company"; 
+import Category from "@/models/Category";
+import "@/models/Company";
 import KategorieClient from "./pageClient";
 
 export const revalidate = 0;
@@ -14,9 +14,8 @@ export default async function KategoriePage({
   await connectToDatabase();
 
   const resolvedSearchParams = await searchParams;
-  const urlType = resolvedSearchParams.type || 'pies'; 
+  const urlType = resolvedSearchParams.type || 'pies';
 
-  // 1. Pobieramy wszystkie kategorie z bazy
   const allCategoriesRaw = await Category.find({}).lean();
 
   const serializedCategories = allCategoriesRaw.map((cat: any) => ({
@@ -26,41 +25,21 @@ export default async function KategoriePage({
     parent: cat.parent ? cat.parent.toString() : null
   }));
 
-  // 2. Szukamy ID dokumentu głównego zwierzaka (np. slug: "pies")
-  const currentAnimalCategory = serializedCategories.find(
-    cat => cat.slug === urlType && cat.parent === null
-  );
+  // 🔥 HELPER: rozpakowywanie obrazka (tablicа w tablicy)
+  const extractImage = (images: any[]): string => {
+    if (!images || images.length === 0) return "/fallback-image.png";
+    const first = images[0];
+    if (Array.isArray(first) && first.length > 0) return first[0];
+    if (typeof first === "string") return first;
+    return "/fallback-image.png";
+  };
 
-  let targetCategoryIds: string[] = [];
-
-  if (currentAnimalCategory) {
-    // Pobieramy podkategorie, które bezpośrednio należą do tego zwierzaka
-    const childCategories = serializedCategories.filter(
-      cat => cat.parent === currentAnimalCategory._id
-    );
-    targetCategoryIds = childCategories.map(cat => cat._id);
-  }
-
-  // 3. Pobieramy produkty pasujące do wyciągniętych podkategorii
-  const rawProducts = await Product.find({
-    isActive: true,
-    category: { $in: targetCategoryIds }
-  })
-    .populate("company")
-    .sort({ updatedAt: -1 }) 
-    .lean();
-
-  const serializedProducts = rawProducts.map((product: any) => {
-    let productImage = "/fallback-image.png";
-    if (product.images && product.images.length > 0) {
-      productImage = product.images[0]; 
-    }
-
-    // BEZPIECZNE I PEWNE KONWERTOWANIE ID KATEGORII DO STRINGA
+  // 🔥 HELPER: serializacja produktu
+  const serializeProduct = (product: any) => {
     let catId = null;
     if (product.category) {
-      catId = product.category._id 
-        ? product.category._id.toString() 
+      catId = product.category._id
+        ? product.category._id.toString()
         : product.category.toString();
     }
 
@@ -68,18 +47,62 @@ export default async function KategoriePage({
       _id: product._id.toString(),
       name: product.name,
       price: product.price,
-      promoPrice: product.oldPrice || null, 
-      image: productImage,
+      promoPrice: product.promoPrice ?? null, // 🔥 promoPrice z bazy
+      image: extractImage(product.images),
       companyName: product.company?.name || "Inna marka",
-      petCategoryId: catId, // To musi idealnie pasować do sub._id w kliencie
+      petCategoryId: catId,
       attributes: product.attributes || []
     };
-  });
+  };
+
+  // ============================================================
+  // PROMOCJE: filtrujemy po promoPrice
+  // ============================================================
+  if (urlType === 'promocje') {
+    const rawProducts = await Product.find({
+      isActive: true,
+      promoPrice: { $ne: null, $exists: true, $gt: 0 } // 🔥 promoPrice
+    })
+      .populate("company")
+      .sort({ updatedAt: -1 })
+      .lean();
+
+    return (
+      <KategorieClient
+        initialProducts={rawProducts.map(serializeProduct)}
+        allCategories={serializedCategories}
+      />
+    );
+  }
+
+  // ============================================================
+  // NORMALNA ŚCIEŻKA: filtrowanie po kategorii zwierzaka
+  // ============================================================
+  const currentAnimalCategory = serializedCategories.find(
+    cat => cat.slug === urlType && cat.parent === null
+  );
+
+  let targetCategoryIds: string[] = [];
+
+  if (currentAnimalCategory) {
+    const childCategories = serializedCategories.filter(
+      cat => cat.parent === currentAnimalCategory._id
+    );
+    targetCategoryIds = childCategories.map(cat => cat._id);
+  }
+
+  const rawProducts = await Product.find({
+    isActive: true,
+    category: { $in: targetCategoryIds }
+  })
+    .populate("company")
+    .sort({ updatedAt: -1 })
+    .lean();
 
   return (
-    <KategorieClient 
-      initialProducts={serializedProducts} 
-      allCategories={serializedCategories} 
+    <KategorieClient
+      initialProducts={rawProducts.map(serializeProduct)}
+      allCategories={serializedCategories}
     />
   );
 }

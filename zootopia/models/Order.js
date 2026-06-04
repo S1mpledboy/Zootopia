@@ -59,21 +59,21 @@ const orderSchema = new mongoose.Schema(
     deliveryAddress: {
       firstName: { type: String, required: true },
       lastName: { type: String, required: true },
-      country: { type: String, required: true, default: "Polska" }, // Sparametryzowane pod pole z frontu
+      country: { type: String, required: true, default: "Polska" },
       street: { type: String, required: true },
       city: { type: String, required: true },
       postalCode: { type: String, required: true },
       phone: { type: String, required: true },
-      email: { type: String, required: true }, // Przydatne do powiadomień mailowych o zamówieniu
+      email: { type: String, required: true },
     },
 
     // 📦 METODY DOSTAWY I PŁATNOŚCI (z shipping-payment)
     shippingMethod: {
-      type: String, // 'inpost', 'dhl', 'paczkomat'
+      type: String,
       required: true,
     },
     paymentMethod: {
-      type: String, // 'blik', 'p24', 'odbior'
+      type: String,
       required: true,
     },
 
@@ -95,6 +95,16 @@ const orderSchema = new mongoose.Schema(
     notes: {
       type: String,
       default: "",
+    },
+
+    // 🔥 NOWE POLA: KOD RABATOWY (Bez tego serwer zgłaszał błąd przy zapisie zamówienia)
+    discountCode: {
+      type: String,
+      default: null,
+    },
+    discountValue: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
