@@ -1,0 +1,363 @@
+/* ── LAYOUT ──────────────────────────────────────────── */
+.page {
+  min-height: 100vh;
+  background: #fff;
+}
+
+.layout {
+  display: flex;
+  gap: 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  align-items: flex-start;
+}
+
+/* ── SIDEBAR ────────────────────────────────────────── */
+.sidebar {
+  flex-shrink: 0;
+  width: 300px;
+  padding: 20px 0;
+  box-sizing: border-box;
+  align-self: stretch;
+}
+
+.sidebarInner {
+  border-radius: 12px;
+  background-color: #fff;
+  border: 1px solid #565e64;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.sidebarHeader {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sidebarTitle {
+  position: relative;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+  font-size: 29px;
+  color: #000;
+  font-family: Poppins, sans-serif;
+}
+
+.sidebarDivider {
+  align-self: stretch;
+  height: 1px;
+  position: relative;
+  border-top: 1px solid #000;
+  box-sizing: border-box;
+}
+
+/* ── MENU LIST ───────────────────────────────────────── */
+.menuList {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  text-align: left;
+  font-size: 16px;
+  font-family: Poppins, sans-serif;
+}
+
+.menuItem {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  line-height: 140%;
+}
+
+.menuItem:hover {
+  color: #fc5773;
+}
+
+.menuItemActive {
+  color: #fc5773 !important;
+}
+
+.menuDivider {
+  align-self: stretch;
+  height: 1px;
+  position: relative;
+  border-top: 1px solid #565e64;
+  box-sizing: border-box;
+}
+
+/* ── CONTENT ─────────────────────────────────────────── */
+.content {
+  flex: 1;
+  min-width: 0;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0px 0px 64px;
+  box-sizing: border-box;
+  font-family: Poppins, sans-serif;
+}
+
+.breadcrumb {
+  align-self: stretch;
+  background-color: #fff;
+  overflow: hidden;
+  display: flex;
+  align-items: flex-start;
+  padding: 4px 0px;
+  gap: 8px;
+  font-size: 12px;
+  color: #366f15;
+  margin-bottom: 6px;
+}
+
+.breadcrumbLink {
+  color: #366f15;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  line-height: 140%;
+}
+
+.breadcrumbLink:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbSep {
+  color: #366f15;
+}
+
+.pageTitle {
+  position: relative;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+  font-size: 29px;
+  color: #000;
+  margin: 0 0 12px;
+}
+
+.titleDivider {
+  align-self: stretch;
+  height: 1px;
+  position: relative;
+  border-top: 1px solid #000;
+  box-sizing: border-box;
+  margin-bottom: 24px;
+  width: 100%;
+}
+
+/* ── ORDER LIST ──────────────────────────────────────── */
+.orderList {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.orderRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+  gap: 16px;
+}
+
+.orderRow:first-child {
+  border-top: 1px solid #f0f0f0;
+}
+
+.orderInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.orderNumber {
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.orderMeta {
+  font-size: 12px;
+  color: #888;
+}
+
+.orderRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+/* ── STATUS BADGE ────────────────────────────────────── */
+.statusBadge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  padding: 3px 10px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.statusInProgress {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.statusShipped {
+  background: #e8d5f5;
+  color: #6f42c1;
+}
+
+.statusCancelled {
+  background: #fde8e8;
+  color: #c0392b;
+}
+
+/* ── DETAILS BUTTON ──────────────────────────────────── */
+.detailsBtn {
+  background: #fc5773;
+  border: 2px solid #fc5773;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+  font-family: Poppins, sans-serif;
+}
+
+.detailsBtn:hover {
+  background: #fff;
+  color: #fc5773;
+  border-color: #fc5773;
+}
+
+.detailsBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── STATES ──────────────────────────────────────────── */
+.stateContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+  width: 100%;
+}
+
+.skeleton {
+  height: 64px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: 8px;
+}
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.errorBox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #fde8e8;
+  border-radius: 8px;
+  color: #c0392b;
+  font-size: 14px;
+}
+
+.errorIcon {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.emptyBox {
+  padding: 40px 0;
+  text-align: center;
+  width: 100%;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 6px;
+}
+
+.emptyDesc {
+  font-size: 13px;
+  color: #888;
+}
+
+/* ── LOADING OVERLAY ─────────────────────────────────── */
+.loadingOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #fff;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+    padding: 24px 16px;
+  }
+
+  .sidebar {
+    width: 100%;
+  }
+
+  .orderRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .orderRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
