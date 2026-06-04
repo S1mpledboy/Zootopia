@@ -234,17 +234,19 @@ const ProduktyWKoszyku: NextPage = () => {
 
               <div className={styles.frameItem} />
 
-              <div className={styles.listaUlubionychParent}>
-                <div className={styles.mojeDane}>Historia zamówień</div>
-                <Image
-                  src={arrow}
-                  className={styles.tablerIconChevronCompactRi}
-                  width={24}
-                  height={24}
-                  sizes="100vw"
-                  alt=""
-                />
-              </div>
+              <Link href="/orders" style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }}>
+                <div className={styles.listaUlubionychParent}>
+                  <div className={styles.mojeDane}>Historia zamówień</div>
+                  <Image
+                   src={arrow}
+                    className={styles.tablerIconChevronCompactRi}
+                    width={24}
+                    height={24}
+                    sizes="100vw"
+                    alt=""
+                  />
+                </div>
+              </Link>
             </div>
           </div>
         </div>
