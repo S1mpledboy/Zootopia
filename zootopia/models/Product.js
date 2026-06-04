@@ -16,6 +16,20 @@ const ProductSchema = new mongoose.Schema(
       maxlength: 3000,
     },
 
+    // 🔥 DODANE: Składniki produktu jako prosty tekst
+    ingredients: {
+      type: String,
+      default: "",
+      maxlength: 3000,
+    },
+
+    // 🔥 DODANE: Dodatkowe informacje jako prosty tekst
+    additionalInfo: {
+      type: String,
+      default: "",
+      maxlength: 3000,
+    },
+
     price: {
       type: Number,
       required: [true, "Price is required"],
@@ -28,7 +42,6 @@ const ProductSchema = new mongoose.Schema(
       min: 0,
     },
 
-    // 🔥 DODANE: pole promoPrice które istnieje w bazie
     promoPrice: {
       type: Number,
       default: null,
@@ -92,7 +105,9 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-ProductSchema.index({ name: "text", description: "text" });
+// 👇 Opcjonalnie: Jeśli chcesz, aby wyszukiwarka tekstowa przeszukiwała też składniki i dodatkowe info, możesz je tutaj dopisać:
+ProductSchema.index({ name: "text", description: "text", ingredients: "text", additionalInfo: "text" });
+
 ProductSchema.index({ category: 1 });
 ProductSchema.index({ company: 1 });
 ProductSchema.index({ animalType: 1 });

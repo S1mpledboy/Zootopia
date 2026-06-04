@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from "next/image";
+import Link from "next/link"; // 🔥 DODANE: Import komponentu Link
 import styles from './product.module.css';
 
 import hearticon from "@/app/Public/Images/tabler-icon-heart.svg";
@@ -14,7 +15,7 @@ interface CartItemProps {
   images: any;       
   quantity: number;
   onCartChanged: () => void;
-  hasStockError?: boolean; // 🔥 DODANE
+  hasStockError?: boolean; 
 }
 
 const Property1Koszyk: React.FC<CartItemProps> = ({
@@ -26,7 +27,7 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
   images,
   quantity,
   onCartChanged,
-  hasStockError = false // 🔥 DODANE (domyślnie false)
+  hasStockError = false 
 }) => {
   
   const getAuthHeaders = () => {
@@ -46,7 +47,6 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
     if (res.ok) {
       onCartChanged();
     } else {
-      // 🔥 Pokaż komunikat jeśli backend zablokował zwiększenie (brak stocku)
       const data = await res.json();
       alert(data.message || 'Nie można zwiększyć ilości.');
     }
@@ -86,19 +86,28 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
   }
 
   return (
-    // 🔥 Czerwona ramka wokół karty jeśli stock niewystarczający
     <div
       className={styles.property1koszyk}
       style={hasStockError ? { border: '1.5px solid #fc5773', borderRadius: '8px' } : {}}
     >
-      <Image className={styles.imgProduktuIcon} src={mainImage} width={100} height={100} alt={name} unoptimized={true} />
+      {/* 🔥 ZMIANA: Opakowanie obrazka w Link i dodanie kursora "pointer" */}
+      <Link href={`/product/${id}`} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+        <Image 
+          className={styles.imgProduktuIcon} 
+          src={mainImage} 
+          width={100} 
+          height={100} 
+          alt={name} 
+          unoptimized={true} 
+        />
+      </Link>
+
       <div className={styles.frameParent}>
         <div className={styles.frameGroup}>
           <div className={styles.frameWrapper}>
             <div className={styles.krainaNoteciParent}>
               <b className={styles.krainaNoteci}>{companyName.toUpperCase()}</b>
               <div className={styles.karmaLoremIpsum}>{name}</div>
-              {/* 🔥 Komunikat bezpośrednio przy produkcie */}
               {hasStockError && (
                 <div style={{
                   color: '#fc5773',

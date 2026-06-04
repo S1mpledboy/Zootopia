@@ -5,7 +5,7 @@ import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
 import ProductActions from "./ProductActions"; 
-import HeartButton from "./HeartButton"; // 🔥 IMPORT NOWEGO PRZYCISKU
+import HeartButton from "./HeartButton"; 
 import "@/models/Company";
 import "@/models/Category";
 
@@ -87,7 +87,6 @@ export default async function ProductPage({
                 {product.company?.name || "Zootopia"}
               </div>
               
-              {/* 🔥 TUTAJ ZMIANA: Przycisk serduszka z akcją dodawania */}
               <HeartButton productId={product._id.toString()} />
               
             </div>
@@ -162,27 +161,12 @@ export default async function ProductPage({
 
         <Accordion
           title="Składniki"
-          content={
-            <>
-              <p>W Zootopii nie mamy nic do ukrycia.</p>
-              <ul>
-                <li>Kategoria: {product.category?.name || "Brak"}</li>
-                <li>Stan magazynowy: {product.stock}</li>
-                <li>ID produktu: {product._id.toString()}</li>
-              </ul>
-            </>
-          }
+          content={product.ingredients || "Brak informacji o składnikach."}
         />
 
         <Accordion
           title="Dodatkowe informacje"
-          content={
-            <ul>
-              <li>Dostępność: Produkt dostępny</li>
-              <li>Wysyłka: 24h</li>
-              <li>Cena: {hasValidPromo ? product.promoPrice : product.price} zł</li>
-            </ul>
-          }
+          content={product.additionalInfo || "Brak dodatkowych informacji."}
         />
 
         <ReviewsSection productId={id} initialReviews={JSON.parse(JSON.stringify(rawReviews))} />
