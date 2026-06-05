@@ -39,7 +39,7 @@ interface ProductProps {
   image: string;
   companyName: string;
   petCategoryId: string | null; 
-  tags: string[]; // 🔥 ZMIANA: Korzystamy z tekstowej tablicy tagów z Excela
+  tags: string[];
 }
 
 interface CategoryProps {
@@ -152,7 +152,6 @@ const KategorieClient = ({
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // 🔥 ZMIANA: Zamiast ID, zapisujemy w filtrach bezpośrednio NAZWĘ klikniętego tagu tekstowego (np. "Szczenię")
   const toggleFilter = (groupKey: string, tagName: string) => {
     setFilters((prev) => {
       const current = prev[groupKey] || [];
@@ -180,7 +179,7 @@ const KategorieClient = ({
   };
 
   // ==========================================
-  // 📊 POPRAWIONE LICZNIKI PRODUKTÓW (FACETS PO TEKŚCIE Z EXCELA)
+  // 📊 LICZNIKI PRODUKTÓW (FACETS PO TEKŚCIE Z EXCELA)
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => {
@@ -201,12 +200,10 @@ const KategorieClient = ({
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
         if (product.price < minPrice || product.price > maxPrice) return false;
 
-        // 🔥 POPRAWKA: Przeszukujemy tablicę tekstową tags (szukamy dopasowań z Excela)
         for (const [key, selectedTagNames] of Object.entries(filters)) {
           if (key === 'marka' || selectedTagNames.length === 0) continue;
           if (groupType === 'tag' && groupKey === key) continue;
 
-          // Sprawdzamy, czy produkt posiada dany tag w wersji tekstowej lub z przedrostkiem (np. "Wiek: Szczenię")
           const hasMatchingTag = product.tags?.some(pTag => 
             selectedTagNames.some(sName => 
               pTag.toLowerCase().trim() === sName.toLowerCase().trim() ||
@@ -234,7 +231,7 @@ const KategorieClient = ({
   }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo]);
 
   // ==========================================
-  // 🔥 POPRAWIONE FILTROWANIE I SORTOWANIE
+  // FILTROWANIE I SORTOWANIE
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
@@ -253,7 +250,6 @@ const KategorieClient = ({
       result = result.filter(p => p.price >= minPrice && p.price <= maxPrice);
     }
 
-    // 🔥 POPRAWKA: Filtrujemy produkty na podstawie tekstowych cech AND / OR
     for (const [groupKey, selectedTagNames] of Object.entries(filters)) {
       if (groupKey === 'marka' || selectedTagNames.length === 0) continue;
       
@@ -283,7 +279,6 @@ const KategorieClient = ({
   // ==========================================
 
   const DynamicCheckbox = ({ groupKey, type, value, label }: { groupKey: string; type: 'marka' | 'tag'; value: string; label: string }) => {
-    // 🔥 ZMIANA: checkbox reaguje na tekstową nazwę (label), a nie na unikalne ID
     const filterValue = type === 'marka' ? value : label;
     const checked = filters[groupKey]?.includes(filterValue);
     const count = facetCounts.get(type, filterValue, groupKey);
@@ -331,8 +326,8 @@ const KategorieClient = ({
           </Section>
         )}
 
-        {/* DYNAMICZNE FILTRY NA PODSTAWIE NAZW FILTRÓW Z EXCELA */}
-        {currentTagGroups.map((group) => {
+        {/* 🔥 ZMIANA: GRUPY TAGÓW Z EXCELA POKAZUJĄ SIĘ TYLKO WTEDY, GDY WYBRANO KATEGORIĘ */}
+        {activeCategoryId && currentTagGroups.map((group) => {
           const tagsForGroup = allTags.filter(t => t.group === group._id);
           if (tagsForGroup.length === 0) return null;
 
