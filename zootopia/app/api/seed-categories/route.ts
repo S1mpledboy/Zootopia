@@ -6,7 +6,7 @@ import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
 
-// Pełna, poprawiona struktura danych ze wszystkimi zwierzętami (Pies, Kot, Małe zwierzęta)
+// Pełna, zweryfikowana struktura danych ze wszystkimi zwierzętami
 const fullShopStructure = [
   // ============================================================
   // SEKCJA: PIES
@@ -72,7 +72,7 @@ const fullShopStructure = [
     subCategory: "Higiena i pielęgnacja",
     groups: [
       { name: "Typ produktu", tags: ["Szampon", "Szczotka", "Obcinacz do pazurów", "Preparaty przeciwkleszczowe", "Chusteczki"] },
-      { name: "Przeznaczenie", tags: ["Krótka sierść", "Długa sierść", "Wrażliwa skóra", "Szczenięta"] }, // <-- POPRAWIONE: 'type' na 'name'
+      { name: "Przeznaczenie", tags: ["Krótka sierść", "Długa sierść", "Wrażliwa skóra", "Szczenięta"] },
       { name: "Cechy", tags: ["Naturalne", "Hipoalergiczne", "Weterynaryjne", "Bezzapachowe"] }
     ]
   },
@@ -181,7 +181,7 @@ const fullShopStructure = [
     subCategory: "Siano i przysmaki",
     groups: [
       { name: "Typ", tags: ["Siano", "Kolby", "Przysmaki", "Gryzaki"] },
-      { name: "Smak / dodatki", tags: ["Ziołowe", "Owocowe", "Warzywne"] }, // <-- POPRAWIONE: 'Birdatki' na 'dodatki'
+      { name: "Smak / dodatki", tags: ["Ziołowe", "Owocowe", "Warzywne"] },
       { name: "Cechy", tags: ["Naturalne", "Dentystyczne", "Ekologiczne"] }
     ]
   },
@@ -252,23 +252,25 @@ export async function GET() {
   try {
     const baseUri = process.env.MONGODB_URI;
     if (!baseUri) return NextResponse.json({ success: false, error: "Brak MONGODB_URI!" }, { status: 500 });
+    
     const cleanUri = baseUri.endsWith("/") ? baseUri.slice(0, -1) : baseUri;
 
-    console.log("🔗 Inicjalizacja dedykowanych połączeń sieciowych...");
-    const connCategories = await mongoose.createConnection(`${cleanUri}/CategoriesDB`).asPromise();
-    const connTagGroups = await mongoose.createConnection(`${cleanUri}/TagGroupsDB`).asPromise();
-    const connTags = await mongoose.createConnection(`${cleanUri}/TagsDB`).asPromise();
+    console.log("🔗 Łączenie bezpośrednio z bazą mydb...");
+    
+    // 🔥 POPRAWKA: Łączymy się z JEDNĄ, konkretną bazą mydb określoną na końcu URI
+    const conn = await mongoose.createConnection(`${cleanUri}/mydb`).asPromise();
 
-    const Category = connCategories.models.Category || connCategories.model("Category", CategoryModel.schema);
-    const TagGroup = connTagGroups.models.TagGroup || connTagGroups.model("TagGroup", TagGroupModel.schema);
-    const Tag = connTags.models.Tag || connTags.model("Tag", TagModel.schema);
+    // Rejestrujemy Twoje oryginalne modele na tym jednym połączeniu do bazy mydb
+    const Category = conn.models.Category || conn.model("Category", CategoryModel.schema, "categories");
+    const TagGroup = conn.models.TagGroup || conn.model("TagGroup", TagGroupModel.schema, "taggroups");
+    const Tag = conn.models.Tag || conn.model("Tag", TagModel.schema, "tags");
 
-    console.log("🧹 Czyszczenie baz produkcyjnych...");
+    console.log("磁 Czyszczenie tabel categories, taggroups oraz tags w bazie mydb...");
     await Category.deleteMany({});
     await TagGroup.deleteMany({});
     await Tag.deleteMany({});
 
-    console.log("🚀 Rozpoczynam bezbłędny zapis masowy (Bulk Write)...");
+    console.log("🚀 Rozpoczynam masowy zapis struktur do bazy mydb...");
 
     const mainCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
     const categoriesToInsert: any[] = [];
@@ -311,21 +313,21 @@ export async function GET() {
       }
     }
 
+    // Masowy zapis bezpośrednio do bazy mydb
     await Category.insertMany(categoriesToInsert);
     await TagGroup.insertMany(tagGroupsToInsert);
     await Tag.insertMany(tagsToInsert);
 
-    await connCategories.close();
-    await connTagGroups.close();
-    await connTags.close();
+    // Zamykamy otwarte połączenie
+    await conn.close();
 
     return NextResponse.json({ 
       success: true, 
-      message: `SUKCES! Wszystkie bazy produkcyjne zostały wyczyszczone i zasilonie kompletnymi strukturami bez błędów walidacji!` 
+      message: `SUKCES! Baza mydb została wyczyszczona i poprawnie zasilona nową strukturą.` 
     });
 
   } catch (error: any) {
-    console.error("❌ Błąd:", error);
+    console.error("❌ Błąd zapisu do bazy mydb:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
