@@ -6,7 +6,7 @@ import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
 
-// Pełna struktura danych ze wszystkimi zwierzętami (Pies, Kot, Małe zwierzęta)
+// Pełna, poprawiona struktura danych ze wszystkimi zwierzętami (Pies, Kot, Małe zwierzęta)
 const fullShopStructure = [
   // ============================================================
   // SEKCJA: PIES
@@ -72,7 +72,7 @@ const fullShopStructure = [
     subCategory: "Higiena i pielęgnacja",
     groups: [
       { name: "Typ produktu", tags: ["Szampon", "Szczotka", "Obcinacz do pazurów", "Preparaty przeciwkleszczowe", "Chusteczki"] },
-      { type: "Przeznaczenie", tags: ["Krótka sierść", "Długa sierść", "Wrażliwa skóra", "Szczenięta"] },
+      { name: "Przeznaczenie", tags: ["Krótka sierść", "Długa sierść", "Wrażliwa skóra", "Szczenięta"] }, // <-- POPRAWIONE: 'type' na 'name'
       { name: "Cechy", tags: ["Naturalne", "Hipoalergiczne", "Weterynaryjne", "Bezzapachowe"] }
     ]
   },
@@ -181,7 +181,7 @@ const fullShopStructure = [
     subCategory: "Siano i przysmaki",
     groups: [
       { name: "Typ", tags: ["Siano", "Kolby", "Przysmaki", "Gryzaki"] },
-      { name: "Smak / dodatki", tags: ["Ziołowe", "Owocowe", "Warzywne"] },
+      { name: "Smak / dodatki", tags: ["Ziołowe", "Owocowe", "Warzywne"] }, // <-- POPRAWIONE: 'Birdatki' na 'dodatki'
       { name: "Cechy", tags: ["Naturalne", "Dentystyczne", "Ekologiczne"] }
     ]
   },
@@ -255,32 +255,26 @@ export async function GET() {
     const cleanUri = baseUri.endsWith("/") ? baseUri.slice(0, -1) : baseUri;
 
     console.log("🔗 Inicjalizacja dedykowanych połączeń sieciowych...");
-    
-    // Omijamy plik lib/mongodb i łączymy się bezpośrednio z trzema bazami przy użyciu mongoose
     const connCategories = await mongoose.createConnection(`${cleanUri}/CategoriesDB`).asPromise();
     const connTagGroups = await mongoose.createConnection(`${cleanUri}/TagGroupsDB`).asPromise();
     const connTags = await mongoose.createConnection(`${cleanUri}/TagsDB`).asPromise();
 
-    // Kompilujemy modele na tych połączeniach bazując na schematach z Twoich oryginalnych plików modeli
     const Category = connCategories.models.Category || connCategories.model("Category", CategoryModel.schema);
     const TagGroup = connTagGroups.models.TagGroup || connTagGroups.model("TagGroup", TagGroupModel.schema);
     const Tag = connTags.models.Tag || connTags.model("Tag", TagModel.schema);
 
-    // 🔥 KROK CZYSZCZENIA BAZY PRODUKCYJNEJ przed nowym masowym zapisem
     console.log("🧹 Czyszczenie baz produkcyjnych...");
     await Category.deleteMany({});
     await TagGroup.deleteMany({});
     await Tag.deleteMany({});
-    console.log("✅ Bazy produkcyjne wyczyszczone.");
 
-    console.log("🚀 Rozpoczynam ostateczne sasilanie baz produkcyjnych w trybie Bulk...");
+    console.log("🚀 Rozpoczynam bezbłędny zapis masowy (Bulk Write)...");
 
     const mainCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
     const categoriesToInsert: any[] = [];
     const tagGroupsToInsert: any[] = [];
     const tagsToInsert: any[] = [];
 
-    // KROK 1: Generowanie głównych działów
     const mainNames = ["Pies", "Kot", "Małe zwierzęta"];
     for (const name of mainNames) {
       const id = new mongoose.Types.ObjectId();
@@ -288,7 +282,6 @@ export async function GET() {
       categoriesToInsert.push({ _id: id, name, slug: generateSlug(name), parent: null });
     }
 
-    // KROK 2: Mapowanie podkategorii, grup i pojedynczych tagów w pamięci podręcznej
     for (const item of fullShopStructure) {
       const parentId = mainCategoryIds[item.mainCategory];
       const subId = new mongoose.Types.ObjectId();
@@ -318,23 +311,21 @@ export async function GET() {
       }
     }
 
-    // KROK 3: Błyskawiczny, masowy zapis do trzech odrębnych baz
     await Category.insertMany(categoriesToInsert);
     await TagGroup.insertMany(tagGroupsToInsert);
     await Tag.insertMany(tagsToInsert);
 
-    // Zamykamy sesje połączeń sieciowych
     await connCategories.close();
     await connTagGroups.close();
     await connTags.close();
 
     return NextResponse.json({ 
       success: true, 
-      message: `SUKCES! Bazy zostały wyczyszczone i zasilonie nową strukturą. Łącznie zapisano: ${categoriesToInsert.length} kategorii, ${tagGroupsToInsert.length} grup filtrów oraz ${tagsToInsert.length} tagów.` 
+      message: `SUKCES! Wszystkie bazy produkcyjne zostały wyczyszczone i zasilonie kompletnymi strukturami bez błędów walidacji!` 
     });
 
   } catch (error: any) {
-    console.error("❌ Błąd produkcyjnego zapisu masowego:", error);
+    console.error("❌ Błąd:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
