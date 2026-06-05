@@ -114,23 +114,39 @@ const KategorieClient = ({
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
 
+  // Lista podkategorii (lub głównych działów dla podstrony promocji) wyświetlana w dolnym menu
   const subCategoriesForMenu = useMemo(() => {
+    if (currentType === 'promocje') {
+      return allCategories.filter(cat => cat.parent === null && cat.slug !== 'promocje');
+    }
     if (!currentAnimalObj) return [];
     return allCategories.filter(cat => cat.parent === currentAnimalObj._id);
-  }, [allCategories, currentAnimalObj]);
+  }, [allCategories, currentAnimalObj, currentType]);
 
   const activeCategoryObj = useMemo(() => {
     return allCategories.find(cat => cat._id === activeCategoryId);
   }, [activeCategoryId, allCategories]);
 
-  // Generowanie filtrów cech
-  const currentTagGroups = useMemo(() => {
-    if (activeCategoryId) {
-      return allTagGroups.filter(g => g.category === activeCategoryId);
-    }
-    const allowedSubCategoryIds = subCategoriesForMenu.map(sub => sub._id);
-    const groups = allTagGroups.filter(g => allowedSubCategoryIds.includes(g.category));
+  // Pomocnicza lista podkategorii, jeśli na stronie promocji kliknięto w głównego zwierzaka
+  const childCategoryIdsForSelectedAnimal = useMemo(() => {
+    if (currentType !== 'promocje' || !activeCategoryId) return [];
+    return allCategories.filter(cat => cat.parent === activeCategoryId).map(cat => cat._id);
+  }, [currentType, activeCategoryId, allCategories]);
 
+  // 🔥 DYNAMICZNE FILTRY: Generowanie grup tagów tylko wtedy, gdy kategoria jest aktywna
+  const currentTagGroups = useMemo(() => {
+    if (!activeCategoryId) return [];
+
+    let groups = [];
+    if (currentType === 'promocje') {
+      // Jeśli jesteśmy w promocjach i zaznaczono np. "Pies", pobieramy grupy tagów przypisane do podkategorii psa
+      groups = allTagGroups.filter(g => childCategoryIdsForSelectedAnimal.includes(g.category));
+    } else {
+      // Standardowy widok działu – grupy przypisane bezpośrednio do wybranej podkategorii
+      groups = allTagGroups.filter(g => g.category === activeCategoryId);
+    }
+
+    // Automatycznie ustawiamy stan 'open' na true dla nowo załadowanych grup filtrów
     groups.forEach(g => {
       if (openSections[g._id] === undefined) {
         setOpenSections(prev => ({ ...prev, [g._id]: true }));
@@ -138,14 +154,20 @@ const KategorieClient = ({
     });
 
     return groups;
-  }, [activeCategoryId, allTagGroups, subCategoriesForMenu]);
+  }, [activeCategoryId, allTagGroups, currentType, childCategoryIdsForSelectedAnimal, openSections]);
 
   const availableBrands = useMemo(() => {
     const brands = initialProducts
-      .filter(p => !activeCategoryId || p.petCategoryId === activeCategoryId)
+      .filter(p => {
+        if (!activeCategoryId) return true;
+        if (currentType === 'promocje') {
+          return childCategoryIdsForSelectedAnimal.includes(p.petCategoryId || '');
+        }
+        return p.petCategoryId === activeCategoryId;
+      })
       .map(p => p.companyName);
     return Array.from(new Set(brands)).sort();
-  }, [initialProducts, activeCategoryId]);
+  }, [initialProducts, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
   // ===== FILTERS LOGIC =====
   const toggleSection = (key: string) => {
@@ -179,18 +201,27 @@ const KategorieClient = ({
   };
 
   // ==========================================
-  // 📊 LICZNIKI PRODUKTÓW (FACETS PO TEKŚCIE Z EXCELA)
+  // 📊 LICZNIKI PRODUKTÓW (FACETS)
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => {
       return initialProducts.filter(product => {
         if (!product.petCategoryId) return false;
 
-        if (groupType !== 'category' && activeCategoryId) {
-          if (product.petCategoryId !== activeCategoryId) return false;
-        }
-        if (groupType === 'category') {
-          if (product.petCategoryId !== value) return false;
+        if (currentType === 'promocje') {
+          if (groupType === 'category') {
+            const subIds = allCategories.filter(cat => cat.parent === value).map(cat => cat._id);
+            if (!subIds.includes(product.petCategoryId)) return false;
+          } else if (activeCategoryId) {
+            if (!childCategoryIdsForSelectedAnimal.includes(product.petCategoryId)) return false;
+          }
+        } else {
+          if (groupType !== 'category' && activeCategoryId) {
+            if (product.petCategoryId !== activeCategoryId) return false;
+          }
+          if (groupType === 'category') {
+            if (product.petCategoryId !== value) return false;
+          }
         }
 
         if (groupType !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(product.companyName)) return false;
@@ -228,7 +259,7 @@ const KategorieClient = ({
     return {
       get: (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => getCountForOption(groupType, value, groupKey)
     };
-  }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo]);
+  }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo, currentType, allCategories, childCategoryIdsForSelectedAnimal]);
 
   // ==========================================
   // FILTROWANIE I SORTOWANIE
@@ -237,7 +268,11 @@ const KategorieClient = ({
     let result = [...initialProducts];
 
     if (activeCategoryId) {
-      result = result.filter(p => p.petCategoryId === activeCategoryId);
+      if (currentType === 'promocje') {
+        result = result.filter(p => childCategoryIdsForSelectedAnimal.includes(p.petCategoryId || ''));
+      } else {
+        result = result.filter(p => p.petCategoryId === activeCategoryId);
+      }
     }
 
     if (filters.marka && filters.marka.length > 0) {
@@ -274,7 +309,7 @@ const KategorieClient = ({
     });
 
     return result;
-  }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId]);
+  }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
   // ==========================================
 
@@ -311,6 +346,7 @@ const KategorieClient = ({
         </div>
         <Image src={line} width={216} height={1} alt="" />
 
+        {/* 1. SEKCJA CENA - Zawsze widoczna */}
         <Section id="cena" title="Cena" openSections={openSections} toggleSection={toggleSection}>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input type="number" placeholder="od" value={priceFrom} onChange={(e) => setPriceFrom(e.target.value)} style={{ width: '80px' }} />
@@ -318,6 +354,7 @@ const KategorieClient = ({
           </div>
         </Section>
 
+        {/* 2. SEKCJA MARKA - Zawsze widoczna */}
         {availableBrands.length > 0 && (
           <Section id="marka" title="Marka" openSections={openSections} toggleSection={toggleSection}>
             {availableBrands.map(brand => (
@@ -326,7 +363,7 @@ const KategorieClient = ({
           </Section>
         )}
 
-        {/* 🔥 ZMIANA: GRUPY TAGÓW Z EXCELA POKAZUJĄ SIĘ TYLKO WTEDY, GDY WYBRANO KATEGORIĘ */}
+        {/* 3. DYNAMICZNE GRUPY TAGÓW - Pojawiają się dopiero PO KLIKNIĘCIU w kategorię */}
         {activeCategoryId && currentTagGroups.map((group) => {
           const tagsForGroup = allTags.filter(t => t.group === group._id);
           if (tagsForGroup.length === 0) return null;
