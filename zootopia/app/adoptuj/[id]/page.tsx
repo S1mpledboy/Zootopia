@@ -36,14 +36,26 @@ const sizeLabel: Record<string, string> = {
   large: "Duży",
 };
 
-type Props = { params: { id: string } };
+// 1. POPRAWKA: Zmiana typu na Promise (wymóg nowszych wersji Next.js)
+type Props = { 
+  params: Promise<{ id: string }>;
+};
 
 export default async function PetPage({ params }: Props) {
+  // 2. POPRAWKA: Rozpakowanie parametrów za pomocą await przed użyciem połączenia
+  const { id } = await params;
+
+  // Dodatkowe zabezpieczenie: sprawdzenie czy ID z URL w ogóle pasuje do formatu MongoDB
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    notFound();
+  }
+
   await getDatabaseConnection();
 
   let pet: any;
   try {
-    pet = await PetModel.findById(params.id).lean();
+    // 3. POPRAWKA: Przekazujemy przefiltrowane, czyste "id" zamiast całego obiektu params.id
+    pet = await PetModel.findById(id).lean();
   } catch {
     notFound();
   }
