@@ -1,6 +1,5 @@
 'use client';
 
-import type { NextPage } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -40,7 +39,7 @@ interface ProductProps {
   image: string;
   companyName: string;
   petCategoryId: string | null; 
-  attributes: string[]; // Identyfikatory tagów z bazy MongoDB przypisane do produktu
+  tags: string[]; // 🔥 ZMIANA: Korzystamy z tekstowej tablicy tagów z Excela
 }
 
 interface CategoryProps {
@@ -53,17 +52,17 @@ interface CategoryProps {
 interface TagGroupProps {
   _id: string;
   name: string;
-  category: string; // Przypisanie do podkategorii
+  category: string;
 }
 
 interface TagProps {
   _id: string;
   name: string;
-  group: string; // Przypisanie do grupy filtrów
+  group: string;
 }
 
 // =========================
-// PAGE CLIENT COMPONENT
+// MAIN PAGE CLIENT COMPONENT
 // =========================
 const KategorieClient = ({ 
   initialProducts, 
@@ -93,7 +92,6 @@ const KategorieClient = ({
   
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  // Reset filtrów przy zmianie podstrony Pies -> Kot
   useEffect(() => {
     setActiveCategoryId(null);
     setFilters({});
@@ -112,7 +110,6 @@ const KategorieClient = ({
     }
   };
 
-  // Menu boczne podkategorii
   const currentAnimalObj = useMemo(() => {
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
@@ -126,25 +123,23 @@ const KategorieClient = ({
     return allCategories.find(cat => cat._id === activeCategoryId);
   }, [activeCategoryId, allCategories]);
 
-  // ==========================================================
-  // 🎯 DYNAMICZNE FILTRY DLA WYBRANEJ PODKATEGORII
-  // ==========================================================
+  // Generowanie filtrów cech
   const currentTagGroups = useMemo(() => {
-    if (!activeCategoryId) return [];
-    // Pobierz grupy przypisane tylko do aktualnie zaznaczonej podkategorii
-    const groups = allTagGroups.filter(g => g.category === activeCategoryId);
-    
-    // Automatycznie otwieramy nowo załadowane sekcje filtrów w menu
+    if (activeCategoryId) {
+      return allTagGroups.filter(g => g.category === activeCategoryId);
+    }
+    const allowedSubCategoryIds = subCategoriesForMenu.map(sub => sub._id);
+    const groups = allTagGroups.filter(g => allowedSubCategoryIds.includes(g.category));
+
     groups.forEach(g => {
       if (openSections[g._id] === undefined) {
         setOpenSections(prev => ({ ...prev, [g._id]: true }));
       }
     });
-    
-    return groups;
-  }, [activeCategoryId, allTagGroups]);
 
-  // Dynamiczne pobieranie unikalnych producentów dla aktualnie załadowanych produktów
+    return groups;
+  }, [activeCategoryId, allTagGroups, subCategoriesForMenu]);
+
   const availableBrands = useMemo(() => {
     const brands = initialProducts
       .filter(p => !activeCategoryId || p.petCategoryId === activeCategoryId)
@@ -152,17 +147,18 @@ const KategorieClient = ({
     return Array.from(new Set(brands)).sort();
   }, [initialProducts, activeCategoryId]);
 
-  // ===== TOGGLE LOGIC =====
+  // ===== FILTERS LOGIC =====
   const toggleSection = (key: string) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
-  const toggleFilter = (groupKey: string, tagId: string) => {
+  // 🔥 ZMIANA: Zamiast ID, zapisujemy w filtrach bezpośrednio NAZWĘ klikniętego tagu tekstowego (np. "Szczenię")
+  const toggleFilter = (groupKey: string, tagName: string) => {
     setFilters((prev) => {
       const current = prev[groupKey] || [];
-      const updated = current.includes(tagId)
-        ? current.filter((v) => v !== tagId)
-        : [...current, tagId];
+      const updated = current.includes(tagName)
+        ? current.filter((v) => v !== tagName)
+        : [...current, tagName];
       return { ...prev, [groupKey]: updated };
     });
   };
@@ -173,7 +169,7 @@ const KategorieClient = ({
 
   const selectCategory = (id: string) => {
     setActiveCategoryId((prev) => (prev === id ? null : id));
-    setFilters({}); // czyścimy zaznaczone tagi przy zmianie podkategorii
+    setFilters({});
   };
 
   const handleResetToMainType = () => {
@@ -184,14 +180,13 @@ const KategorieClient = ({
   };
 
   // ==========================================
-  // 📊 DYNAMICZNE WYLICZANIE FACETS (LICZNIKÓW)
+  // 📊 POPRAWIONE LICZNIKI PRODUKTÓW (FACETS PO TEKŚCIE Z EXCELA)
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => {
       return initialProducts.filter(product => {
         if (!product.petCategoryId) return false;
 
-        // Warunek kategorii głównej
         if (groupType !== 'category' && activeCategoryId) {
           if (product.petCategoryId !== activeCategoryId) return false;
         }
@@ -199,31 +194,34 @@ const KategorieClient = ({
           if (product.petCategoryId !== value) return false;
         }
 
-        // Warunek marki
         if (groupType !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(product.companyName)) return false;
         if (groupType === 'marka' && product.companyName !== value) return false;
 
-        // Warunek cenowy
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
         if (product.price < minPrice || product.price > maxPrice) return false;
 
-        // Warunek dla dynamicznych tagów
-        // Sprawdzamy czy produkt spełnia kryteria filtrów z POZOSTAŁYCH grup tagów
-        for (const [key, selectedTagIds] of Object.entries(filters)) {
-          if (key === 'marka' || selectedTagIds.length === 0) continue;
-          
-          // Jeśli liczymy dla konkretnej grupy tagów, pomijamy jej własny filtr
+        // 🔥 POPRAWKA: Przeszukujemy tablicę tekstową tags (szukamy dopasowań z Excela)
+        for (const [key, selectedTagNames] of Object.entries(filters)) {
+          if (key === 'marka' || selectedTagNames.length === 0) continue;
           if (groupType === 'tag' && groupKey === key) continue;
 
-          // Sprawdzamy czy produkt ma chociaż jeden z zaznaczonych tagów w tej grupie
-          const hasMatchingTag = product.attributes?.some(attrId => selectedTagIds.includes(attrId));
+          // Sprawdzamy, czy produkt posiada dany tag w wersji tekstowej lub z przedrostkiem (np. "Wiek: Szczenię")
+          const hasMatchingTag = product.tags?.some(pTag => 
+            selectedTagNames.some(sName => 
+              pTag.toLowerCase().trim() === sName.toLowerCase().trim() ||
+              pTag.toLowerCase().trim().endsWith(sName.toLowerCase().trim())
+            )
+          );
           if (!hasMatchingTag) return false;
         }
 
-        // Jeśli liczymy konkretną opcję tagu, sprawdzamy czy produkt go posiada
         if (groupType === 'tag') {
-          if (!product.attributes?.includes(value)) return false;
+          const hasThisTag = product.tags?.some(pTag => 
+            pTag.toLowerCase().trim() === value.toLowerCase().trim() ||
+            pTag.toLowerCase().trim().endsWith(value.toLowerCase().trim())
+          );
+          if (!hasThisTag) return false;
         }
 
         return true;
@@ -236,39 +234,39 @@ const KategorieClient = ({
   }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo]);
 
   // ==========================================
-  // 🔥 FILTROWANIE I SORTOWANIA PRODUKTÓW
+  // 🔥 POPRAWIONE FILTROWANIE I SORTOWANIE
   // ==========================================
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
 
-    // Wybór kategorii
     if (activeCategoryId) {
       result = result.filter(p => p.petCategoryId === activeCategoryId);
     }
 
-    // Filtrowanie marek
     if (filters.marka && filters.marka.length > 0) {
       result = result.filter(p => filters.marka.includes(p.companyName));
     }
 
-    // Filtrowanie cen
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
     if (minPrice > 0 || maxPrice < Infinity) {
       result = result.filter(p => p.price >= minPrice && p.price <= maxPrice);
     }
 
-    // Dynamiczne filtrowanie atrybutów/tagów (Każda grupa działa jako warunek AND)
-    for (const [groupKey, selectedTagIds] of Object.entries(filters)) {
-      if (groupKey === 'marka' || selectedTagIds.length === 0) continue;
+    // 🔥 POPRAWKA: Filtrujemy produkty na podstawie tekstowych cech AND / OR
+    for (const [groupKey, selectedTagNames] of Object.entries(filters)) {
+      if (groupKey === 'marka' || selectedTagNames.length === 0) continue;
       
       result = result.filter(product => {
-        // Produkt musi posiadać przynajmniej jeden z tagów wybranych w danej sekcji (OR wewnątrz grupy)
-        return product.attributes?.some(attrId => selectedTagIds.includes(attrId));
+        return product.tags?.some(pTag => 
+          selectedTagNames.some(sName => 
+            pTag.toLowerCase().trim() === sName.toLowerCase().trim() ||
+            pTag.toLowerCase().trim().endsWith(sName.toLowerCase().trim())
+          )
+        );
       });
     }
 
-    // Sortowanie
     result.sort((a, b) => {
       switch (sort) {
         case 'Nazwa rosnąco': return a.name.localeCompare(b.name);
@@ -284,15 +282,16 @@ const KategorieClient = ({
 
   // ==========================================
 
-  // Uniwersalny, elastyczny komponent Checkboxa
   const DynamicCheckbox = ({ groupKey, type, value, label }: { groupKey: string; type: 'marka' | 'tag'; value: string; label: string }) => {
-    const checked = filters[groupKey]?.includes(value);
-    const count = facetCounts.get(type, value, groupKey);
+    // 🔥 ZMIANA: checkbox reaguje na tekstową nazwę (label), a nie na unikalne ID
+    const filterValue = type === 'marka' ? value : label;
+    const checked = filters[groupKey]?.includes(filterValue);
+    const count = facetCounts.get(type, filterValue, groupKey);
     
     return (
       <div
         className={styles.frameParent2}
-        onClick={() => toggleFilter(groupKey, value)}
+        onClick={() => toggleFilter(groupKey, filterValue)}
         style={{ cursor: 'pointer', display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center' }}
       >
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -308,7 +307,7 @@ const KategorieClient = ({
 
   return (
     <div className={styles.kategorie}>
-      {/* ================= LEFT (FILTRY) ================= */}
+      {/* ================= LEFT (PANEL FILTRÓW) ================= */}
       <div className={styles.frameParent}>
         <div className={styles.frameWrapper}>
           <div className={styles.filtrujWrapper}>
@@ -317,7 +316,6 @@ const KategorieClient = ({
         </div>
         <Image src={line} width={216} height={1} alt="" />
 
-        {/* Sekcja ceny */}
         <Section id="cena" title="Cena" openSections={openSections} toggleSection={toggleSection}>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input type="number" placeholder="od" value={priceFrom} onChange={(e) => setPriceFrom(e.target.value)} style={{ width: '80px' }} />
@@ -325,7 +323,6 @@ const KategorieClient = ({
           </div>
         </Section>
 
-        {/* Dynamiczna sekcja marek dostępnych w danej kategorii */}
         {availableBrands.length > 0 && (
           <Section id="marka" title="Marka" openSections={openSections} toggleSection={toggleSection}>
             {availableBrands.map(brand => (
@@ -334,9 +331,8 @@ const KategorieClient = ({
           </Section>
         )}
 
-        {/* 🔥 DYNAMICZNE FILTRY Z BAZY (Wiek, Rozmiar, Funkcje itp.) */}
+        {/* DYNAMICZNE FILTRY NA PODSTAWIE NAZW FILTRÓW Z EXCELA */}
         {currentTagGroups.map((group) => {
-          // Pobieramy wyłącznie te opcje/tagi, które należą do tej grupy filtrów
           const tagsForGroup = allTags.filter(t => t.group === group._id);
           if (tagsForGroup.length === 0) return null;
 
@@ -359,7 +355,7 @@ const KategorieClient = ({
           <div className={styles.zastosujFiltry}>Resetuj filtry</div>
         </div>
 
-        {/* ===== KATEGORIE - MENU BOCZNE ===== */}
+        {/* Menu Kategorii bocznych */}
         <div className={styles.frameWrapper}>
           <div className={styles.filtrujWrapper}>
             <div className={styles.filtruj}>Kategorie</div>
@@ -406,7 +402,7 @@ const KategorieClient = ({
         </div>
       </div>
 
-      {/* ================= RIGHT (PRODUKTY) ================= */}
+      {/* ================= RIGHT (LISTA PRODUKTÓW) ================= */}
       <div className={styles.frameParent25}>
         <div className={styles.sortowanieParent}>
           <div className={styles.sortowanie}>

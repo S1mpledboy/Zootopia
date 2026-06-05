@@ -18,10 +18,10 @@ export default async function KategoriePage({
   const baseUri = process.env.MONGODB_URI;
   if (!baseUri) throw new Error("Brak MONGODB_URI w zmiennych środowiskowych!");
 
-  // Łączymy się i wymuszamy bazę mydb
+  // Bezpieczne połączenie i wymuszenie bazy mydb
   const conn = await mongoose.createConnection(baseUri, { dbName: "mydb" }).asPromise();
 
-  // Rejestrujemy modele na aktywnym połączeniu sieciowym
+  // Rejestracja modeli na aktywnym połączeniu
   const Company = conn.models.Company || conn.model("Company", CompanyModel.schema, "companies");
   const Category = conn.models.Category || conn.model("Category", CategoryModel.schema, "categories");
   const TagGroup = conn.models.TagGroup || conn.model("TagGroup", TagGroupModel.schema, "taggroups");
@@ -31,12 +31,12 @@ export default async function KategoriePage({
   const resolvedSearchParams = await searchParams;
   const urlType = resolvedSearchParams.type || 'pies';
 
-  // Pobieramy komplet danych strukturalnych z bazy mydb
+  // Pobranie struktur danych z bazy mydb
   const allCategoriesRaw = await Category.find({}).lean();
   const allTagGroupsRaw = await TagGroup.find({}).lean();
   const allTagsRaw = await Tag.find({}).lean();
 
-  // Serializacja kategorii pod Next.js Client Component
+  // Serializacja kategorii
   const serializedCategories = allCategoriesRaw.map((cat: any) => ({
     _id: cat._id.toString(),
     name: cat.name,
@@ -44,21 +44,21 @@ export default async function KategoriePage({
     parent: cat.parent ? cat.parent.toString() : null
   }));
 
-  // Serializacja grup filtrów pod komponent kliencki
+  // Serializacja grup filtrów
   const serializedTagGroups = allTagGroupsRaw.map((group: any) => ({
     _id: group._id.toString(),
     name: group.name,
     category: group.category.toString()
   }));
 
-  // Serializacja poszczególnych tagów pod komponent kliencki
+  // Serializacja poszczególnych tagów
   const serializedTags = allTagsRaw.map((tag: any) => ({
     _id: tag._id.toString(),
     name: tag.name,
     group: tag.group.toString()
   }));
 
-  // Helper: rozpakowywanie obrazka (obsługa tablicy w tablicy)
+  // Helper do wyciągania pierwszego poprawnego zdjęcia z bazy danych
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
     const first = images[0];
@@ -67,16 +67,12 @@ export default async function KategoriePage({
     return "/fallback-image.png";
   };
 
-  // Helper: serializacja produktu i transformacja ObjectId do stringów
+  // Helper do mapowania produktu z bazy na czysty obiekt tekstowy (z tags dla Excela)
   const serializeProduct = (product: any) => {
     let catId = null;
     if (product.category) {
       catId = product.category._id ? product.category._id.toString() : product.category.toString();
     }
-
-    const serializedAttributes = product.attributes
-      ? product.attributes.map((attr: any) => attr.toString())
-      : [];
 
     return {
       _id: product._id.toString(),
@@ -86,11 +82,11 @@ export default async function KategoriePage({
       image: extractImage(product.images),
       companyName: product.company?.name || "Inna marka",
       petCategoryId: catId,
-      attributes: serializedAttributes
+      tags: product.tags || [] // 🔥 KLUCZOWE: Przekazujemy tablicę tekstową tags dla filtrów z Excela
     };
   };
 
-  // Wybór podkategorii przypisanych do wybranego typu zwierzaka (Menu boczne)
+  // Namierzanie głównego działu zwierzaka (Menu boczne)
   const currentAnimalCategory = serializedCategories.find(
     cat => cat.slug === urlType && cat.parent === null
   );
@@ -103,7 +99,7 @@ export default async function KategoriePage({
     targetCategoryIds = childCategories.map(cat => cat._id);
   }
 
-  // Budujemy zapytanie do bazy produktów
+  // Kryteria zapytania o produkty
   let productQuery: any = { isActive: true };
   if (urlType === 'promocje') {
     productQuery.promoPrice = { $ne: null, $exists: true, $gt: 0 };
@@ -111,15 +107,16 @@ export default async function KategoriePage({
     productQuery.category = { $in: targetCategoryIds };
   }
 
-  // Pobieramy produkty i dołączamy markę za pomocą .populate()
+  // Pobranie gotowych produktów i wyciągnięcie danych o marce przez .populate()
   const rawProducts = await Product.find(productQuery)
     .populate("company")
     .sort({ updatedAt: -1 })
     .lean();
 
-  // Zamykamy aktywne połączenie
+  // Zamykamy sesję połączenia
   await conn.close();
 
+  // Wysyłamy komplet w 100% zmapowanych danych na front-end
   return (
     <KategorieClient
       initialProducts={rawProducts.map(serializeProduct)}
