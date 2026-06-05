@@ -6,6 +6,7 @@ import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
 import ProductActions from "./ProductActions"; 
 import HeartButton from "./HeartButton"; 
+import RecommendedProducts from "./RecommendedProducts";
 import "@/models/Company";
 import "@/models/Category";
 
@@ -65,6 +66,19 @@ export default async function ProductPage({
   const avgRating = totalReviews > 0 
     ? Number((rawReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / totalReviews).toFixed(1))
     : 0;
+
+  const categoryId = (product.category as any)?._id || product.category;
+
+  const rawRecommended = await Product.find({
+    category: categoryId,
+    _id: { $ne: new Types.ObjectId(id) },
+    isActive: true,
+    stock: { $gt: 0 },
+  })
+    .populate("company")
+    .lean();
+
+  const shuffled = rawRecommended.sort(() => Math.random() - 0.5).slice(0, 4);
 
   const hasValidPromo = product.promoPrice !== undefined && product.promoPrice !== null;
 
@@ -170,6 +184,8 @@ export default async function ProductPage({
         />
 
         <ReviewsSection productId={id} initialReviews={JSON.parse(JSON.stringify(rawReviews))} />
+
+        <RecommendedProducts products={JSON.parse(JSON.stringify(shuffled))} />
       </div>
     </div>
   );
