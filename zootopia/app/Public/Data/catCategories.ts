@@ -32,11 +32,5 @@ export const items: CatCategoryItem[] = [
     // Przenosi do sekcji Kot -> Kategoria Legowiska Kot
     link: "/ShopPage?type=kot&category=legowiska-kot"
   },
-  {
-    id: 4,
-    name: "Przekąski",
-    image: przekaski,
-    // Przenosi do sekcji Kot -> Kategoria Zabawki Kot (lub jak nazwałaś przekąski/przysmaki u kota w bazie)
-    link: "/ShopPage?type=kot&category=zabawki-kot"
-  }
+
 ];
