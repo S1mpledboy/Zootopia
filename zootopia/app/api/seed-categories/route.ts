@@ -6,7 +6,7 @@ import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
 
-// Struktura danych (Pies, Kot, Małe zwierzęta)
+// Pełna, zaktualizowana struktura danych ze wszystkimi zwierzętami
 const fullShopStructure = [
   // ============================================================
   // SEKCJA: PIES
@@ -15,6 +15,7 @@ const fullShopStructure = [
     mainCategory: "Pies",
     subCategory: "Karma",
     groups: [
+      { name: "Typ", tags: ["Karma sucha", "Karma mokra"] }, // <-- NOWOŚĆ DLA PSA
       { name: "Wiek", tags: ["Szczenię", "Dorosły", "Senior"] },
       { name: "Wielkość rasy", tags: ["Mini/mała <10kg", "Średnia 10-25kg", "Duża >25kg"] },
       { name: "Specjalne potrzeby", tags: ["Bezzbożowa", "Dla alergików", "Wysoka aktywność", "Nadwaga"] }
@@ -85,6 +86,7 @@ const fullShopStructure = [
     subCategory: "Karma Kot",
     displayName: "Karma",
     groups: [
+      { name: "Typ", tags: ["Karma sucha", "Karma mokra"] }, // <-- NOWOŚĆ DLA KOTA
       { name: "Wiek", tags: ["Kocię", "Dorosły", "Senior"] },
       { name: "Wielkość rasy", tags: ["Mini/mała <4kg", "Średnia 4-6kg", "Duża >6kg"] },
       { name: "Specjalne potrzeby", tags: ["Bezzbożowa", "Dla alergików", "Wysoka aktywność", "Nadwaga"] }
@@ -254,24 +256,20 @@ export async function GET() {
     if (!baseUri) return NextResponse.json({ success: false, error: "Brak MONGODB_URI!" }, { status: 500 });
 
     console.log("🔗 Otwieranie połączenia i wymuszanie bazy mydb...");
-    
-    // 🔥 KLUCZOWA POPRAWKA: Przekazujemy dbName bezpośrednio w obiekcie opcji Mongoose.
-    // To całkowicie nadpisuje to, co jest na końcu Twojego linku connection string.
     const conn = await mongoose.createConnection(baseUri, {
       dbName: "mydb"
     }).asPromise();
 
-    // Rejestrujemy modele na wymuszonym połączeniu do mydb
     const Category = conn.models.Category || conn.model("Category", CategoryModel.schema, "categories");
     const TagGroup = conn.models.TagGroup || conn.model("TagGroup", TagGroupModel.schema, "taggroups");
     const Tag = conn.models.Tag || conn.model("Tag", TagModel.schema, "tags");
 
-    console.log("🧹 Czyszczenie tabel categories, taggroups oraz tags w bazie mydb...");
+    console.log("🧹 Reset bazy mydb (czyszczenie kolekcji)...");
     await Category.deleteMany({});
     await TagGroup.deleteMany({});
     await Tag.deleteMany({});
 
-    console.log("🚀 Rozpoczynam masowy zapis do bazy mydb...");
+    console.log("🚀 Rozpoczynam masowy zapis zaktualizowanych struktur...");
 
     const mainCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
     const categoriesToInsert: any[] = [];
@@ -314,17 +312,15 @@ export async function GET() {
       }
     }
 
-    // Masowy zapis bezpośrednio do bazy mydb
     await Category.insertMany(categoriesToInsert);
     await TagGroup.insertMany(tagGroupsToInsert);
     await Tag.insertMany(tagsToInsert);
 
-    // Zamykamy połączenie sieciowe
     await conn.close();
 
     return NextResponse.json({ 
       success: true, 
-      message: `SUKCES! Dane zostały poprawnie i trwale zapisane w bazie o nazwie 'mydb'.` 
+      message: `SUKCES! Zaktualizowano strukturę bazy 'mydb'. Dodano filtry Typu karmy (sucha/mokra).` 
     });
 
   } catch (error: any) {
