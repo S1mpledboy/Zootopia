@@ -31,10 +31,5 @@ export const items: DogCategoryItem[] = [
     image: legowiska,
     link: "/ShopPage?type=pies&category=legowiska"
   },
-  {
-    id: 4,
-    name: "Przekąski",
-    image: przekaski,
-    link: "/ShopPage?type=pies&category=siano-i-przysmaki"
-  }
+
 ];
