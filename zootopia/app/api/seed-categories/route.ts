@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { connectToDatabase } from "@/lib/mongodb";
 import mongoose from "mongoose";
 
 // Poprawne importy domyślne z Twoich plików modeli
@@ -73,7 +72,7 @@ const fullShopStructure = [
     subCategory: "Higiena i pielęgnacja",
     groups: [
       { name: "Typ produktu", tags: ["Szampon", "Szczotka", "Obcinacz do pazurów", "Preparaty przeciwkleszczowe", "Chusteczki"] },
-      { name: "Przeznaczenie", tags: ["Krótka sierść", "Długa sierść", "Wrażliwa skóra", "Szczenięta"] },
+      { type: "Przeznaczenie", tags: ["Krótka sierść", "Długa sierść", "Wrażliwa skóra", "Szczenięta"] },
       { name: "Cechy", tags: ["Naturalne", "Hipoalergiczne", "Weterynaryjne", "Bezzapachowe"] }
     ]
   },
@@ -255,26 +254,26 @@ export async function GET() {
     if (!baseUri) return NextResponse.json({ success: false, error: "Brak MONGODB_URI!" }, { status: 500 });
     const cleanUri = baseUri.endsWith("/") ? baseUri.slice(0, -1) : baseUri;
 
-    // 1. Nawiązanie połączenia z 3 odrębnymi bazami produkcyjnymi
-    const connections = await connectToDatabase();
+    console.log("🔗 Inicjalizacja dedykowanych połączeń sieciowych...");
     
-    const connCategories = connections.connCategories;
-    const connTagGroups = connections.connTagGroups;
-    const connTags = connections.connTags;
+    // Omijamy plik lib/mongodb i łączymy się bezpośrednio z trzema bazami przy użyciu mongoose
+    const connCategories = await mongoose.createConnection(`${cleanUri}/CategoriesDB`).asPromise();
+    const connTagGroups = await mongoose.createConnection(`${cleanUri}/TagGroupsDB`).asPromise();
+    const connTags = await mongoose.createConnection(`${cleanUri}/TagsDB`).asPromise();
 
-    // 2. Wiążemy zaimportowane modele z właściwymi połączeniami
+    // Kompilujemy modele na tych połączeniach bazując na schematach z Twoich oryginalnych plików modeli
     const Category = connCategories.models.Category || connCategories.model("Category", CategoryModel.schema);
     const TagGroup = connTagGroups.models.TagGroup || connTagGroups.model("TagGroup", TagGroupModel.schema);
     const Tag = connTags.models.Tag || connTags.model("Tag", TagModel.schema);
 
-    // 🔥 NOWY KROK: Czyszczenie istniejących kolekcji produkcyjnych przed wgraniem nowych danych
+    // 🔥 KROK CZYSZCZENIA BAZY PRODUKCYJNEJ przed nowym masowym zapisem
     console.log("🧹 Czyszczenie baz produkcyjnych...");
     await Category.deleteMany({});
     await TagGroup.deleteMany({});
     await Tag.deleteMany({});
-    console.log("✅ Kolekcje produkcyjne zostały wyczyszczone.");
+    console.log("✅ Bazy produkcyjne wyczyszczone.");
 
-    console.log("🚀 Rozpoczynam produkcyjny zapis masowy (Bulk Write)...");
+    console.log("🚀 Rozpoczynam ostateczne sasilanie baz produkcyjnych w trybie Bulk...");
 
     const mainCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
     const categoriesToInsert: any[] = [];
@@ -289,7 +288,7 @@ export async function GET() {
       categoriesToInsert.push({ _id: id, name, slug: generateSlug(name), parent: null });
     }
 
-    // KROK 2: Przygotowanie struktur danych w pamięci
+    // KROK 2: Mapowanie podkategorii, grup i pojedynczych tagów w pamięci podręcznej
     for (const item of fullShopStructure) {
       const parentId = mainCategoryIds[item.mainCategory];
       const subId = new mongoose.Types.ObjectId();
@@ -319,14 +318,19 @@ export async function GET() {
       }
     }
 
-    // KROK 3: Masowy zapis paczek do produkcyjnych baz
+    // KROK 3: Błyskawiczny, masowy zapis do trzech odrębnych baz
     await Category.insertMany(categoriesToInsert);
     await TagGroup.insertMany(tagGroupsToInsert);
     await Tag.insertMany(tagsToInsert);
 
+    // Zamykamy sesje połączeń sieciowych
+    await connCategories.close();
+    await connTagGroups.close();
+    await connTags.close();
+
     return NextResponse.json({ 
       success: true, 
-      message: `PRODUKCJA ZASILONA! Bazy zostały wyczyszczone, a następnie zapisano: ${categoriesToInsert.length} kategorii, ${tagGroupsToInsert.length} grup oraz ${tagsToInsert.length} tagów do 3 odrębnych baz danych.` 
+      message: `SUKCES! Bazy zostały wyczyszczone i zasilonie nową strukturą. Łącznie zapisano: ${categoriesToInsert.length} kategorii, ${tagGroupsToInsert.length} grup filtrów oraz ${tagsToInsert.length} tagów.` 
     });
 
   } catch (error: any) {
