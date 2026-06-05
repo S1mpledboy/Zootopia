@@ -1,27 +1,5 @@
 import { NextResponse } from "next/server";
-import { connectToDatabase } from "@/lib/mongodb";
 import mongoose from "mongoose";
-
-// ============================================================
-// TYMCZASOWE MODELE TESTOWE (Z KOLEKCJAMI ZAKOŃCZONYMI NA "1")
-// ============================================================
-
-const CategorySchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true, maxlength: 100 },
-  slug: { type: String, required: true, trim: true, lowercase: true },
-  parent: { type: mongoose.Schema.Types.ObjectId, ref: "Category1", default: null },
-}, { timestamps: true });
-
-const TagGroupSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  category: { type: mongoose.Schema.Types.ObjectId, ref: "Category1", required: true },
-}, { timestamps: true });
-
-const TagSchema = new mongoose.Schema({
-  name: { type: String, required: true, trim: true },
-  group: { type: mongoose.Schema.Types.ObjectId, ref: "TagGroup1", required: true },
-}, { timestamps: true });
-
 
 // Kompleksowa struktura sklepu (Pies, Kot, Małe Zwierzęta)
 const fullShopStructure = [
@@ -227,7 +205,7 @@ const fullShopStructure = [
     subCategory: "Ściółka",
     groups: [
       { name: "Typ", tags: ["Drewniana", "Papierowa", "Pellet"] },
-      { name: "Właściwości", tags: ["Ekologiczna", "Niskopyląca", "Bezzapachowa"] }
+      { name: "Właściwości", tags: ["Ekologiczna", "Niskopyląca", "Bezzapachowe"] }
     ]
   },
   {
@@ -279,20 +257,50 @@ const generateSlug = (text: string) => {
     .replace(/\s+/g, "-");
 };
 
+// Definicje schematów
+const CategorySchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  slug: { type: String, required: true },
+  parent: { type: mongoose.Schema.Types.ObjectId, default: null },
+}, { timestamps: true });
+
+const TagGroupSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  category: { type: mongoose.Schema.Types.ObjectId, required: true },
+}, { timestamps: true });
+
+const TagSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  group: { type: mongoose.Schema.Types.ObjectId, required: true },
+}, { timestamps: true });
+
+
 export async function GET() {
   try {
-    // 1. Połączenie z 3 odrębnymi bazami
-    const { connCategories, connTagGroups, connTags } = await connectToDatabase();
+    const baseUri = process.env.MONGODB_URI;
+
+    if (!baseUri) {
+      return NextResponse.json({ success: false, error: "Brak MONGODB_URI w Vercelu!" }, { status: 500 });
+    }
+
+    const cleanUri = baseUri.endsWith("/") ? baseUri.slice(0, -1) : baseUri;
+
+    console.log("🔗 Inicjalizacja bezpośrednich połączeń sieciowych...");
     
-    // Inicjalizujemy dedykowane modele testowe wskazując na kolekcje z jedynką na końcu
+    // Tworzymy osobne połączenia ad-hoc bezpośrednio z linku URI
+    const connCategories = await mongoose.createConnection(`${cleanUri}/CategoriesDB`).asPromise();
+    const connTagGroups = await mongoose.createConnection(`${cleanUri}/TagGroupsDB`).asPromise();
+    const connTags = await mongoose.createConnection(`${cleanUri}/TagsDB`).asPromise();
+
+    // Rejestrujemy tymczasowe modele wskazujące na kolekcje z jedynką "1" na końcu
     const Category1 = connCategories.models.Category1 || connCategories.model("Category1", CategorySchema, "category1s");
     const TagGroup1 = connTagGroups.models.TagGroup1 || connTagGroups.model("TagGroup1", TagGroupSchema, "taggroup1s");
     const Tag1 = connTags.models.Tag1 || connTags.model("Tag1", TagSchema, "tag1s");
 
-    console.log("🚀 Start bezpiecznej migracji testowej (kolekcje z końcówką '1')...");
+    console.log("🚀 Rozpoczynam bezpieczny zapis struktur...");
 
     for (const item of fullShopStructure) {
-      // 2. Dodaj / zaktualizuj główną kategorię
+      // Zapis kategorii głównej
       const mainSlug = generateSlug(item.mainCategory);
       const mainCategoryDoc = await Category1.findOneAndUpdate(
         { slug: mainSlug },
@@ -300,7 +308,7 @@ export async function GET() {
         { new: true, upsert: true }
       );
 
-      // 3. Dodaj / zaktualizuj podkategorię
+      // Zapis podkategorii
       const subSlug = generateSlug(item.subCategory);
       const realName = item.displayName || item.subCategory;
       
@@ -310,7 +318,7 @@ export async function GET() {
         { new: true, upsert: true }
       );
 
-      // 4. Przejdź przez grupy filtrów
+      // Zapis grup tagów
       for (const groupData of item.groups) {
         let tagGroupDoc = await TagGroup1.findOne({
           name: groupData.name,
@@ -324,7 +332,7 @@ export async function GET() {
           });
         }
 
-        // 5. Dodaj pojedyncze opcje filtrów (tagi)
+        // Zapis poszczególnych tagów
         for (const tagName of groupData.tags) {
           const tagExists = await Tag1.findOne({
             name: tagName,
@@ -341,13 +349,18 @@ export async function GET() {
       }
     }
 
+    // Zamykamy połączenia po skończonej pracy dla bezpieczeństwa funkcji serverless
+    await connCategories.close();
+    await connTagGroups.close();
+    await connTags.close();
+
     return NextResponse.json({ 
       success: true, 
-      message: "DANE TESTOWE ZAPISANE! Sprawdź kolekcje: category1s, taggroup1s oraz tag1s w MongoDB." 
+      message: "PROCES ZAKOŃCZONY! Sprawdź nowe kolekcje z końcówką 1 w MongoDB." 
     });
 
   } catch (error: any) {
-    console.error("❌ Błąd:", error);
+    console.error("❌ Błąd krytyczny:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
