@@ -92,13 +92,45 @@ const KategorieClient = ({
   
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
+  // ==========================================================
+  // 🔥 INTELIGENTNA OBSŁUGA LINKÓW Z KAFELKÓW (ZAMIAST DWÓCH OSOBNYCH EFFECTÓW)
+  // ==========================================================
   useEffect(() => {
-    setActiveCategoryId(null);
-    setFilters({});
-    setPriceFrom('');
-    setPriceTo('');
-    setOpenSections({ cena: true, marka: true });
-  }, [currentType]);
+    const urlCategorySlug = searchParams.get('category');
+    const urlTagName = searchParams.get('tag');
+
+    if (urlCategorySlug) {
+      // 1. SCENARIUSZ: Kliknięto w kafalek na stronie głównej (mamy parametry w URL)
+      const foundCategory = allCategories.find(c => c.slug === urlCategorySlug);
+      if (foundCategory) {
+        setActiveCategoryId(foundCategory._id);
+
+        if (urlTagName) {
+          // Szukamy grupy powiązanej z tym tagiem, by automatycznie ją rozwinąć i zaznaczyć
+          const foundTag = allTags.find(t => t.name.toLowerCase().trim() === urlTagName.toLowerCase().trim());
+          
+          if (foundTag) {
+            setFilters({
+              [foundTag.group]: [urlTagName] // Aktywujemy zaznaczenie tekstowe
+            });
+            // Automatycznie otwieramy nową sekcję tagów
+            setOpenSections(prev => ({ ...prev, [foundTag.group]: true, cena: true, marka: true }));
+          } else {
+            setFilters({});
+          }
+        } else {
+          setFilters({});
+        }
+      }
+    } else {
+      // 2. SCENARIUSZ: Zwykłe przełączenie Pies/Kot w menu głównym (brak filtrów w URL) -> Resetujemy
+      setActiveCategoryId(null);
+      setFilters({});
+      setPriceFrom('');
+      setPriceTo('');
+      setOpenSections({ cena: true, marka: true });
+    }
+  }, [currentType, searchParams, allCategories, allTags]);
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -114,7 +146,6 @@ const KategorieClient = ({
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
 
-  // Lista podkategorii (lub głównych działów dla podstrony promocji) wyświetlana w dolnym menu
   const subCategoriesForMenu = useMemo(() => {
     if (currentType === 'promocje') {
       return allCategories.filter(cat => cat.parent === null && cat.slug !== 'promocje');
@@ -127,26 +158,22 @@ const KategorieClient = ({
     return allCategories.find(cat => cat._id === activeCategoryId);
   }, [activeCategoryId, allCategories]);
 
-  // Pomocnicza lista podkategorii, jeśli na stronie promocji kliknięto w głównego zwierzaka
   const childCategoryIdsForSelectedAnimal = useMemo(() => {
     if (currentType !== 'promocje' || !activeCategoryId) return [];
     return allCategories.filter(cat => cat.parent === activeCategoryId).map(cat => cat._id);
   }, [currentType, activeCategoryId, allCategories]);
 
-  // 🔥 DYNAMICZNE FILTRY: Generowanie grup tagów tylko wtedy, gdy kategoria jest aktywna
+  // Dynamiczne filtry
   const currentTagGroups = useMemo(() => {
     if (!activeCategoryId) return [];
 
     let groups = [];
     if (currentType === 'promocje') {
-      // Jeśli jesteśmy w promocjach i zaznaczono np. "Pies", pobieramy grupy tagów przypisane do podkategorii psa
       groups = allTagGroups.filter(g => childCategoryIdsForSelectedAnimal.includes(g.category));
     } else {
-      // Standardowy widok działu – grupy przypisane bezpośrednio do wybranej podkategorii
       groups = allTagGroups.filter(g => g.category === activeCategoryId);
     }
 
-    // Automatycznie ustawiamy stan 'open' na true dla nowo załadowanych grup filtrów
     groups.forEach(g => {
       if (openSections[g._id] === undefined) {
         setOpenSections(prev => ({ ...prev, [g._id]: true }));
@@ -194,6 +221,8 @@ const KategorieClient = ({
   };
 
   const handleResetToMainType = () => {
+    // Przy ręcznym kliknięciu resetu usuwamy parametry z URL za pomocą routera Next.js
+    router.push(`/ShopPage?type=${currentType}`);
     setActiveCategoryId(null);
     setFilters({});
     setPriceFrom('');
@@ -346,7 +375,7 @@ const KategorieClient = ({
         </div>
         <Image src={line} width={216} height={1} alt="" />
 
-        {/* 1. SEKCJA CENA - Zawsze widoczna */}
+        {/* 1. SEKCJA CENA */}
         <Section id="cena" title="Cena" openSections={openSections} toggleSection={toggleSection}>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input type="number" placeholder="od" value={priceFrom} onChange={(e) => setPriceFrom(e.target.value)} style={{ width: '80px' }} />
@@ -354,7 +383,7 @@ const KategorieClient = ({
           </div>
         </Section>
 
-        {/* 2. SEKCJA MARKA - Zawsze widoczna */}
+        {/* 2. SEKCJA MARKA */}
         {availableBrands.length > 0 && (
           <Section id="marka" title="Marka" openSections={openSections} toggleSection={toggleSection}>
             {availableBrands.map(brand => (
@@ -363,7 +392,7 @@ const KategorieClient = ({
           </Section>
         )}
 
-        {/* 3. DYNAMICZNE GRUPY TAGÓW - Pojawiają się dopiero PO KLIKNIĘCIU w kategorię */}
+        {/* 3. DYNAMICZNE GRUPY TAGÓW - Pojawiają się poprawnie również po wejściu z przekierowania */}
         {activeCategoryId && currentTagGroups.map((group) => {
           const tagsForGroup = allTags.filter(t => t.group === group._id);
           if (tagsForGroup.length === 0) return null;
