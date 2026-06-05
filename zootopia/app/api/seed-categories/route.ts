@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
-// Kompleksowa struktura sklepu (Pies, Kot, Małe Zwierzęta)
+// Struktura danych pozostaje bez zmian
 const fullShopStructure = [
-  // ============================================================
-  // SEKCJA: PIES
-  // ============================================================
+  // ... (tutaj znajduje się Twoja pełna struktura z psami, kotami i małymi zwierzętami)
   {
     mainCategory: "Pies",
     subCategory: "Karma",
@@ -71,10 +69,6 @@ const fullShopStructure = [
       { name: "Cechy", tags: ["Naturalne", "Hipoalergiczne", "Weterynaryjne", "Bezzapachowe"] }
     ]
   },
-
-  // ============================================================
-  // SEKCJA: KOT
-  // ============================================================
   {
     mainCategory: "Kot",
     subCategory: "Karma Kot",
@@ -156,10 +150,6 @@ const fullShopStructure = [
       { name: "Cechy", tags: ["Naturalne", "Hipoalergiczne", "Bezzapachowe", "Weterynaryjne"] }
     ]
   },
-
-  // ============================================================
-  // SEKCJA: MAŁE ZWIERZĘTA
-  // ============================================================
   {
     mainCategory: "Małe zwierzęta",
     subCategory: "Karma Małe Zwierzęta",
@@ -240,127 +230,99 @@ const fullShopStructure = [
 ];
 
 const generateSlug = (text: string) => {
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[ąáàâãäå]/g, "a")
-    .replace(/[ęéèêë]/g, "e")
-    .replace(/[íìîï]/g, "i")
-    .replace(/[óòôõöø]/g, "o")
-    .replace(/[úùûü]/g, "u")
-    .replace(/[ć]/g, "c")
-    .replace(/[ł]/g, "l")
-    .replace(/[ń]/g, "n")
-    .replace(/[ś]/g, "s")
-    .replace(/[źż]/g, "z")
-    .replace(/[^a-z0-9\s-]/g, "") 
-    .replace(/\s+/g, "-");
+  return text.toLowerCase().trim().replace(/[ąáàâãäå]/g, "a").replace(/[ęéèêë]/g, "e").replace(/[íìîï]/g, "i").replace(/[óòôõöø]/g, "o").replace(/[úùûü]/g, "u").replace(/[ć]/g, "c").replace(/[ł]/g, "l").replace(/[ń]/g, "n").replace(/[ś]/g, "s").replace(/[źż]/g, "z").replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
 };
 
-// Definicje schematów
-const CategorySchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  slug: { type: String, required: true },
-  parent: { type: mongoose.Schema.Types.ObjectId, default: null },
-}, { timestamps: true });
-
-const TagGroupSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  category: { type: mongoose.Schema.Types.ObjectId, required: true },
-}, { timestamps: true });
-
-const TagSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  group: { type: mongoose.Schema.Types.ObjectId, required: true },
-}, { timestamps: true });
-
+const CategorySchema = new mongoose.Schema({ name: String, slug: String, parent: mongoose.Schema.Types.ObjectId }, { timestamps: true });
+const TagGroupSchema = new mongoose.Schema({ name: String, category: mongoose.Schema.Types.ObjectId }, { timestamps: true });
+const TagSchema = new mongoose.Schema({ name: String, group: mongoose.Schema.Types.ObjectId }, { timestamps: true });
 
 export async function GET() {
   try {
     const baseUri = process.env.MONGODB_URI;
-
-    if (!baseUri) {
-      return NextResponse.json({ success: false, error: "Brak MONGODB_URI w Vercelu!" }, { status: 500 });
-    }
-
+    if (!baseUri) return NextResponse.json({ success: false, error: "Brak MONGODB_URI!" }, { status: 500 });
     const cleanUri = baseUri.endsWith("/") ? baseUri.slice(0, -1) : baseUri;
 
-    console.log("🔗 Inicjalizacja bezpośrednich połączeń sieciowych...");
-    
-    // Tworzymy osobne połączenia ad-hoc bezpośrednio z linku URI
     const connCategories = await mongoose.createConnection(`${cleanUri}/CategoriesDB`).asPromise();
     const connTagGroups = await mongoose.createConnection(`${cleanUri}/TagGroupsDB`).asPromise();
     const connTags = await mongoose.createConnection(`${cleanUri}/TagsDB`).asPromise();
 
-    // Rejestrujemy tymczasowe modele wskazujące na kolekcje z jedynką "1" na końcu
     const Category1 = connCategories.models.Category1 || connCategories.model("Category1", CategorySchema, "category1s");
     const TagGroup1 = connTagGroups.models.TagGroup1 || connTagGroups.model("TagGroup1", TagGroupSchema, "taggroup1s");
     const Tag1 = connTags.models.Tag1 || connTags.model("Tag1", TagSchema, "tag1s");
 
-    console.log("🚀 Rozpoczynam bezpieczny zapis struktur...");
+    // PRZED URUCHOMIENIEM: Czyścimy kolekcje testowe, aby zapisać wszystko od zera bez duplikatów i przerw
+    await Category1.deleteMany({});
+    await TagGroup1.deleteMany({});
+    await Tag1.deleteMany({});
 
+    console.log("🧹 Wyczyszczono stare kolekcje testowe. Budowanie struktur w pamięci...");
+
+    // Słowniki pomocnicze mapujące unikalne nazwy na wygenerowane ID
+    const mainCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
+    const subCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
+
+    const categoriesToInsert: any[] = [];
+    const tagGroupsToInsert: any[] = [];
+    const tagsToInsert: any[] = [];
+
+    // KROK 1: Wygeneruj ID i przygotuj dokumenty dla głównych kategorii (Pies, Kot, Małe zwierzęta)
+    const mainNames = ["Pies", "Kot", "Małe zwierzęta"];
+    for (const name of mainNames) {
+      const id = new mongoose.Types.ObjectId();
+      mainCategoryIds[name] = id;
+      categoriesToInsert.push({ _id: id, name, slug: generateSlug(name), parent: null });
+    }
+
+    // KROK 2: Przygotuj podkategorie oraz grupy tagów
     for (const item of fullShopStructure) {
-      // Zapis kategorii głównej
-      const mainSlug = generateSlug(item.mainCategory);
-      const mainCategoryDoc = await Category1.findOneAndUpdate(
-        { slug: mainSlug },
-        { name: item.mainCategory, parent: null },
-        { new: true, upsert: true }
-      );
+      const parentId = mainCategoryIds[item.mainCategory];
+      const subId = new mongoose.Types.ObjectId();
+      subCategoryIds[item.subCategory] = subId;
 
-      // Zapis podkategorii
-      const subSlug = generateSlug(item.subCategory);
-      const realName = item.displayName || item.subCategory;
-      
-      const subCategoryDoc = await Category1.findOneAndUpdate(
-        { slug: subSlug },
-        { name: realName, parent: mainCategoryDoc._id },
-        { new: true, upsert: true }
-      );
+      categoriesToInsert.push({
+        _id: subId,
+        name: item.displayName || item.subCategory,
+        slug: generateSlug(item.subCategory),
+        parent: parentId
+      });
 
-      // Zapis grup tagów
       for (const groupData of item.groups) {
-        let tagGroupDoc = await TagGroup1.findOne({
+        const groupId = new mongoose.Types.ObjectId();
+        
+        tagGroupsToInsert.push({
+          _id: groupId,
           name: groupData.name,
-          category: subCategoryDoc._id
+          category: subId
         });
 
-        if (!tagGroupDoc) {
-          tagGroupDoc = await TagGroup1.create({
-            name: groupData.name,
-            category: subCategoryDoc._id
-          });
-        }
-
-        // Zapis poszczególnych tagów
         for (const tagName of groupData.tags) {
-          const tagExists = await Tag1.findOne({
+          tagsToInsert.push({
             name: tagName,
-            group: tagGroupDoc._id
+            group: groupId
           });
-
-          if (!tagExists) {
-            await Tag1.create({
-              name: tagName,
-              group: tagGroupDoc._id
-            });
-          }
         }
       }
     }
 
-    // Zamykamy połączenia po skończonej pracy dla bezpieczeństwa funkcji serverless
+    console.log(`📦 Przygotowano do wysyłki: ${categoriesToInsert.length} kategorii, ${tagGroupsToInsert.length} grup, ${tagsToInsert.length} tagów.`);
+
+    // KROK 3: Masowy ultra-szybki zapis w paczkach (Jedno zapytanie na kolekcję)
+    await Category1.insertMany(categoriesToInsert);
+    await TagGroup1.insertMany(tagGroupsToInsert);
+    await Tag1.insertMany(tagsToInsert);
+
     await connCategories.close();
     await connTagGroups.close();
     await connTags.close();
 
     return NextResponse.json({ 
       success: true, 
-      message: "PROCES ZAKOŃCZONY! Sprawdź nowe kolekcje z końcówką 1 w MongoDB." 
+      message: `Baza zasilona błyskawicznie! Zapisano: ${categoriesToInsert.length} kategorii, ${tagGroupsToInsert.length} grup filtrów oraz ${tagsToInsert.length} tagów w kolekcjach z końcówką 1.` 
     });
 
   } catch (error: any) {
-    console.error("❌ Błąd krytyczny:", error);
+    console.error("❌ Błąd masowego zapisu:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
