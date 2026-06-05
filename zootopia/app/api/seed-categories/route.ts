@@ -6,7 +6,7 @@ import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
 
-// Pełna, zweryfikowana struktura danych ze wszystkimi zwierzętami
+// Struktura danych (Pies, Kot, Małe zwierzęta)
 const fullShopStructure = [
   // ============================================================
   // SEKCJA: PIES
@@ -210,7 +210,7 @@ const fullShopStructure = [
     subCategory: "Ściółka",
     groups: [
       { name: "Typ", tags: ["Drewniana", "Papierowa", "Pellet"] },
-      { name: "Właściwości", tags: ["Ekologiczna", "Niskopyląca", "Bezzapachowa"] }
+      { name: "Właściwości", tags: ["Ekologiczna", "Niskopyląca", "Bezzapachowe"] }
     ]
   },
   {
@@ -252,25 +252,26 @@ export async function GET() {
   try {
     const baseUri = process.env.MONGODB_URI;
     if (!baseUri) return NextResponse.json({ success: false, error: "Brak MONGODB_URI!" }, { status: 500 });
-    
-    const cleanUri = baseUri.endsWith("/") ? baseUri.slice(0, -1) : baseUri;
 
-    console.log("🔗 Łączenie bezpośrednio z bazą mydb...");
+    console.log("🔗 Otwieranie połączenia i wymuszanie bazy mydb...");
     
-    // 🔥 POPRAWKA: Łączymy się z JEDNĄ, konkretną bazą mydb określoną na końcu URI
-    const conn = await mongoose.createConnection(`${cleanUri}/mydb`).asPromise();
+    // 🔥 KLUCZOWA POPRAWKA: Przekazujemy dbName bezpośrednio w obiekcie opcji Mongoose.
+    // To całkowicie nadpisuje to, co jest na końcu Twojego linku connection string.
+    const conn = await mongoose.createConnection(baseUri, {
+      dbName: "mydb"
+    }).asPromise();
 
-    // Rejestrujemy Twoje oryginalne modele na tym jednym połączeniu do bazy mydb
+    // Rejestrujemy modele na wymuszonym połączeniu do mydb
     const Category = conn.models.Category || conn.model("Category", CategoryModel.schema, "categories");
     const TagGroup = conn.models.TagGroup || conn.model("TagGroup", TagGroupModel.schema, "taggroups");
     const Tag = conn.models.Tag || conn.model("Tag", TagModel.schema, "tags");
 
-    console.log("磁 Czyszczenie tabel categories, taggroups oraz tags w bazie mydb...");
+    console.log("🧹 Czyszczenie tabel categories, taggroups oraz tags w bazie mydb...");
     await Category.deleteMany({});
     await TagGroup.deleteMany({});
     await Tag.deleteMany({});
 
-    console.log("🚀 Rozpoczynam masowy zapis struktur do bazy mydb...");
+    console.log("🚀 Rozpoczynam masowy zapis do bazy mydb...");
 
     const mainCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
     const categoriesToInsert: any[] = [];
@@ -318,16 +319,16 @@ export async function GET() {
     await TagGroup.insertMany(tagGroupsToInsert);
     await Tag.insertMany(tagsToInsert);
 
-    // Zamykamy otwarte połączenie
+    // Zamykamy połączenie sieciowe
     await conn.close();
 
     return NextResponse.json({ 
       success: true, 
-      message: `SUKCES! Baza mydb została wyczyszczona i poprawnie zasilona nową strukturą.` 
+      message: `SUKCES! Dane zostały poprawnie i trwale zapisane w bazie o nazwie 'mydb'.` 
     });
 
   } catch (error: any) {
-    console.error("❌ Błąd zapisu do bazy mydb:", error);
+    console.error("❌ Błąd:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
