@@ -8,11 +8,13 @@ const TagSchema = new mongoose.Schema(
       trim: true,
     },
 
-    group: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "TagGroup",
-      required: true,
-    },
+    group: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "TagGroup",
+        required: true,
+      },
+    ],
   },
   { timestamps: true }
 );
