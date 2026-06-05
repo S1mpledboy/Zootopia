@@ -3,8 +3,10 @@ import ProductModel from "@/models/Product";
 import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
-import "@/models/Company";
-import KategorieClient from "./pageClient";
+import CompanyModel from "@/models/Company";
+
+// Import komponentu klienckiego z tego samego folderu
+import KategorieClient from "./pageClient"; 
 
 export const revalidate = 0;
 
@@ -16,10 +18,11 @@ export default async function KategoriePage({
   const baseUri = process.env.MONGODB_URI;
   if (!baseUri) throw new Error("Brak MONGODB_URI w zmiennych środowiskowych!");
 
-  // 🔥 KLUCZOWE: Łączymy się i wymuszamy bazę mydb, dokładnie tak samo jak w skryptach seedujących
+  // Łączymy się i wymuszamy bazę mydb
   const conn = await mongoose.createConnection(baseUri, { dbName: "mydb" }).asPromise();
 
-  // Wiążemy Twoje oficjalne modele z połączeniem do mydb
+  // Rejestrujemy modele na aktywnym połączeniu sieciowym
+  const Company = conn.models.Company || conn.model("Company", CompanyModel.schema, "companies");
   const Category = conn.models.Category || conn.model("Category", CategoryModel.schema, "categories");
   const TagGroup = conn.models.TagGroup || conn.model("TagGroup", TagGroupModel.schema, "taggroups");
   const Tag = conn.models.Tag || conn.model("Tag", TagModel.schema, "tags");
@@ -28,12 +31,12 @@ export default async function KategoriePage({
   const resolvedSearchParams = await searchParams;
   const urlType = resolvedSearchParams.type || 'pies';
 
-  // 🔥 NOWOŚĆ: Pobieramy KOMPLET danych strukturalnych z bazy mydb
+  // Pobieramy komplet danych strukturalnych z bazy mydb
   const allCategoriesRaw = await Category.find({}).lean();
   const allTagGroupsRaw = await TagGroup.find({}).lean();
   const allTagsRaw = await Tag.find({}).lean();
 
-  // Serializacja kategorii
+  // Serializacja kategorii pod Next.js Client Component
   const serializedCategories = allCategoriesRaw.map((cat: any) => ({
     _id: cat._id.toString(),
     name: cat.name,
@@ -41,21 +44,21 @@ export default async function KategoriePage({
     parent: cat.parent ? cat.parent.toString() : null
   }));
 
-  // 🔥 NOWOŚĆ: Serializacja grup filtrów pod komponent kliencki
+  // Serializacja grup filtrów pod komponent kliencki
   const serializedTagGroups = allTagGroupsRaw.map((group: any) => ({
     _id: group._id.toString(),
     name: group.name,
     category: group.category.toString()
   }));
 
-  // 🔥 NOWOŚĆ: Serializacja tagów pod komponent kliencki
+  // Serializacja poszczególnych tagów pod komponent kliencki
   const serializedTags = allTagsRaw.map((tag: any) => ({
     _id: tag._id.toString(),
     name: tag.name,
     group: tag.group.toString()
   }));
 
-  // HELPER: rozpakowywanie obrazka (tablicа w tablicy)
+  // Helper: rozpakowywanie obrazka (obsługa tablicy w tablicy)
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
     const first = images[0];
@@ -64,16 +67,13 @@ export default async function KategoriePage({
     return "/fallback-image.png";
   };
 
-  // HELPER: serializacja produktu
+  // Helper: serializacja produktu i transformacja ObjectId do stringów
   const serializeProduct = (product: any) => {
     let catId = null;
     if (product.category) {
-      catId = product.category._id
-        ? product.category._id.toString()
-        : product.category.toString();
+      catId = product.category._id ? product.category._id.toString() : product.category.toString();
     }
 
-    // Zamieniamy tablicę atrybutów (ObjectId) na tablicę czystych stringów tekstowych dla frontu
     const serializedAttributes = product.attributes
       ? product.attributes.map((attr: any) => attr.toString())
       : [];
@@ -86,13 +86,11 @@ export default async function KategoriePage({
       image: extractImage(product.images),
       companyName: product.company?.name || "Inna marka",
       petCategoryId: catId,
-      attributes: serializedAttributes // 🔥 Poprawione przekazywanie atrybutów
+      attributes: serializedAttributes
     };
   };
 
-  // ============================================================
-  // WYBÓR KATEGORII DOCELOWYCH
-  // ============================================================
+  // Wybór podkategorii przypisanych do wybranego typu zwierzaka (Menu boczne)
   const currentAnimalCategory = serializedCategories.find(
     cat => cat.slug === urlType && cat.parent === null
   );
@@ -113,16 +111,15 @@ export default async function KategoriePage({
     productQuery.category = { $in: targetCategoryIds };
   }
 
-  // Pobieramy produkty
+  // Pobieramy produkty i dołączamy markę za pomocą .populate()
   const rawProducts = await Product.find(productQuery)
     .populate("company")
     .sort({ updatedAt: -1 })
     .lean();
 
-  // 🔥 Zamykamy aktywne połączenie po ściągnięciu kompletu danych
+  // Zamykamy aktywne połączenie
   await conn.close();
 
-  // Zwracamy komponent kliencki i przekazujemy mu WSZYSTKIE 4 tablice z bazy mydb
   return (
     <KategorieClient
       initialProducts={rawProducts.map(serializeProduct)}
