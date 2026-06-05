@@ -51,12 +51,14 @@ export default async function KategoriePage({
     category: group.category.toString()
   }));
 
-  // Serializacja poszczególnych tagów
-  const serializedTags = allTagsRaw.map((tag: any) => ({
-    _id: tag._id.toString(),
-    name: tag.name,
-    group: tag.group.toString()
-  }));
+  // 🔥 ZMIANA: Serializacja poszczególnych tagów połączona z sortowaniem alfabetycznym (uwzględnia polskie znaki)
+  const serializedTags = allTagsRaw
+    .map((tag: any) => ({
+      _id: tag._id.toString(),
+      name: tag.name,
+      group: tag.group.toString()
+    }))
+    .sort((a: any, b: any) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));
 
   // Helper do wyciągania pierwszego poprawnego zdjęcia z bazy danych
   const extractImage = (images: any[]): string => {
@@ -82,7 +84,7 @@ export default async function KategoriePage({
       image: extractImage(product.images),
       companyName: product.company?.name || "Inna marka",
       petCategoryId: catId,
-      tags: product.tags || [] // 🔥 KLUCZOWE: Przekazujemy tablicę tekstową tags dla filtrów z Excela
+      tags: product.tags || []
     };
   };
 
