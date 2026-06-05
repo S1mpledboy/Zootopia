@@ -2,7 +2,6 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import styles from './shopPage.module.css';
 import { useState, useMemo, useEffect } from 'react';
 
@@ -31,21 +30,21 @@ function Section({ id, title, children, openSections, toggleSection }: any) {
 // MAIN PAGE CLIENT COMPONENT
 // =========================
 const KategorieClient = ({ 
+  currentType,
   allCategories,
   allTagGroups = [],
   allTags = []
 }: { 
+  currentType: string;
   allCategories: any[];
   allTagGroups?: any[];
   allTags?: any[];
 }) => {
-  const searchParams = useSearchParams();
-  const currentType = searchParams.get('type') || 'pies';
-
-  // ===== DYNAMICZNY STAN DLA PRODUKTÓW POBIERANYCH Z NOWEGO API =====
+  // ===== STANY PRODUKTÓW POBIERANYCH Z API =====
   const [products, setProducts] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
+  // ===== STANY FILTRÓW =====
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ cena: true, marka: true });
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sort, setSort] = useState<string>('popularność');
@@ -53,7 +52,7 @@ const KategorieClient = ({
   const [priceTo, setPriceTo] = useState<string>('');
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  // 🔥 EFEKT POBIERANIA PRODUKTÓW Z NOWEGO ENDPOINTU API
+  // Efekt ładujący dane z API po zmianie działu (Pies / Kot / Promocje)
   useEffect(() => {
     async function loadShopProducts() {
       setIsLoading(true);
@@ -64,7 +63,7 @@ const KategorieClient = ({
           setProducts(data);
         }
       } catch (err) {
-        console.error("Nie udało się pobrać produktów z API:", err);
+        console.error("Błąd ładowania produktów przez Client-side API:", err);
       } finally {
         setIsLoading(false);
       }
@@ -72,7 +71,7 @@ const KategorieClient = ({
 
     loadShopProducts();
 
-    // Reset stanów filtrowania przy zmianie głównej kategorii zwierzaka
+    // Resetowanie filtrów przy przejściu na inny typ zwierzaka
     setActiveCategoryId(null);
     setFilters({});
     setPriceFrom('');
@@ -94,6 +93,7 @@ const KategorieClient = ({
     return allCategories.find(cat => cat.slug === currentType && cat.parent === null);
   }, [allCategories, currentType]);
 
+  // Kategorie w dolnym menu (dla promocji wyświetlamy główne działy zwierząt)
   const subCategoriesForMenu = useMemo(() => {
     if (currentType === 'promocje') {
       return allCategories.filter(cat => cat.parent === null && cat.slug !== 'promocje');
@@ -106,11 +106,13 @@ const KategorieClient = ({
     return allCategories.find(cat => cat._id === activeCategoryId);
   }, [activeCategoryId, allCategories]);
 
+  // Podkategorie wybranego zwierzaka (potrzebne tylko gdy jesteśmy na podstronie promocji)
   const childCategoryIdsForSelectedAnimal = useMemo(() => {
     if (currentType !== 'promocje' || !activeCategoryId) return [];
     return allCategories.filter(cat => cat.parent === activeCategoryId).map(cat => cat._id);
   }, [currentType, activeCategoryId, allCategories]);
 
+  // Grupy tagów - generowane tylko wtedy, kiedy kategoria jest wybrana
   const currentTagGroups = useMemo(() => {
     if (!activeCategoryId) return [];
     let groups = currentType === 'promocje'
@@ -150,6 +152,7 @@ const KategorieClient = ({
   const selectCategory = (id: string) => { setActiveCategoryId((prev) => (prev === id ? null : id)); setFilters({}); };
   const handleResetToMainType = () => { setActiveCategoryId(null); setFilters({}); setPriceFrom(''); setPriceTo(''); };
 
+  // Liczniki podokienek (Facets)
   const facetCounts = useMemo(() => {
     const getCountForOption = (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => {
       return products.filter((product: any) => {
@@ -249,10 +252,12 @@ const KategorieClient = ({
 
   return (
     <div className={styles.kategorie}>
+      {/* PANEL LEWY (FILTRY) */}
       <div className={styles.frameParent}>
         <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Filtruj</div></div></div>
         <Image src={line} width={216} height={1} alt="" />
 
+        {/* CENA */}
         <Section id="cena" title="Cena" openSections={openSections} toggleSection={toggleSection}>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input type="number" placeholder="od" value={priceFrom} onChange={(e) => setPriceFrom(e.target.value)} style={{ width: '80px' }} />
@@ -260,12 +265,14 @@ const KategorieClient = ({
           </div>
         </Section>
 
+        {/* MARKA */}
         {availableBrands.length > 0 && (
           <Section id="marka" title="Marka" openSections={openSections} toggleSection={toggleSection}>
             {availableBrands.map(brand => <DynamicCheckbox key={brand} groupKey="marka" type="marka" value={brand} label={brand} />)}
           </Section>
         )}
 
+        {/* TAGI - Pokazują się tylko gdy kategoria jest zaznaczona */}
         {activeCategoryId && currentTagGroups.map((group) => {
           const tagsForGroup = allTags.filter(t => t.group === group._id);
           if (tagsForGroup.length === 0) return null;
@@ -280,6 +287,7 @@ const KategorieClient = ({
         <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Kategorie</div></div></div>
         <Image src={line} width={216} height={1} alt="" />
 
+        {/* DOLNE MENU SEKCJI KATEGORII */}
         <div className={styles.frameGroup}>
           <div className={styles.tablerIconChevronCompactRiParent}><div className={styles.cena} style={{ fontWeight: 'bold' }}>{getTypeLabel(currentType)}</div></div>
           <div className={styles.frameDiv}>
@@ -297,6 +305,7 @@ const KategorieClient = ({
         </div>
       </div>
 
+      {/* PANEL PRAWY (PRODUKTY) */}
       <div className={styles.frameParent25}>
         <div className={styles.sortowanieParent}>
           <div className={styles.sortowanie}>
