@@ -39,7 +39,7 @@ interface ProductProps {
   image: string;
   companyName: string;
   petCategoryId: string | null; 
-  tags: string[]; 
+  tags: string[]; // 🔥 ZMIANA: Korzystamy z tekstowej tablicy tagów z Excela
 }
 
 interface CategoryProps {
@@ -123,11 +123,13 @@ const KategorieClient = ({
     return allCategories.find(cat => cat._id === activeCategoryId);
   }, [activeCategoryId, allCategories]);
 
-  // 🔥 ZMIANA 1: Pokazuj grupy tagów TYLKO wtedy, gdy wybrana jest podkategoria
+  // Generowanie filtrów cech
   const currentTagGroups = useMemo(() => {
-    if (!activeCategoryId) return []; // Jeśli nie wybrano podkategorii, zwracamy pustą tablicę
-
-    const groups = allTagGroups.filter(g => g.category === activeCategoryId);
+    if (activeCategoryId) {
+      return allTagGroups.filter(g => g.category === activeCategoryId);
+    }
+    const allowedSubCategoryIds = subCategoriesForMenu.map(sub => sub._id);
+    const groups = allTagGroups.filter(g => allowedSubCategoryIds.includes(g.category));
 
     groups.forEach(g => {
       if (openSections[g._id] === undefined) {
@@ -136,7 +138,7 @@ const KategorieClient = ({
     });
 
     return groups;
-  }, [activeCategoryId, allTagGroups]);
+  }, [activeCategoryId, allTagGroups, subCategoriesForMenu]);
 
   const availableBrands = useMemo(() => {
     const brands = initialProducts
@@ -150,6 +152,7 @@ const KategorieClient = ({
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // 🔥 ZMIANA: Zamiast ID, zapisujemy w filtrach bezpośrednio NAZWĘ klikniętego tagu tekstowego (np. "Szczenię")
   const toggleFilter = (groupKey: string, tagName: string) => {
     setFilters((prev) => {
       const current = prev[groupKey] || [];
@@ -177,7 +180,7 @@ const KategorieClient = ({
   };
 
   // ==========================================
-  // 📊 POPRAWIONE LICZNIKI PRODUKTÓW (FACETS)
+  // 📊 POPRAWIONE LICZNIKI PRODUKTÓW (FACETS PO TEKŚCIE Z EXCELA)
   // ==========================================
   const facetCounts = useMemo(() => {
     const getCountForOption = (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => {
@@ -198,10 +201,12 @@ const KategorieClient = ({
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
         if (product.price < minPrice || product.price > maxPrice) return false;
 
+        // 🔥 POPRAWKA: Przeszukujemy tablicę tekstową tags (szukamy dopasowań z Excela)
         for (const [key, selectedTagNames] of Object.entries(filters)) {
           if (key === 'marka' || selectedTagNames.length === 0) continue;
           if (groupType === 'tag' && groupKey === key) continue;
 
+          // Sprawdzamy, czy produkt posiada dany tag w wersji tekstowej lub z przedrostkiem (np. "Wiek: Szczenię")
           const hasMatchingTag = product.tags?.some(pTag => 
             selectedTagNames.some(sName => 
               pTag.toLowerCase().trim() === sName.toLowerCase().trim() ||
@@ -248,6 +253,7 @@ const KategorieClient = ({
       result = result.filter(p => p.price >= minPrice && p.price <= maxPrice);
     }
 
+    // 🔥 POPRAWKA: Filtrujemy produkty na podstawie tekstowych cech AND / OR
     for (const [groupKey, selectedTagNames] of Object.entries(filters)) {
       if (groupKey === 'marka' || selectedTagNames.length === 0) continue;
       
@@ -274,7 +280,10 @@ const KategorieClient = ({
     return result;
   }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId]);
 
+  // ==========================================
+
   const DynamicCheckbox = ({ groupKey, type, value, label }: { groupKey: string; type: 'marka' | 'tag'; value: string; label: string }) => {
+    // 🔥 ZMIANA: checkbox reaguje na tekstową nazwę (label), a nie na unikalne ID
     const filterValue = type === 'marka' ? value : label;
     const checked = filters[groupKey]?.includes(filterValue);
     const count = facetCounts.get(type, filterValue, groupKey);
@@ -322,17 +331,9 @@ const KategorieClient = ({
           </Section>
         )}
 
-        {/* 🔥 ZMIANA 2: DYNAMICZNE FILTRY SĄ RENDEROWANE TYLKO JEŚLI JEST WYBRANA KATEGORIA, A TAGI SĄ POSORTOWANE OD NAJWIĘKSZEGO */}
-        {activeCategoryId && currentTagGroups.map((group) => {
-          // Pobieramy tagi dla grupy, a następnie sortujemy je od największego na podstawie dynamicznego facetCounts
-          const tagsForGroup = allTags
-            .filter(t => t.group === group._id)
-            .sort((a, b) => {
-              const countA = facetCounts.get('tag', a.name, group._id);
-              const countB = facetCounts.get('tag', b.name, group._id);
-              return countB - countA; // Sortowanie malejąco (od największego)
-            });
-
+        {/* DYNAMICZNE FILTRY NA PODSTAWIE NAZW FILTRÓW Z EXCELA */}
+        {currentTagGroups.map((group) => {
+          const tagsForGroup = allTags.filter(t => t.group === group._id);
           if (tagsForGroup.length === 0) return null;
 
           return (
