@@ -4,91 +4,76 @@ import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
 import CompanyModel from "@/models/Company";
+import KategorieClient from "./pageClient";
+import { unstable_cache } from "next/cache";
 
-// Import komponentu klienckiego z tego samego folderu
-import KategorieClient from "./pageClient"; 
+// Wywalamy revalidate = 0. Dynamiczne będą tylko produkty, struktury zostaną w cache.
+export const dynamic = "force-dynamic"; 
 
-export const revalidate = 0;
+// 1. POPRAWNE, REUŻYWALNE POŁĄCZENIE (Connection Pooling)
+let cachedDb: any = null;
+async function getDatabaseConnection() {
+  const baseUri = process.env.MONGODB_URI;
+  if (!baseUri) throw new Error("Brak MONGODB_URI!");
+  
+  if (cachedDb && mongoose.connection.readyState === 1) {
+    return cachedDb;
+  }
+  
+  // Tworzymy stałe połączenie, nie zamykamy go po każdym rysowaniu strony!
+  cachedDb = await mongoose.connect(baseUri, { dbName: "mydb" });
+  return cachedDb;
+}
+
+// 2. CACHE DLA STRUKTUR (Kategorie i Tagi pobierają się z bazy RAZ, a potem z pamięci)
+// Rewalidacja co 10 minut (600 sekund) - zmieni się coś w panelu, odświeży się po max 10 min.
+const getCachedStructures = unstable_cache(
+  async () => {
+    await getDatabaseConnection();
+    
+    // Pobieramy dane równolegle (Promise.all jest o wiele szybszy niż 3x await)
+    const [categories, tagGroups, tags] = await Promise.all([
+      CategoryModel.find({}).lean(),
+      TagGroupModel.find({}).lean(),
+      // Sortowanie przeniesione bezpośrednio do MongoDB (wykorzystuje indeksy!)
+      TagModel.find({}).sort({ name: 1 }).lean()
+    ]);
+
+    return {
+      serializedCategories: categories.map((cat: any) => ({
+        _id: cat._id.toString(),
+        name: cat.name,
+        slug: cat.slug,
+        parent: cat.parent ? cat.parent.toString() : null
+      })),
+      serializedTagGroups: tagGroups.map((group: any) => ({
+        _id: group._id.toString(),
+        name: group.name,
+        category: group.category.toString()
+      })),
+      serializedTags: tags.map((tag: any) => ({
+        _id: tag._id.toString(),
+        name: tag.name,
+        group: tag.group.toString()
+      }))
+    };
+  },
+  ["shop-structures-cache"],
+  { revalidate: 600, tags: ["structures"] }
+);
 
 export default async function KategoriePage({
   searchParams,
 }: {
   searchParams: Promise<{ type?: string }>;
 }) {
-  const baseUri = process.env.MONGODB_URI;
-  if (!baseUri) throw new Error("Brak MONGODB_URI w zmiennych środowiskowych!");
-
-  // Bezpieczne połączenie i wymuszenie bazy mydb
-  const conn = await mongoose.createConnection(baseUri, { dbName: "mydb" }).asPromise();
-
-  // Rejestracja modeli na aktywnym połączeniu
-  const Company = conn.models.Company || conn.model("Company", CompanyModel.schema, "companies");
-  const Category = conn.models.Category || conn.model("Category", CategoryModel.schema, "categories");
-  const TagGroup = conn.models.TagGroup || conn.model("TagGroup", TagGroupModel.schema, "taggroups");
-  const Tag = conn.models.Tag || conn.model("Tag", TagModel.schema, "tags");
-  const Product = conn.models.Product || conn.model("Product", ProductModel.schema, "products");
+  // Pobieramy (lub wyciągamy z pamięci podręcznej) struktury menu i tagów
+  const { serializedCategories, serializedTagGroups, serializedTags } = await getCachedStructures();
 
   const resolvedSearchParams = await searchParams;
   const urlType = resolvedSearchParams.type || 'pies';
 
-  // Pobranie struktur danych z bazy mydb
-  const allCategoriesRaw = await Category.find({}).lean();
-  const allTagGroupsRaw = await TagGroup.find({}).lean();
-  const allTagsRaw = await Tag.find({}).lean();
-
-  // Serializacja kategorii
-  const serializedCategories = allCategoriesRaw.map((cat: any) => ({
-    _id: cat._id.toString(),
-    name: cat.name,
-    slug: cat.slug,
-    parent: cat.parent ? cat.parent.toString() : null
-  }));
-
-  // Serializacja grup filtrów
-  const serializedTagGroups = allTagGroupsRaw.map((group: any) => ({
-    _id: group._id.toString(),
-    name: group.name,
-    category: group.category.toString()
-  }));
-
-  // 🔥 ZMIANA: Serializacja poszczególnych tagów połączona z sortowaniem alfabetycznym (uwzględnia polskie znaki)
-  const serializedTags = allTagsRaw
-    .map((tag: any) => ({
-      _id: tag._id.toString(),
-      name: tag.name,
-      group: tag.group.toString()
-    }))
-    .sort((a: any, b: any) => a.name.localeCompare(b.name, 'pl', { sensitivity: 'base' }));
-
-  // Helper do wyciągania pierwszego poprawnego zdjęcia z bazy danych
-  const extractImage = (images: any[]): string => {
-    if (!images || images.length === 0) return "/fallback-image.png";
-    const first = images[0];
-    if (Array.isArray(first) && first.length > 0) return first[0];
-    if (typeof first === "string") return first;
-    return "/fallback-image.png";
-  };
-
-  // Helper do mapowania produktu z bazy na czysty obiekt tekstowy (z tags dla Excela)
-  const serializeProduct = (product: any) => {
-    let catId = null;
-    if (product.category) {
-      catId = product.category._id ? product.category._id.toString() : product.category.toString();
-    }
-
-    return {
-      _id: product._id.toString(),
-      name: product.name,
-      price: product.price,
-      promoPrice: product.promoPrice ?? null,
-      image: extractImage(product.images),
-      companyName: product.company?.name || "Inna marka",
-      petCategoryId: catId,
-      tags: product.tags || []
-    };
-  };
-
-  // Namierzanie głównego działu zwierzaka (Menu boczne)
+  // Namierzanie głównego działu zwierzaka
   const currentAnimalCategory = serializedCategories.find(
     cat => cat.slug === urlType && cat.parent === null
   );
@@ -109,19 +94,47 @@ export default async function KategoriePage({
     productQuery.category = { $in: targetCategoryIds };
   }
 
-  // Pobranie gotowych produktów i wyciągnięcie danych o marce przez .populate()
-  const rawProducts = await Product.find(productQuery)
+  // Połączenie przed zapytaniem o produkty
+  await getDatabaseConnection();
+
+  // Pobieramy TYLKO produkty potrzebne dla danej kategorii
+  const rawProducts = await ProductModel.find(productQuery)
     .populate("company")
     .sort({ updatedAt: -1 })
+    // Limituj produkty! Jeśli masz ich 500, nie pchaj wszystkich na raz na front. 
+    // .limit(40) // <-- Odkomentuj to, jeśli produktów jest za dużo i zrób pagynację!
     .lean();
 
-  // Zamykamy sesję połączenia
-  await conn.close();
+  // Helper do wyciągania zdjęcia
+  const extractImage = (images: any[]): string => {
+    if (!images || images.length === 0) return "/fallback-image.png";
+    const first = images[0];
+    if (Array.isArray(first) && first.length > 0) return first[0];
+    if (typeof first === "string") return first;
+    return "/fallback-image.png";
+  };
 
-  // Wysyłamy komplet w 100% zmapowanych danych na front-end
+  // Mapowanie produktów
+  const initialProducts = rawProducts.map((product: any) => {
+    let catId = null;
+    if (product.category) {
+      catId = product.category._id ? product.category._id.toString() : product.category.toString();
+    }
+    return {
+      _id: product._id.toString(),
+      name: product.name,
+      price: product.price,
+      promoPrice: product.promoPrice ?? null,
+      image: extractImage(product.images), // <--- TUTAJ upewnij się, że w komponencie KategorieClient używasz next/image!
+      companyName: product.company?.name || "Inna marka",
+      petCategoryId: catId,
+      tags: product.tags || []
+    };
+  });
+
   return (
     <KategorieClient
-      initialProducts={rawProducts.map(serializeProduct)}
+      initialProducts={initialProducts}
       allCategories={serializedCategories}
       allTagGroups={serializedTagGroups}
       allTags={serializedTags}
