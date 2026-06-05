@@ -1,9 +1,17 @@
 import { NextResponse } from "next/server";
+import { connectToDatabase } from "@/lib/mongodb";
 import mongoose from "mongoose";
 
-// Struktura danych pozostaje bez zmian
+// Poprawne importy domyślne z Twoich plików modeli
+import CategoryModel from "@/models/Category";
+import TagGroupModel from "@/models/TagGroup";
+import TagModel from "@/models/Tag";
+
+// Pełna struktura danych ze wszystkimi zwierzętami (Pies, Kot, Małe zwierzęta)
 const fullShopStructure = [
-  // ... (tutaj znajduje się Twoja pełna struktura z psami, kotami i małymi zwierzętami)
+  // ============================================================
+  // SEKCJA: PIES
+  // ============================================================
   {
     mainCategory: "Pies",
     subCategory: "Karma",
@@ -69,6 +77,10 @@ const fullShopStructure = [
       { name: "Cechy", tags: ["Naturalne", "Hipoalergiczne", "Weterynaryjne", "Bezzapachowe"] }
     ]
   },
+
+  // ============================================================
+  // SEKCJA: KOT
+  // ============================================================
   {
     mainCategory: "Kot",
     subCategory: "Karma Kot",
@@ -150,6 +162,10 @@ const fullShopStructure = [
       { name: "Cechy", tags: ["Naturalne", "Hipoalergiczne", "Bezzapachowe", "Weterynaryjne"] }
     ]
   },
+
+  // ============================================================
+  // SEKCJA: MAŁE ZWIERZĘTA
+  // ============================================================
   {
     mainCategory: "Małe zwierzęta",
     subCategory: "Karma Małe Zwierzęta",
@@ -195,7 +211,7 @@ const fullShopStructure = [
     subCategory: "Ściółka",
     groups: [
       { name: "Typ", tags: ["Drewniana", "Papierowa", "Pellet"] },
-      { name: "Właściwości", tags: ["Ekologiczna", "Niskopyląca", "Bezzapachowe"] }
+      { name: "Właściwości", tags: ["Ekologiczna", "Niskopyląca", "Bezzapachowa"] }
     ]
   },
   {
@@ -233,40 +249,39 @@ const generateSlug = (text: string) => {
   return text.toLowerCase().trim().replace(/[ąáàâãäå]/g, "a").replace(/[ęéèêë]/g, "e").replace(/[íìîï]/g, "i").replace(/[óòôõöø]/g, "o").replace(/[úùûü]/g, "u").replace(/[ć]/g, "c").replace(/[ł]/g, "l").replace(/[ń]/g, "n").replace(/[ś]/g, "s").replace(/[źż]/g, "z").replace(/[^a-z0-9\s-]/g, "").replace(/\s+/g, "-");
 };
 
-const CategorySchema = new mongoose.Schema({ name: String, slug: String, parent: mongoose.Schema.Types.ObjectId }, { timestamps: true });
-const TagGroupSchema = new mongoose.Schema({ name: String, category: mongoose.Schema.Types.ObjectId }, { timestamps: true });
-const TagSchema = new mongoose.Schema({ name: String, group: mongoose.Schema.Types.ObjectId }, { timestamps: true });
-
 export async function GET() {
   try {
     const baseUri = process.env.MONGODB_URI;
     if (!baseUri) return NextResponse.json({ success: false, error: "Brak MONGODB_URI!" }, { status: 500 });
     const cleanUri = baseUri.endsWith("/") ? baseUri.slice(0, -1) : baseUri;
 
-    const connCategories = await mongoose.createConnection(`${cleanUri}/CategoriesDB`).asPromise();
-    const connTagGroups = await mongoose.createConnection(`${cleanUri}/TagGroupsDB`).asPromise();
-    const connTags = await mongoose.createConnection(`${cleanUri}/TagsDB`).asPromise();
+    // 1. Nawiązanie połączenia z 3 odrębnymi bazami produkcyjnymi
+    const connections = await connectToDatabase();
+    
+    const connCategories = connections.connCategories;
+    const connTagGroups = connections.connTagGroups;
+    const connTags = connections.connTags;
 
-    const Category1 = connCategories.models.Category1 || connCategories.model("Category1", CategorySchema, "category1s");
-    const TagGroup1 = connTagGroups.models.TagGroup1 || connTagGroups.model("TagGroup1", TagGroupSchema, "taggroup1s");
-    const Tag1 = connTags.models.Tag1 || connTags.model("Tag1", TagSchema, "tag1s");
+    // 2. Wiążemy zaimportowane modele z właściwymi połączeniami
+    const Category = connCategories.models.Category || connCategories.model("Category", CategoryModel.schema);
+    const TagGroup = connTagGroups.models.TagGroup || connTagGroups.model("TagGroup", TagGroupModel.schema);
+    const Tag = connTags.models.Tag || connTags.model("Tag", TagModel.schema);
 
-    // PRZED URUCHOMIENIEM: Czyścimy kolekcje testowe, aby zapisać wszystko od zera bez duplikatów i przerw
-    await Category1.deleteMany({});
-    await TagGroup1.deleteMany({});
-    await Tag1.deleteMany({});
+    // 🔥 NOWY KROK: Czyszczenie istniejących kolekcji produkcyjnych przed wgraniem nowych danych
+    console.log("🧹 Czyszczenie baz produkcyjnych...");
+    await Category.deleteMany({});
+    await TagGroup.deleteMany({});
+    await Tag.deleteMany({});
+    console.log("✅ Kolekcje produkcyjne zostały wyczyszczone.");
 
-    console.log("🧹 Wyczyszczono stare kolekcje testowe. Budowanie struktur w pamięci...");
+    console.log("🚀 Rozpoczynam produkcyjny zapis masowy (Bulk Write)...");
 
-    // Słowniki pomocnicze mapujące unikalne nazwy na wygenerowane ID
     const mainCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
-    const subCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
-
     const categoriesToInsert: any[] = [];
     const tagGroupsToInsert: any[] = [];
     const tagsToInsert: any[] = [];
 
-    // KROK 1: Wygeneruj ID i przygotuj dokumenty dla głównych kategorii (Pies, Kot, Małe zwierzęta)
+    // KROK 1: Generowanie głównych działów
     const mainNames = ["Pies", "Kot", "Małe zwierzęta"];
     for (const name of mainNames) {
       const id = new mongoose.Types.ObjectId();
@@ -274,11 +289,10 @@ export async function GET() {
       categoriesToInsert.push({ _id: id, name, slug: generateSlug(name), parent: null });
     }
 
-    // KROK 2: Przygotuj podkategorie oraz grupy tagów
+    // KROK 2: Przygotowanie struktur danych w pamięci
     for (const item of fullShopStructure) {
       const parentId = mainCategoryIds[item.mainCategory];
       const subId = new mongoose.Types.ObjectId();
-      subCategoryIds[item.subCategory] = subId;
 
       categoriesToInsert.push({
         _id: subId,
@@ -305,24 +319,18 @@ export async function GET() {
       }
     }
 
-    console.log(`📦 Przygotowano do wysyłki: ${categoriesToInsert.length} kategorii, ${tagGroupsToInsert.length} grup, ${tagsToInsert.length} tagów.`);
-
-    // KROK 3: Masowy ultra-szybki zapis w paczkach (Jedno zapytanie na kolekcję)
-    await Category1.insertMany(categoriesToInsert);
-    await TagGroup1.insertMany(tagGroupsToInsert);
-    await Tag1.insertMany(tagsToInsert);
-
-    await connCategories.close();
-    await connTagGroups.close();
-    await connTags.close();
+    // KROK 3: Masowy zapis paczek do produkcyjnych baz
+    await Category.insertMany(categoriesToInsert);
+    await TagGroup.insertMany(tagGroupsToInsert);
+    await Tag.insertMany(tagsToInsert);
 
     return NextResponse.json({ 
       success: true, 
-      message: `Baza zasilona błyskawicznie! Zapisano: ${categoriesToInsert.length} kategorii, ${tagGroupsToInsert.length} grup filtrów oraz ${tagsToInsert.length} tagów w kolekcjach z końcówką 1.` 
+      message: `PRODUKCJA ZASILONA! Bazy zostały wyczyszczone, a następnie zapisano: ${categoriesToInsert.length} kategorii, ${tagGroupsToInsert.length} grup oraz ${tagsToInsert.length} tagów do 3 odrębnych baz danych.` 
     });
 
   } catch (error: any) {
-    console.error("❌ Błąd masowego zapisu:", error);
+    console.error("❌ Błąd produkcyjnego zapisu masowego:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
