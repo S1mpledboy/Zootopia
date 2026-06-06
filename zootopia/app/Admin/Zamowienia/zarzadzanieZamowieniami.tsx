@@ -19,30 +19,27 @@ interface ZarzadzanieZamowieniamiProps {
 const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initialOrders }) => {
   const [orders] = useState(initialOrders);
   const [activeFilter, setActiveFilter] = useState<FilterType>('wszystkie');
-  
-  // NOWOŚĆ: Stan dla wpisanej frazy w wyszukiwarce
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
 
-  // Statystyki obliczamy zawsze z PEŁNEJ listy (niezależnie od wyszukiwania i filtrów)
-  const countAll = orders.length;
-  const countCompleted = orders.filter(o => o.status === 'ukończone').length;
-  const countInProgress = orders.filter(o => o.status === 'w trakcie').length;
-  const countShipped = orders.filter(o => o.status === 'wysłane').length;
-  const countCancelled = orders.filter(o => o.status === 'anulowane').length;
-
-  // NOWOŚĆ: Połączona logika filtrowania (Status + Wyszukiwarka)
-  const filteredOrders = orders.filter(order => {
-    // 1. Warunek statusu
-    const matchesStatus = activeFilter === 'wszystkie' || order.status === activeFilter;
-
-    // 2. Warunek wyszukiwarki (usuwamy zbędne spacje i ignorujemy wielkość liter)
-    const matchesSearch = order.orderNumber
+  // KROK 1: Najpierw filtrujemy całą bazę TYLKO po wpisanym numerze zamówienia
+  const searchedOrders = orders.filter(order =>
+    order.orderNumber
       .toLowerCase()
-      .includes(searchQuery.trim().toLowerCase());
+      .includes(searchQuery.trim().toLowerCase())
+  );
 
-    return matchesStatus && matchesSearch;
-  });
+  // KROK 2: Statystyki obliczamy z przefiltrowanych przez wyszukiwarkę zamówień (teraz liczby będą się zmieniać!)
+  const countAll = searchedOrders.length;
+  const countCompleted = searchedOrders.filter(o => o.status === 'ukończone').length;
+  const countInProgress = searchedOrders.filter(o => o.status === 'w trakcie').length;
+  const countShipped = searchedOrders.filter(o => o.status === 'wysłane').length;
+  const countCancelled = searchedOrders.filter(o => o.status === 'anulowane').length;
+
+  // KROK 3: Do końcowego wyrenderowania na liście bierzemy zamówienia spełniające też kryterium zakładki statusu
+  const filteredOrders = activeFilter === 'wszystkie'
+    ? searchedOrders
+    : searchedOrders.filter(order => order.status === activeFilter);
 
   const getFilterStyle = (filterName: FilterType) => {
     return {
@@ -68,7 +65,6 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
           <div className={styles.zarzdzanieZamwieniamiParent}>
             <div className={styles.zarzdzanieZamwieniami2}>Zarządzanie zamówieniami</div>
             
-            {/* ZMIANA: Zastąpienie diva dynamicznym inputem */}
             <div className={styles.szukajZamwieniaParent} style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
               <input
                 type="text"
@@ -103,7 +99,7 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
           <Image src={line} className={styles.dividerChild} width={760} height={1} sizes="100vw" alt="" />
         </div>
 
-        {/* STATYSTYKI */}
+        {/* STATYSTYKI (Teraz z dynamicznymi wartościami) */}
         <div className={styles.sortowanieZamwie}>
           <div className={styles.zarzdzanieZamwieniamiParent}>
             <div className={styles.wszystkieParent} onClick={() => setActiveFilter('wszystkie')} style={getFilterStyle('wszystkie')}>
