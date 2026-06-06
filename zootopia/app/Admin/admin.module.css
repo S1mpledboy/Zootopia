@@ -110,6 +110,7 @@
   	padding: 0px 0px 64px;
   	box-sizing: border-box;
   	font-size: 12px;
+	flex: 1;
 }
 .sortowanieParent {
   	align-self: stretch;

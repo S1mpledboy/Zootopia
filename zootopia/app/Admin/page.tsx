@@ -2,6 +2,7 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Order from "@/models/Order";
 import Product from "@/models/Product";
 import AdminClient from "./adminClient";
+import User from "@/models/User";
 
 // Wymuszenie pobierania świeżych danych z bazy przy każdym wejściu na stronę panelu
 export const dynamic = "force-dynamic";
@@ -44,6 +45,16 @@ export default async function AdminPage() {
     }))
   }));
 
+  const users = await User.find({}).lean();
+const serializedUsers = users.map(user => ({
+  _id: user._id.toString(),
+  email: user.email,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  isActive: user.isActive,
+  createdAt: user.createdAt ? new Date(user.createdAt).toLocaleDateString('pl-PL') : '—'
+}));
+
   // (Opcjonalnie) Pobranie produktów dla drugiej zakładki
   const rawProducts = await Product.find({ isActive: true }).populate("company").sort({ updatedAt: -1 }).lean();
   const serializedProducts = rawProducts.map((p: any) => ({
@@ -59,6 +70,7 @@ export default async function AdminPage() {
     <AdminClient 
       ordersData={serializedOrders} 
       productsData={serializedProducts}
+      usersData={serializedUsers}
     />
   );
 }
