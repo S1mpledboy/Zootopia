@@ -158,7 +158,7 @@ const ZamowienieModal: React.FC<ZamowienieModalProps> = ({ order, onClose }) => 
                   <div className={styles.z2}>{item.price.toFixed(2)} ZŁ</div>
                 </div>
               </div>
-                <Image src={line} className={styles.frameChild} width={570} height={1} sizes="100vw" alt="" />
+                <Image src={line} className={styles.frameChild}alt="" />
             </div>
           ))}
         </div>
