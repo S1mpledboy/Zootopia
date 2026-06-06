@@ -1,108 +1,44 @@
-'use client';
+import { connectToDatabase } from "@/lib/mongodb";
+import Order from "@/models/Order";
+import ZarzadzanieZamowieniamiClient from "./zarzadzanieClient";
 
-import type { NextPage } from 'next';
-import Image from "next/image";
-import { useState } from 'react';
-import styles from './zamowienia.module.css';
+// Wymuszenie pobierania świeżych danych przy każdym przeładowaniu
+export const dynamic = "force-dynamic"; 
 
-import lupa from '@/app/Public/Images/lupa.svg';
-import line from '@/app/Public/Images/line.svg';
+export default async function ZarzadzanieZamowieniamiPage() {
+  // Połączenie z bazą danych
+  await connectToDatabase();
 
-import { mockOrdersData, Order } from './testOrders';
-import OrderCard from './zamowienieKarta';
-import ZamowienieModal from './zamowienie'; // Import nowego Modala
+  // Pobranie wszystkich zamówień posortowanych od najnowszych
+  const rawOrders = await Order.find({})
+    .sort({ createdAt: -1 })
+    .lean();
 
-const ZarzadzanieZamowieniami: NextPage = () => {
-  const [orders] = useState(mockOrdersData);
-  const [activeOrder, setActiveOrder] = useState<Order | null>(null); // Stan wybranego zamówienia
+  // Funkcja mapująca statusy z bazy (enum) na stringi w UI
+  const mapStatusToUI = (status: string) => {
+    switch (status) {
+      case "IN_PROGRESS": return "w trakcie";
+      case "SHIPPED": return "wysłane";
+      case "CANCELLED": return "anulowane";
+      default: return "w trakcie";
+    }
+  };
 
-  const countAll = orders.length;
-  const countCompleted = orders.filter(o => o.status === 'ukończone').length;
-  const countInProgress = orders.filter(o => o.status === 'w trakcie').length;
-  const countShipped = orders.filter(o => o.status === 'wysłane').length;
-  const countCancelled = orders.filter(o => o.status === 'anulowane').length;
+  // Serializacja danych (konwersja ObjectId i Date na zwykłe stringi)
+  const serializedOrders = rawOrders.map((order: any) => ({
+    ...order,
+    id: order._id.toString(),
+    _id: order._id.toString(),
+    userId: order.userId?.toString(),
+    status: mapStatusToUI(order.status),
+    createdAt: order.createdAt?.toISOString(),
+    updatedAt: order.updatedAt?.toISOString(),
+    items: order.items.map((item: any) => ({
+      ...item,
+      productId: item.productId?.toString(),
+    })),
+  }));
 
-  return (
-    <div className={styles.prawa}>
-      <div className={styles.content}>
-        
-        {/* BREADCRUMBS */}
-        <div className={styles.menuMiejsce}>
-          <div className={styles.administrator}>Administrator</div>
-          <div className={styles.administrator}>{`>`}</div>
-          <div className={styles.administrator}>Zarządzanie zamówieniami</div>
-        </div>
-
-        {/* TYTUŁ I WYSZUKIWARKA */}
-        <div className={styles.tytul}>
-          <div className={styles.zarzdzanieZamwieniamiParent}>
-            <div className={styles.zarzdzanieZamwieniami2}>Zarządzanie zamówieniami</div>
-            <div className={styles.szukajZamwieniaParent}>
-              <div className={styles.administrator}>Szukaj zamówienia...</div>
-              <Image src={lupa} className={styles.tablerIconSearch} width={20} height={20} sizes="100vw" alt="" />
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.divider}>
-          <Image src={line} className={styles.dividerChild} width={760} height={1} sizes="100vw" alt="" />
-        </div>
-
-        {/* STATYSTYKI */}
-        <div className={styles.sortowanieZamwie}>
-          <div className={styles.zarzdzanieZamwieniamiParent}>
-            <div className={styles.wszystkieParent}>
-              <b className={styles.wszystkie}>Wszystkie</b>
-              <b className={styles.wszystkie}>({countAll})</b>
-            </div>
-            <div className={styles.ukoczoneParent}>
-              <b className={styles.wszystkie}>Ukończone</b>
-              <b className={styles.wszystkie}>({countCompleted})</b>
-            </div>
-            <div className={styles.ukoczoneParent}>
-              <b className={styles.wszystkie}>W trakcie</b>
-              <b className={styles.wszystkie}>({countInProgress})</b>
-            </div>
-            <div className={styles.ukoczoneParent}>
-              <b className={styles.wszystkie}>Wysłane</b>
-              <b className={styles.wszystkie}>({countShipped})</b>
-            </div>
-            <div className={styles.ukoczoneParent}>
-              <b className={styles.wszystkie}>Anulowane</b>
-              <b className={styles.wszystkie}>({countCancelled})</b>
-            </div>
-          </div>
-        </div>
-
-        <div className={styles.divider}>
-          <Image src={line} className={styles.dividerChild} width={760} height={1} sizes="100vw" alt="" />
-        </div>
-
-        {/* LISTA ZAMÓWIEŃ */}
-        {orders.map((order, index) => (
-          <div key={order.id} style={{ width: '100%' }}>
-            {/* Przekazujemy funkcję ustawiającą to konkretne zamówienie jako aktywne */}
-            <OrderCard order={order} onOpenDetails={() => setActiveOrder(order)} />
-            
-            {index < orders.length - 1 && (
-              <div className={styles.produktyWKoszyku}>
-                <Image src={line} className={styles.dividerChild} width={760} height={1} sizes="100vw" alt="" />
-              </div>
-            )}
-          </div>
-        ))}
-
-      </div>
-
-      {/* WARUNKOWE RENDEROWANIE NAKŁADKI (MODALA) */}
-      {activeOrder && (
-        <ZamowienieModal 
-          order={activeOrder} 
-          onClose={() => setActiveOrder(null)} 
-        />
-      )}
-    </div>
-  );
-};
-
-export default ZarzadzanieZamowieniami;
+  // Przekazanie gotowych danych do komponentu klienckiego
+  return <ZarzadzanieZamowieniamiClient initialOrders={serializedOrders} />;
+}
