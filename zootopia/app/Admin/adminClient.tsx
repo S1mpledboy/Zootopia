@@ -18,9 +18,10 @@ type TabType = "dane" | "zamowienia" | "produkty" | "uzytkownicy" | "tags";
 interface AdminClientProps {
   ordersData: any[];
   productsData: any[];
+  usersData: any[]; // NOWOŚĆ: Przekazujemy tablicę użytkowników pobraną z bazy MongoDB
 }
 
-const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData }) => {
+const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData, usersData }) => {
   const [activeTab, setActiveTab] = useState<TabType>("dane");
 
   const getMenuClass = (tabName: TabType) => {
@@ -33,12 +34,12 @@ const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData }) =
       case "dane":
         return <DaneIBezpieczenstwo />;
       case "zamowienia":
-        // KLUCZOWA ZMIANA: Przekazujemy pobrane z bazy zamówienia jako prop
         return <ZarzadzanieZamowieniami initialOrders={ordersData} />;
       case "produkty":
         //return <ZarzadzanieProduktami initialProducts={productsData} />;
       case "uzytkownicy":
-        return <Konta />;
+        // ZMIANA: Przekazujemy tablicę użytkowników do komponentu Konta
+        return <Konta initialUsers={usersData} />;
       case "tags":
         return <Tags />;
       default:
