@@ -311,7 +311,7 @@ const Kategorie: NextPage = () => {
               productName={item.productName}
               price={item.price}
               promoPrice={item.promoPrice}
-              image={item.image}
+              image="https://yts5oeiwfp7gpem4.public.blob.vercel-storage.com/SafeWalk%20Odblaskowa%20Smycz%20Miejska%20Z%20Amortyzatorem%20200cm%20%28Czerwie%C5%84%29%20img1.png"
             />
           ))}
         </div>
