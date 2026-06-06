@@ -5,7 +5,6 @@ import styles from './konta.module.css';
 import kalendarz from '@/app/Public/Images/kalendarz.svg';
 import kosz from '@/app/Public/Images/kosz.svg';
 
-// Definicja typu użytkownika odpowiadająca schematowi Mongoose
 export interface DbUser {
   _id: string;
   email: string;
@@ -17,7 +16,7 @@ export interface DbUser {
 
 interface UserKartaProps {
   user: DbUser;
-  onDelete?: (id: string) => void; // Opcjonalna akcja usunięcia pod ikonę kosza
+  onDelete?: (user: DbUser) => void; // ZMIANA: Przekazujemy cały obiekt użytkownika
 }
 
 const UserKarta: React.FC<UserKartaProps> = ({ user, onDelete }) => {
@@ -30,7 +29,6 @@ const UserKarta: React.FC<UserKartaProps> = ({ user, onDelete }) => {
         <b className={styles.jankowalskigmailcom}>{user.email}</b>
       </div>
       <div className={styles.frameWrapper}>
-        {/* Dynamicznie zmieniamy klasę kontenera w zależności od statusu isActive */}
         <div className={user.isActive ? styles.frameContainer : styles.frameParent6}>
           <div className={styles.vectorParent}>
             <Image src={kalendarz} className={styles.vectorIcon} width={16} height={18} sizes="100vw" alt="Data rejestracji" />
@@ -49,7 +47,8 @@ const UserKarta: React.FC<UserKartaProps> = ({ user, onDelete }) => {
             sizes="100vw" 
             alt="Usuń" 
             style={{ cursor: 'pointer' }}
-            onClick={() => onDelete && onDelete(user._id)}
+            // ZMIANA: Przekazanie całego usera przy kliknięciu kosza
+            onClick={() => onDelete && onDelete(user)}
           />
         </div>
       </div>
