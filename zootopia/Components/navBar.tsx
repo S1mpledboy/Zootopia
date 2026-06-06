@@ -13,6 +13,8 @@ import bagicon from "@/app/Public/Images/tabler-icon-shopping-bag.svg";
 import usericon from "@/app/Public/Images/tabler-icon-user-circle.svg";
 import Category from '@/Components/category';
 
+import { useAuth } from "@/app/context/AuthContext";
+
 interface ISearchProduct {
   _id: string;
   name: string;
@@ -21,6 +23,7 @@ interface ISearchProduct {
 }
 
 const Nawigacja: NextPage = () => {
+  const { logout, user, refreshUser } = useAuth();
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [products, setProducts] = useState<ISearchProduct[]>([]);
@@ -189,14 +192,14 @@ const Nawigacja: NextPage = () => {
             </div>
           </Link>
 
-          <Link href={isLoggedIn ? "/MojeKonto" : "/Auth"}>
-            <div className={styles.tablerIconHeartParent}>
-              <Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
-              <div className={styles.ulubione}>
-                {isLoggedIn ? "Moje konto" : "Zaloguj się"}
-              </div>
-            </div>
-          </Link>
+          <Link href={isLoggedIn ? (user?.role === "admin" ? "/Admin" : "/MojeKonto") : "/Auth"}>
+			<div className={styles.tablerIconHeartParent}>
+				<Image src={usericon} className={styles.tablerIconHeart} width={36} height={36} sizes="100vw" alt="" />
+				<div className={styles.ulubione}>
+				{isLoggedIn ? (user?.role === "admin" ? "Panel Admina" : "Moje konto") : "Zaloguj się"}
+				</div>
+			</div>
+		</Link>
 
           <Link href="/Cart">
             <div className={styles.tablerIconHeartParent}>
