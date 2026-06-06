@@ -37,25 +37,32 @@ export async function GET(req) {
 
   const search = searchParams.get("search");
   const category = searchParams.get("category");
+  const company = searchParams.get("company");
   const animalType = searchParams.get("animalType");
   const sort = searchParams.get("sort");
 
   const minPrice = searchParams.get("minPrice");
   const maxPrice = searchParams.get("maxPrice");
   const isActive = searchParams.get("isActive");
+  const isPromotion = searchParams.get("isPromotion");
 
   const filter = {};
 
   if (search) {
     filter.$or = [
       { name: { $regex: search, $options: "i" } },
-      { brand: { $regex: search, $options: "i" } },
       { description: { $regex: search, $options: "i" } },
+      { ingredients: { $regex: search, $options: "i" } },
+      { additionalInfo: { $regex: search, $options: "i" } },
     ];
   }
 
   if (category) {
     filter.category = category;
+  }
+
+  if (company) {
+    filter.company = company;
   }
 
   if (animalType) {
@@ -68,6 +75,14 @@ export async function GET(req) {
 
   if (isActive === "false") {
     filter.isActive = false;
+  }
+
+  if (isPromotion === "true") {
+    filter.isPromotion = true;
+  }
+
+  if (isPromotion === "false") {
+    filter.isPromotion = false;
   }
 
   if (minPrice || maxPrice) {
@@ -92,7 +107,10 @@ export async function GET(req) {
   if (sort === "STOCK_ASC") sortOption = { stock: 1 };
   if (sort === "STOCK_DESC") sortOption = { stock: -1 };
 
-  const products = await Product.find(filter).sort(sortOption);
+  const products = await Product.find(filter)
+    .populate("category", "name slug parent")
+    .populate("company", "name slug")
+    .sort(sortOption);
 
   return Response.json({ products });
 }
@@ -106,27 +124,69 @@ export async function POST(req) {
 
   const body = await req.json();
 
-  if (!body.name || !body.price || !body.category || !body.animalType) {
+  if (!body.name || body.price === undefined || !body.category || !body.company) {
     return Response.json(
-      { message: "Name, price, category and animalType are required" },
+      { message: "Name, price, category and company are required" },
       { status: 400 }
     );
   }
 
+  if (body.promoPrice !== undefined && body.promoPrice !== null) {
+    if (Number(body.promoPrice) >= Number(body.price)) {
+      return Response.json(
+        { message: "Promo price must be lower than regular price" },
+        { status: 400 }
+      );
+    }
+  }
+
   const product = await Product.create({
     name: body.name,
-    brand: body.brand || "",
     description: body.description || "",
-    price: body.price,
-    oldPrice: body.oldPrice || null,
-    imageUrl: body.imageUrl || "",
+    ingredients: body.ingredients || "",
+    additionalInfo: body.additionalInfo || "",
+
+    price: Number(body.price),
+    oldPrice: body.oldPrice !== undefined && body.oldPrice !== null
+      ? Number(body.oldPrice)
+      : null,
+
+    promoPrice: body.promoPrice !== undefined && body.promoPrice !== null
+      ? Number(body.promoPrice)
+      : null,
+
+    isPromotion: body.isPromotion !== undefined
+      ? Boolean(body.isPromotion)
+      : false,
+
+    stock: body.stock !== undefined
+      ? Number(body.stock)
+      : 0,
+
     category: body.category,
-    animalType: body.animalType,
-    stock: body.stock || 0,
-    rating: body.rating || 0,
-    popularity: body.popularity || 0,
-    isActive: body.isActive !== undefined ? body.isActive : true,
-    tags: body.tags || [],
+    company: body.company,
+
+    animalType: body.animalType || null,
+
+    images: Array.isArray(body.images)
+      ? body.images
+      : [],
+
+    rating: body.rating !== undefined
+      ? Number(body.rating)
+      : 0,
+
+    popularity: body.popularity !== undefined
+      ? Number(body.popularity)
+      : 0,
+
+    isActive: body.isActive !== undefined
+      ? Boolean(body.isActive)
+      : true,
+
+    tags: Array.isArray(body.tags)
+      ? body.tags
+      : [],
   });
 
   return Response.json(

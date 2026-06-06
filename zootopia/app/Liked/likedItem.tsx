@@ -26,13 +26,13 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
     const [isDeleting, setIsDeleting] = useState<boolean>(false);
     const [isAddingToCart, setIsAddingToCart] = useState<boolean>(false);
     
-    // 🔢 Dynamiczny licznik ilości produktów do dodania
+
     const [quantity, setQuantity] = useState<number>(1);
 
     const handleIncrease = () => setQuantity((prev) => prev + 1);
     const handleDecrease = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-    // 🛒 Funkcja obsługująca dodawanie produktu do koszyka
+
     const handleAddToCart = async () => {
         const token = localStorage.getItem("token");
 
@@ -54,7 +54,7 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
                 },
                 body: JSON.stringify({
                     productId: product.id,
-                    quantity: quantity, // Przekazujemy wybrany stan ilości
+                    quantity: quantity, 
                 }),
             });
 
@@ -72,7 +72,7 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
         }
     };
 
-    // 🗑️ Funkcja obsługująca usuwanie produktu z ulubionych
+
     const handleRemoveFromLiked = async () => {
         const token = localStorage.getItem('token');
         if (!token) return;
@@ -107,7 +107,7 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
     return (
         <div className={styles.property1ulubione} style={{ opacity: isDeleting ? 0.5 : 1 }}>
             
-            {/* 🔗 Kliknięcie w obrazek przenosi na podstronę produktu */}
+
             <Link href={`/product/${product.id}`}>
                 <Image
                     className={styles.imgProduktuIcon}
@@ -140,7 +140,7 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
                 </div>
 
                 <div className={styles.frameContainer}>
-                    {/* 🔢 AKTYWNY SELEKTOR ILOŚCI */}
+
                     <div className={styles.parent}>
                         <div className={styles.div} onClick={handleDecrease} style={{ cursor: "pointer", userSelect: "none" }}>-</div>
                         <div className={styles.wrapper}>
@@ -152,7 +152,6 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
                     <div className={styles.ulubioneParent}>
                         <Image src={FavoriteIcon} alt="Ulubione" className={styles.ulubioneIcon} width={24} height={24} />
                         
-                        {/* 🛒 INTERAKTYWNY PRZYCISK KOSZYKA */}
                         <div 
                             className={styles.dodajDoKoszyka} 
                             onClick={handleAddToCart}
@@ -164,7 +163,7 @@ const LikedItem: FC<LikedItemProps> = ({ product }) => {
                             <Image src={CartIcon} alt="Koszyk" className={styles.vectorIcon} width={24} height={24} />
                         </div>
                         
-                        {/* 🗑️ IKONA KOSZA (USUWANIE Z ULUBIONYCH) */}
+
                         <Image 
                             src={TrashIcon} 
                             alt="Usuń" 

@@ -6,7 +6,7 @@ export async function GET(req: Request) {
     await connectToDatabase();
     const user = await getAuthUser(req);
     
-    // Zwracamy po prostu true albo false, bez zbędnych danych
+
     return Response.json({ isLoggedIn: !!user });
   } catch (error) {
     return Response.json({ isLoggedIn: false });

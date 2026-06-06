@@ -35,7 +35,9 @@ export async function GET(req, { params }) {
 
   if (error) return error;
 
-  const product = await Product.findById(id);
+  const product = await Product.findById(id)
+    .populate("category", "name slug")
+    .populate("company", "name slug");
 
   if (!product) {
     return Response.json(
@@ -60,16 +62,20 @@ export async function PATCH(req, { params }) {
 
   const allowedFields = [
     "name",
-    "brand",
     "description",
+    "ingredients",
+    "additionalInfo",
     "price",
     "oldPrice",
-    "imageUrl",
+    "promoPrice",
+    "isPromotion",
     "category",
+    "company",
     "animalType",
     "stock",
     "rating",
     "popularity",
+    "images",
     "isActive",
     "tags",
   ];
@@ -81,6 +87,22 @@ export async function PATCH(req, { params }) {
       updateData[field] = body[field];
     }
   });
+
+  if (
+    body.promoPrice !== undefined &&
+    body.promoPrice !== null &&
+    body.price !== undefined
+  ) {
+    if (Number(body.promoPrice) >= Number(body.price)) {
+      return Response.json(
+        {
+          message:
+            "Promo price must be lower than regular price",
+        },
+        { status: 400 }
+      );
+    }
+  }
 
   if (Object.keys(updateData).length === 0) {
     return Response.json(
@@ -96,7 +118,9 @@ export async function PATCH(req, { params }) {
       new: true,
       runValidators: true,
     }
-  );
+  )
+    .populate("category", "name slug")
+    .populate("company", "name slug");
 
   if (!updatedProduct) {
     return Response.json(

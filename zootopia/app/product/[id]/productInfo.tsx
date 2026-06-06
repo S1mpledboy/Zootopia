@@ -22,7 +22,7 @@ const Accordion = ({ title, content }: AccordionProps) => {
         <div className={styles.opis}>{title}</div>
         <Image 
           className={`${styles.tablerIconChevronCompactRi} ${isOpen ? styles.rotate : ''}`} 
-          src={chevronIcon} // Używamy zaimportowanej zmiennej
+          src={chevronIcon} 
           alt="arrow" 
           width={24} 
           height={24} 

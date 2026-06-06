@@ -6,17 +6,19 @@ const CategorySchema = new mongoose.Schema(
       type: String,
       required: [true, "Category name is required"],
       trim: true,
-      minlength: 2,
       maxlength: 100,
     },
-    description: {
+    slug: {
       type: String,
-      default: "",
-      maxlength: 500,
+      required: true,
+      unique: true, 
+      trim: true,
+      lowercase: true,
     },
-    isActive: {
-      type: Boolean,
-      default: true,
+    parent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category",
+      default: null,
     },
   },
   {

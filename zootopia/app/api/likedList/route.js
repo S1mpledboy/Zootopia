@@ -1,10 +1,10 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import User from "@/models/User";
 import Product from "@/models/Product";
-import "@/models/Company"; // Rejestracja modelu firmy dla .populate()
+import "@/models/Company"; 
 import jwt from "jsonwebtoken";
 
-// 📥 GET: Pobieranie listy polubionych produktów użytkownika
+
 export async function GET(req) {
   try {
     await connectToDatabase();
@@ -31,7 +31,7 @@ export async function GET(req) {
 
     const products = user.likedProducts || [];
 
-    // Transformacja danych na czysty format frontendowy
+
     const transformedProducts = products.map((product) => {
       let productImage = "/placeholder.png";
       if (product.images && product.images.length > 0) {
@@ -54,12 +54,11 @@ export async function GET(req) {
 
     return Response.json(transformedProducts);
   } catch (error) {
-    console.error("❌ Błąd GET /api/likedList:", error);
+    console.error(" Błąd GET /api/likedList:", error);
     return Response.json({ ok: false, error: "Błąd serwera" }, { status: 500 });
   }
 }
 
-// 📤 POST: Dodawanie produktu do listy ulubionych
 export async function POST(req) {
   try {
     await connectToDatabase();
@@ -78,7 +77,7 @@ export async function POST(req) {
       return Response.json({ error: "Brak ID produktu" }, { status: 400 });
     }
 
-    // 1. Sprawdzamy czy użytkownik ma już ten produkt w ulubionych
+   
     const userObj = await User.findById(userId);
     const hasProduct = userObj.likedProducts.includes(productId);
 
@@ -86,11 +85,11 @@ export async function POST(req) {
     let message;
 
     if (hasProduct) {
-      // Jeśli już ma – usuwamy ($pull)
+
       updateOperation = { $pull: { likedProducts: productId } };
       message = "Usunięto z ulubionych";
     } else {
-      // Jeśli nie ma – dodajemy ($addToSet)
+
       updateOperation = { $addToSet: { likedProducts: productId } };
       message = "Dodano do ulubionych";
     }
@@ -99,7 +98,7 @@ export async function POST(req) {
 
     return Response.json({ ok: true, message });
   } catch (error) {
-    console.error("❌ Błąd POST /api/likedList:", error);
+    console.error(" Błąd POST /api/likedList:", error);
     return Response.json({ ok: false, error: "Błąd serwera" }, { status: 500 });
   }
 }

@@ -15,7 +15,7 @@
 
 .twojeZamwienieZostao {
   position: relative;
-  font-size: 45px; /* Przeniesione z pierwszej zdublowanej klasy */
+  font-size: 45px; 
   letter-spacing: -0.05em;
   line-height: 90%;
   font-weight: 600;
@@ -25,7 +25,7 @@
   align-self: stretch;
   display: flex;
   flex-direction: column;
-  align-items: center; /* Zmienione na center, żeby teksty w środku były idealnie wyśrodkowane */
+  align-items: center; 
   gap: 12px;
 }
 
@@ -52,7 +52,7 @@
 }
 
 .potwierdzenieZamwieniaWraz {
-  width: 100%; /* Zmienione na 100% z max-width dla lepszej responsywności */
+  width: 100%; 
   max-width: 1120px;
   position: relative;
   font-size: 19px;
@@ -69,5 +69,5 @@
   line-height: 120%;
   font-weight: 600;
   display: inline-block;
-  margin-top: 10px; /* Delikatny odstęp dla idealnego balansu jak na zdjęciu */
+  margin-top: 10px; 
 }

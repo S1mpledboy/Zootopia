@@ -1,4 +1,4 @@
-"use client"; // 🔥 To pozwala na obsługę stanów i kliknięć w przeglądarce
+"use client";
 
 import { useState } from "react";
 import styles from "./product.module.css";
@@ -19,14 +19,14 @@ export default function ProductActions({ productId }: ProductActionsProps) {
 
     if (!token) {
       alert("Musisz się zalogować, aby dodać produkt do koszyka!");
-      window.location.href = "/Auth"; // Przekierowanie do logowania
+      window.location.href = "/Auth"; 
       return;
     }
 
     setIsAdding(true);
 
     try {
-      // Strzelamy do stworzonego wcześniej endpointu POST /api/cart
+
       const res = await fetch("/api/cart", {
         method: "POST",
         headers: {
@@ -55,14 +55,12 @@ export default function ProductActions({ productId }: ProductActionsProps) {
 
   return (
     <div className={styles.frameParent3}>
-      {/* Selektor ilości */}
       <div className={styles.quantitySelectorContainer} style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
         <button onClick={handleDecrease} style={{ cursor: 'pointer', padding: '5px 10px' }}>-</button>
         <span>{quantity}</span>
         <button onClick={handleIncrease} style={{ cursor: 'pointer', padding: '5px 10px' }}>+</button>
       </div>
 
-      {/* Przycisk dodawania */}
       <button 
         className={styles.dodajDoKoszykaWrapper} 
         onClick={handleAddToCart}

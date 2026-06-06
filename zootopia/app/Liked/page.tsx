@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import LikedItem from "./likedItem"; // Zmieniono nazwę na bardziej intuicyjną
+import LikedItem from "./likedItem"; 
 import styles from './liked.module.css';
 
 interface TransformedProduct {
@@ -49,7 +49,6 @@ const UlubionePage: NextPage = () => {
     });
   }, [router]);
 
-  // 🧮 Dynamiczne obliczanie sumy cen produktów
   const totalPrice = likedProducts.reduce((sum, item) => sum + item.price, 0);
 
   if (loading) {
@@ -65,7 +64,7 @@ const UlubionePage: NextPage = () => {
           {likedProducts.length === 0 ? (
             <div className={styles.empty}>Twoja lista ulubionych produktów jest pusta.</div>
           ) : (
-            // ✅ Renderujemy komponent pojedynczego produktu w pętli
+
             likedProducts.map((product) => (
               <LikedItem key={product.id} product={product} />
             ))

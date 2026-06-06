@@ -161,13 +161,6 @@ const FormularzPlatnosci: NextPage = () => {
             </div>
           </div>
 
-          {!isLoggedIn && (
-            <div className={styles.rectangleParent}>
-              <input type="checkbox" checked={createAccount} onChange={(e) => setCreateAccount(e.target.checked)} className={styles.frameChild} id="createAccount" />
-              <label htmlFor="createAccount" className={styles.stworzyKonto}>Stworzyć konto?</label>
-            </div>
-          )}
-
           <div className={styles.rectangleGroup}>
             <input type="checkbox" checked={showInvoice} onChange={(e) => setShowInvoice(e.target.checked)} className={styles.frameChild} id="invoice" />
             <label htmlFor="invoice" className={styles.stworzyKonto}>Faktura</label>

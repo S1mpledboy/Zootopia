@@ -16,6 +16,18 @@ const ProductSchema = new mongoose.Schema(
       maxlength: 3000,
     },
 
+    ingredients: {
+      type: String,
+      default: "",
+      maxlength: 3000,
+    },
+
+    additionalInfo: {
+      type: String,
+      default: "",
+      maxlength: 3000,
+    },
+
     price: {
       type: Number,
       required: [true, "Price is required"],
@@ -23,6 +35,12 @@ const ProductSchema = new mongoose.Schema(
     },
 
     oldPrice: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+
+    promoPrice: {
       type: Number,
       default: null,
       min: 0,
@@ -49,7 +67,7 @@ const ProductSchema = new mongoose.Schema(
     animalType: {
       type: String,
       enum: ["DOG", "CAT", "SMALL_ANIMALS", "VET", "PROMOTIONS"],
-      required: [true, "Animal type is required"],
+      required: [false, "Animal type is required"],
     },
 
     images: {
@@ -85,7 +103,9 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-ProductSchema.index({ name: "text", description: "text" });
+
+ProductSchema.index({ name: "text", description: "text", ingredients: "text", additionalInfo: "text" });
+
 ProductSchema.index({ category: 1 });
 ProductSchema.index({ company: 1 });
 ProductSchema.index({ animalType: 1 });

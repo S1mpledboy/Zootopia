@@ -5,7 +5,8 @@ import Accordion from "./productInfo";
 import ReviewsSection from "./Reviews";
 import Carousel from "./photoCarousel";
 import ProductActions from "./ProductActions"; 
-import HeartButton from "./HeartButton"; // 🔥 IMPORT NOWEGO PRZYCISKU
+import HeartButton from "./HeartButton"; 
+import RecommendedProducts from "./RecommendedProducts";
 import "@/models/Company";
 import "@/models/Category";
 
@@ -66,35 +67,46 @@ export default async function ProductPage({
     ? Number((rawReviews.reduce((acc: number, r: any) => acc + r.rating, 0) / totalReviews).toFixed(1))
     : 0;
 
+  const categoryId = (product.category as any)?._id || product.category;
+
+  const rawRecommended = await Product.find({
+    category: categoryId,
+    _id: { $ne: new Types.ObjectId(id) },
+    isActive: true,
+    stock: { $gt: 0 },
+  })
+    .populate("company")
+    .lean();
+
+  const shuffled = rawRecommended.sort(() => Math.random() - 0.5).slice(0, 4);
+
   const hasValidPromo = product.promoPrice !== undefined && product.promoPrice !== null;
 
   return (
     <div className={styles.kategorie}>
       <div className={styles.produktKaruzelaParent}>
 
-        {/* LEWA KOLUMNA - CAROUSEL */}
+
         <div className={styles.produktKaruzela}>
           <Carousel images={product.images || []} />
         </div>
 
-        {/* PRAWA KOLUMNA */}
         <div className={styles.frameGroup}>
 
-          {/* KATEGORIA + SERCE */}
+
           <div className={styles.frameContainer}>
             <div className={styles.alphawolfParent}>
               <div className={styles.alphawolf}>
                 {product.company?.name || "Zootopia"}
               </div>
               
-              {/* 🔥 TUTAJ ZMIANA: Przycisk serduszka z akcją dodawania */}
               <HeartButton productId={product._id.toString()} />
               
             </div>
             <div className={styles.divider} />
           </div>
 
-          {/* NAZWA */}
+
           <div className={styles.alphawolf400gBezzboowaMokrWrapper}>
             <h1 className={styles.alphawolf400gBezzboowa}>
               {product.name}
@@ -103,7 +115,6 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* GWIAZDKI */}
           <div className={styles.frameDiv}>
             <div className={styles.tablerIconStarParent}>
               {getServerStars(avgRating, styles.tablerIconStar)}
@@ -111,7 +122,7 @@ export default async function ProductPage({
             <div className={styles.div}>({totalReviews})</div>
           </div>
 
-          {/* CENA */}
+
           <div className={styles.frameParent2}>
             <div className={styles.alphawolfParent} style={{ alignItems: 'baseline', justifyContent: 'flex-start', gap: '12px' }}>
               <div className={`${styles.z} ${hasValidPromo ? styles.przekreslona : ""}`}>
@@ -144,14 +155,14 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* ILOŚĆ + KOSZYK */}
+
           <div className={styles.frameWrapper}>
             <ProductActions productId={product._id.toString()} />
           </div>
         </div>
       </div>
 
-      {/* DÓŁ */}
+
       <div className={styles.vectorParent}>
         <div className={styles.dividerFull} />
 
@@ -162,30 +173,17 @@ export default async function ProductPage({
 
         <Accordion
           title="Składniki"
-          content={
-            <>
-              <p>W Zootopii nie mamy nic do ukrycia.</p>
-              <ul>
-                <li>Kategoria: {product.category?.name || "Brak"}</li>
-                <li>Stan magazynowy: {product.stock}</li>
-                <li>ID produktu: {product._id.toString()}</li>
-              </ul>
-            </>
-          }
+          content={product.ingredients || "Brak informacji o składnikach."}
         />
 
         <Accordion
           title="Dodatkowe informacje"
-          content={
-            <ul>
-              <li>Dostępność: Produkt dostępny</li>
-              <li>Wysyłka: 24h</li>
-              <li>Cena: {hasValidPromo ? product.promoPrice : product.price} zł</li>
-            </ul>
-          }
+          content={product.additionalInfo || "Brak dodatkowych informacji."}
         />
 
         <ReviewsSection productId={id} initialReviews={JSON.parse(JSON.stringify(rawReviews))} />
+
+        <RecommendedProducts products={JSON.parse(JSON.stringify(shuffled))} />
       </div>
     </div>
   );

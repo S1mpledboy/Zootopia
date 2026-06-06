@@ -55,35 +55,34 @@ const orderSchema = new mongoose.Schema(
       default: "IN_PROGRESS",
     },
 
-    // 🏡 PODSTAWOWY ADRES DOSTAWY I DANE KLIENTA (z user-info)
+  
     deliveryAddress: {
       firstName: { type: String, required: true },
       lastName: { type: String, required: true },
-      country: { type: String, required: true, default: "Polska" }, // Sparametryzowane pod pole z frontu
+      country: { type: String, required: true, default: "Polska" },
       street: { type: String, required: true },
       city: { type: String, required: true },
       postalCode: { type: String, required: true },
       phone: { type: String, required: true },
-      email: { type: String, required: true }, // Przydatne do powiadomień mailowych o zamówieniu
+      email: { type: String, required: true },
     },
 
-    // 📦 METODY DOSTAWY I PŁATNOŚCI (z shipping-payment)
+
     shippingMethod: {
-      type: String, // 'inpost', 'dhl', 'paczkomat'
+      type: String,
       required: true,
     },
     paymentMethod: {
-      type: String, // 'blik', 'p24', 'odbior'
+      type: String,
       required: true,
     },
 
-    // 🧾 OPCJONALNE DANE DO FAKTURY (z checkboxa 'Faktura')
+
     invoiceData: {
       companyName: { type: String, default: "" },
       nip: { type: String, default: "" },
     },
 
-    // 🚚 OPCJONALNY ALTERNATYWNY ADRES WYSYŁKI
     alternativeShippingAddress: {
       country: { type: String, default: "" },
       street: { type: String, default: "" },
@@ -91,10 +90,20 @@ const orderSchema = new mongoose.Schema(
       postalCode: { type: String, default: "" },
     },
 
-    // ✍️ UWAGI DO ZAMÓWIENIA (z textarea)
+ 
     notes: {
       type: String,
       default: "",
+    },
+
+ 
+    discountCode: {
+      type: String,
+      default: null,
+    },
+    discountValue: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }
