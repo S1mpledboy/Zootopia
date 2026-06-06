@@ -7,10 +7,10 @@ import CompanyModel from "@/models/Company";
 import KategorieClient from "./pageClient";
 import { unstable_cache } from "next/cache";
 
-// Wywalamy revalidate = 0. Dynamiczne będą tylko produkty, struktury zostaną w cache.
+
 export const dynamic = "force-dynamic"; 
 
-// 1. POPRAWNE, REUŻYWALNE POŁĄCZENIE (Connection Pooling)
+
 let cachedDb: any = null;
 async function getDatabaseConnection() {
   const baseUri = process.env.MONGODB_URI;
@@ -20,22 +20,18 @@ async function getDatabaseConnection() {
     return cachedDb;
   }
   
-  // Tworzymy stałe połączenie, nie zamykamy go po każdym rysowaniu strony!
   cachedDb = await mongoose.connect(baseUri, { dbName: "mydb" });
   return cachedDb;
 }
 
-// 2. CACHE DLA STRUKTUR (Kategorie i Tagi pobierają się z bazy RAZ, a potem z pamięci)
-// Rewalidacja co 10 minut (600 sekund) - zmieni się coś w panelu, odświeży się po max 10 min.
 const getCachedStructures = unstable_cache(
   async () => {
     await getDatabaseConnection();
     
-    // Pobieramy dane równolegle (Promise.all jest o wiele szybszy niż 3x await)
+
     const [categories, tagGroups, tags] = await Promise.all([
       CategoryModel.find({}).lean(),
       TagGroupModel.find({}).lean(),
-      // Sortowanie przeniesione bezpośrednio do MongoDB (wykorzystuje indeksy!)
       TagModel.find({}).sort({ name: 1 }).lean()
     ]);
 
@@ -67,13 +63,11 @@ export default async function KategoriePage({
 }: {
   searchParams: Promise<{ type?: string }>;
 }) {
-  // Pobieramy (lub wyciągamy z pamięci podręcznej) struktury menu i tagów
   const { serializedCategories, serializedTagGroups, serializedTags } = await getCachedStructures();
 
   const resolvedSearchParams = await searchParams;
   const urlType = resolvedSearchParams.type || 'pies';
 
-  // Namierzanie głównego działu zwierzaka
   const currentAnimalCategory = serializedCategories.find(
     cat => cat.slug === urlType && cat.parent === null
   );
@@ -86,7 +80,7 @@ export default async function KategoriePage({
     targetCategoryIds = childCategories.map(cat => cat._id);
   }
 
-  // Kryteria zapytania o produkty
+
   let productQuery: any = { isActive: true };
   if (urlType === 'promocje') {
     productQuery.promoPrice = { $ne: null, $exists: true, $gt: 0 };
@@ -94,18 +88,15 @@ export default async function KategoriePage({
     productQuery.category = { $in: targetCategoryIds };
   }
 
-  // Połączenie przed zapytaniem o produkty
+
   await getDatabaseConnection();
 
-  // Pobieramy TYLKO produkty potrzebne dla danej kategorii
   const rawProducts = await ProductModel.find(productQuery)
     .populate("company")
     .sort({ updatedAt: -1 })
-    // Limituj produkty! Jeśli masz ich 500, nie pchaj wszystkich na raz na front. 
-    // .limit(40) // <-- Odkomentuj to, jeśli produktów jest za dużo i zrób pagynację!
     .lean();
 
-  // Helper do wyciągania zdjęcia
+
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
     const first = images[0];
@@ -114,7 +105,7 @@ export default async function KategoriePage({
     return "/fallback-image.png";
   };
 
-  // Mapowanie produktów
+
   const initialProducts = rawProducts.map((product: any) => {
     let catId = null;
     if (product.category) {
@@ -125,7 +116,7 @@ export default async function KategoriePage({
       name: product.name,
       price: product.price,
       promoPrice: product.promoPrice ?? null,
-      image: extractImage(product.images), // <--- TUTAJ upewnij się, że w komponencie KategorieClient używasz next/image!
+      image: extractImage(product.images), 
       companyName: product.company?.name || "Inna marka",
       petCategoryId: catId,
       tags: product.tags || []

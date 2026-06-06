@@ -6,9 +6,6 @@ import Product from "@/models/Product";
 import { getAuthUser } from "@/middleware/auth";
 import mongoose from "mongoose";
 
-// ==========================================================================
-// 1. POBIERANIE HISTORII ZAMÓWIEŃ (Metoda GET)
-// ==========================================================================
 export async function GET(req) {
   try {
     await connectToDatabase();
@@ -26,9 +23,6 @@ export async function GET(req) {
   }
 }
 
-// ==========================================================================
-// 2. TWORZENIE NOWEGO ZAMÓWIENIA (Metoda POST)
-// ==========================================================================
 export async function POST(req) {
   try {
     await connectToDatabase();
@@ -109,9 +103,6 @@ export async function POST(req) {
 
     await newOrder.save();
 
-    // ==========================================================================
-    // 🔥 ODEJMOWANIE STOCKU DLA KAŻDEGO PRODUKTU
-    // ==========================================================================
     try {
       const stockUpdates = mappedItems.map((item) =>
         Product.findByIdAndUpdate(
@@ -126,9 +117,6 @@ export async function POST(req) {
       console.error("[MongoDB Error] Błąd podczas aktualizacji stocku:", stockError);
     }
 
-    // ==========================================================================
-    // 🔥 CZYSZCZENIE KOSZYKA W BAZIE MONGODB
-    // ==========================================================================
     try {
       const userId = new mongoose.Types.ObjectId(user._id.toString());
       const result = await Cart.deleteMany({ user: userId });

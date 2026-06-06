@@ -40,12 +40,11 @@ function formatDate(dateStr) {
 export default function OrderDetailModal({ order, onClose }) {
   const overlayRef = useRef(null);
 
-  // Zamknięcie po kliknięciu w tło
   const handleOverlayClick = (e) => {
     if (e.target === overlayRef.current) onClose();
   };
 
-  // Zamknięcie po ESC
+
   useEffect(() => {
     const handleKey = (e) => {
       if (e.key === "Escape") onClose();
@@ -70,7 +69,6 @@ export default function OrderDetailModal({ order, onClose }) {
       onClick={handleOverlayClick}
     >
       <div className={styles.modal} role="dialog" aria-modal="true">
-        {/* NAGŁÓWEK */}
         <div className={styles.modalHeader}>
           <div className={styles.orderTitle}>
             <span className={styles.orderLabel}>ZAMÓWIENIE NR {order.orderNumber}</span>
@@ -92,7 +90,7 @@ export default function OrderDetailModal({ order, onClose }) {
 
         <div className={styles.divider} />
 
-        {/* SIATKA INFORMACJI */}
+
         <div className={styles.infoGrid}>
           <div className={styles.infoCell}>
             <span className={styles.infoLabel}>DATA ZAMÓWIENIA</span>
@@ -170,7 +168,7 @@ export default function OrderDetailModal({ order, onClose }) {
 
         <div className={styles.divider} />
 
-        {/* PRODUKTY */}
+
         <div className={styles.itemsSection}>
           <span className={styles.infoLabel}>ZAMÓWIENIE:</span>
           <div className={styles.itemsList}>

@@ -55,7 +55,7 @@ const orderSchema = new mongoose.Schema(
       default: "IN_PROGRESS",
     },
 
-    // 🏡 PODSTAWOWY ADRES DOSTAWY I DANE KLIENTA (z user-info)
+  
     deliveryAddress: {
       firstName: { type: String, required: true },
       lastName: { type: String, required: true },
@@ -67,7 +67,7 @@ const orderSchema = new mongoose.Schema(
       email: { type: String, required: true },
     },
 
-    // 📦 METODY DOSTAWY I PŁATNOŚCI (z shipping-payment)
+
     shippingMethod: {
       type: String,
       required: true,
@@ -77,13 +77,12 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
 
-    // 🧾 OPCJONALNE DANE DO FAKTURY (z checkboxa 'Faktura')
+
     invoiceData: {
       companyName: { type: String, default: "" },
       nip: { type: String, default: "" },
     },
 
-    // 🚚 OPCJONALNY ALTERNATYWNY ADRES WYSYŁKI
     alternativeShippingAddress: {
       country: { type: String, default: "" },
       street: { type: String, default: "" },
@@ -91,13 +90,13 @@ const orderSchema = new mongoose.Schema(
       postalCode: { type: String, default: "" },
     },
 
-    // ✍️ UWAGI DO ZAMÓWIENIA (z textarea)
+ 
     notes: {
       type: String,
       default: "",
     },
 
-    // 🔥 NOWE POLA: KOD RABATOWY (Bez tego serwer zgłaszał błąd przy zapisie zamówienia)
+ 
     discountCode: {
       type: String,
       default: null,

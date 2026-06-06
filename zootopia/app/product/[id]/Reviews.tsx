@@ -76,7 +76,7 @@ const ReviewItem = ({ review }: { review: Review }) => (
   </>
 );
 
-// 🔥 PRZYJMUJEMY INITIAL REVIEWS Z SERWERA
+
 export default function Reviews({ productId, initialReviews }: { productId: string; initialReviews: Review[] }) {
   const [isOpen, setIsOpen] = useState(false);
   const [reviewsData, setReviewsData] = useState<Review[]>(initialReviews);
@@ -92,7 +92,7 @@ export default function Reviews({ productId, initialReviews }: { productId: stri
     setReviewsData(data);
   };
 
-  // Synchronizacja stanu, jeśli ID produktu ulegnie zmianie
+
   useEffect(() => {
     setReviewsData(initialReviews);
   }, [productId, initialReviews]);
@@ -137,14 +137,14 @@ export default function Reviews({ productId, initialReviews }: { productId: stri
     if (res.ok) {
       setText("");
       setRating(5);
-      fetchReviews(); // Pobieramy najnowsze opinie po dodaniu nowej
+      fetchReviews(); 
     }
   };
 
   return (
     <div className={`${styles.mainContainer} ${!isOpen ? styles.property1opinieZwinite : styles.property1opinieRozwinite}`}>
 
-      {/* HEADER */}
+
       <div className={styles.frameParent} onClick={() => setIsOpen(!isOpen)} style={{ cursor: 'pointer' }}>
         <div className={styles.opinieParent}>
           <div className={styles.opinie}>Opinie</div>
@@ -162,7 +162,7 @@ export default function Reviews({ productId, initialReviews }: { productId: stri
         />
       </div>
 
-      {/* STATS */}
+
       <div className={styles.property1opinieZwiniteInner}>
         <div className={styles.frameContainer}>
           <div className={styles.frameDiv}>
@@ -201,7 +201,7 @@ export default function Reviews({ productId, initialReviews }: { productId: stri
         </div>
       </div>
 
-      {/* FORMULARZ DODAWANIA */}
+
       {isOpen && (
         <div style={{ padding: "12px 16px" }}>
           <textarea
@@ -223,7 +223,7 @@ export default function Reviews({ productId, initialReviews }: { productId: stri
         </div>
       )}
 
-      {/* LISTA OPINII */}
+
       {reviewsData.map((review) => (
         <ReviewItem key={review._id} review={review} />
       ))}

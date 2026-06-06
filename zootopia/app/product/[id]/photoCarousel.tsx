@@ -19,7 +19,7 @@ const Carousel: NextPage<CarouselProps> = ({ images = [] }) => {
   return (
     <div className={styles.property1img1}>
 
-      {/* GŁÓWNE ZDJĘCIE */}
+
       <div className={styles.property1img1Child}>
         <Image
           src={images[activeIndex]}
@@ -32,7 +32,6 @@ const Carousel: NextPage<CarouselProps> = ({ images = [] }) => {
         />
       </div>
 
-      {/* MINIATURKI */}
       <div className={styles.frameParent}>
         {images.map((photo, index) => (
           <button

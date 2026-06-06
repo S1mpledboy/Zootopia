@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/mongodb";
 import mongoose from "mongoose";
 
-// Wymuszenie rejestracji powiązanych modeli
 import CompanyModel from "@/models/Company";
 import "@/models/Category";
 import ProductModel from "@/models/Product";
@@ -38,7 +37,7 @@ export async function GET(request: Request) {
       ],
       isActive: true
     })
-      .select("name price promoPrice images")  // ← dodane promoPrice
+      .select("name price promoPrice images")  
       .limit(6)
       .lean();
 

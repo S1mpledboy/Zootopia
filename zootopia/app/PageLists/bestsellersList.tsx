@@ -4,20 +4,15 @@ import categoryNameStyle from '@/app/modulesCSS/categoryName.module.css';
 
 import PromotionItem from '../ItemBlocks/promotionItem';
 
-// 🔥 Importy bazy danych i modeli
+
 import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
-import "@/models/Company"; // Rejestrujemy model firmy dla .populate()
+import "@/models/Company"; 
 
 export default async function Kategorie() {
-  // 1. Łączymy się z bazą danych
+
   await connectToDatabase();
 
-  // 2. Pobieramy 5 produktów:
-  // - tylko aktywne (isActive: true)
-  // - stan magazynowy większy niż 0 (stock: { $gt: 0 })
-  // - sortujemy od najmniejszego stanu (stock: 1)
-  // - wyciągamy tylko 5 sztuk (.limit(5))
   const bestsellersData = await Product.find({
     isActive: true,
     stock: { $gt: 0 } 
@@ -30,7 +25,7 @@ export default async function Kategorie() {
   return (
     <div className={styles.kategorie}>
       {bestsellersData.map((product: any) => {
-        // 🔥 Bezpieczne wyciąganie zdjęcia z tablicy w tablicy (images[0][0])
+
         let productImage = "/fallback-image.png";
         if (product.images && product.images.length > 0) {
           const innerImages = product.images[0];
@@ -48,8 +43,8 @@ export default async function Kategorie() {
             brandName={product.company?.name || "Zootopia"}
             productName={product.name}
             price={product.price}
-            promoPrice={product.promoPrice} // 🔥 TA LINIJKA: Przekazuje cenę promocyjną (nawet jeśli to null)
-            image={productImage} // Przekazujemy przefiltrowany, czysty link URL
+            promoPrice={product.promoPrice}
+            image={productImage}
           />
         );
       })}

@@ -1,4 +1,4 @@
-/* ── LAYOUT ──────────────────────────────────────────── */
+
 .page {
   min-height: 100vh;
   background: #fff;
@@ -13,7 +13,7 @@
   align-items: flex-start;
 }
 
-/* ── SIDEBAR ────────────────────────────────────────── */
+
 .sidebar {
   flex-shrink: 0;
   width: 300px;
@@ -61,7 +61,7 @@
   box-sizing: border-box;
 }
 
-/* ── MENU LIST ───────────────────────────────────────── */
+
 .menuList {
   align-self: stretch;
   display: flex;
@@ -102,7 +102,7 @@
   box-sizing: border-box;
 }
 
-/* ── CONTENT ─────────────────────────────────────────── */
+
 .content {
   flex: 1;
   min-width: 0;
@@ -163,7 +163,7 @@
   width: 100%;
 }
 
-/* ── ORDER LIST ──────────────────────────────────────── */
+
 .orderList {
   align-self: stretch;
   display: flex;
@@ -208,7 +208,7 @@
   flex-shrink: 0;
 }
 
-/* ── STATUS BADGE ────────────────────────────────────── */
+
 .statusBadge {
   font-size: 11px;
   font-weight: 700;
@@ -233,7 +233,7 @@
   color: #c0392b;
 }
 
-/* ── DETAILS BUTTON ──────────────────────────────────── */
+
 .detailsBtn {
   background: #fc5773;
   border: 2px solid #fc5773;
@@ -260,7 +260,7 @@
   cursor: not-allowed;
 }
 
-/* ── STATES ──────────────────────────────────────────── */
+
 .stateContainer {
   display: flex;
   flex-direction: column;
@@ -316,7 +316,7 @@
   color: #888;
 }
 
-/* ── LOADING OVERLAY ─────────────────────────────────── */
+
 .loadingOverlay {
   position: fixed;
   inset: 0;
@@ -340,7 +340,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ── RESPONSIVE ──────────────────────────────────────── */
+
 @media (max-width: 768px) {
   .layout {
     flex-direction: column;

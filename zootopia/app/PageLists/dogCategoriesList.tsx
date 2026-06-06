@@ -1,10 +1,10 @@
 import type { NextPage } from 'next';
 import Image from "next/image";
-import Link from "next/link"; // Importujemy komponent odnośnika
+import Link from "next/link"; 
 import styles from '@/app/modulesCSS/categoryItem.module.css';
 
 import Category from "@/app/ItemBlocks/categoryItem";
-import { items } from "@/app/Public/Data/dogCategories"; // Pobieramy czystą tablicę danych
+import { items } from "@/app/Public/Data/dogCategories"; 
 
 import dog from "@/app/Public/Images/piesCat.png";
 
@@ -12,7 +12,7 @@ const Kategorie: NextPage = () => {
   return (
     <div className={styles.kategorie}>
       
-      {/* 1. Pierwszy stały kafelek */}
+
       <Link 
         href="/ShopPage?type=pies" 
         style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
@@ -25,7 +25,7 @@ const Kategorie: NextPage = () => {
         />
       </Link>
       
-      {/* 2. Dynamiczne renderowanie kafelków z Excela */}
+
       {items.map((item) => {
         const targetLink = (item as any).link || "/ShopPage?type=pies";
         

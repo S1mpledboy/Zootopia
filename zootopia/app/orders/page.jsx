@@ -39,7 +39,7 @@ export default function OrdersPage() {
   const [modalLoading, setModalLoading]   = useState(false);
   const router = useRouter();
 
-  /* ── POBIERANIE LISTY ZAMÓWIEŃ ─────────────────────── */
+
   useEffect(() => {
     const fetchOrders = async () => {
       const token = localStorage.getItem("token");
@@ -61,7 +61,7 @@ export default function OrdersPage() {
     fetchOrders();
   }, [router]);
 
-  /* ── OTWIERANIE MODALA ─────────────────────────────── */
+
   const openOrder = useCallback(async (orderId) => {
     const token = localStorage.getItem("token");
     if (!token) { router.push("/Auth"); return; }
@@ -82,12 +82,12 @@ export default function OrdersPage() {
 
   const closeModal = useCallback(() => setSelectedOrder(null), []);
 
-  /* ── RENDER ────────────────────────────────────────── */
+
   return (
     <div className={styles.page}>
       <div className={styles.layout}>
 
-        {/* ── LEWE MENU (identyczne z mojeKonto) ───────── */}
+
         <div className={styles.sidebar}>
           <div className={styles.sidebarInner}>
             <div className={styles.sidebarHeader}>
@@ -133,7 +133,7 @@ export default function OrdersPage() {
           </div>
         </div>
 
-        {/* ── PRAWA STRONA ─────────────────────────────── */}
+
         <div className={styles.content}>
           {/* Breadcrumb */}
           <div className={styles.breadcrumb}>
@@ -145,7 +145,7 @@ export default function OrdersPage() {
           <h1 className={styles.pageTitle}>Historia zamówień</h1>
           <div className={styles.titleDivider} />
 
-          {/* STANY */}
+
           {loading && (
             <div className={styles.stateContainer}>
               {[1, 2, 3].map((i) => (
@@ -172,7 +172,7 @@ export default function OrdersPage() {
             </div>
           )}
 
-          {/* LISTA ZAMÓWIEŃ */}
+
           {!loading && !error && orders.length > 0 && (
             <div className={styles.orderList}>
               {orders.map((order) => (
@@ -205,7 +205,6 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* MODAL */}
       {modalLoading && (
         <div className={styles.loadingOverlay}>
           <div className={styles.spinner} />

@@ -12,9 +12,6 @@ import line from '@/app/Public/Images/line.svg';
 
 import PromotionItem from '../ItemBlocks/promotionItem';
 
-// =========================
-// SECTION COMPONENT
-// =========================
 function Section({ id, title, children, openSections, toggleSection }: any) {
   const open = openSections[id];
   return (
@@ -28,9 +25,7 @@ function Section({ id, title, children, openSections, toggleSection }: any) {
   );
 }
 
-// =========================
-// INTERFEJSY DANYCH
-// =========================
+
 interface ProductProps {
   _id: string;
   name: string;
@@ -61,9 +56,7 @@ interface TagProps {
   group: string;
 }
 
-// =========================
-// MAIN PAGE CLIENT COMPONENT
-// =========================
+
 const KategorieClient = ({ 
   initialProducts, 
   allCategories,
@@ -80,7 +73,7 @@ const KategorieClient = ({
 
   const currentType = searchParams.get('type') || 'pies';
 
-  // ===== STATE =====
+
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
     cena: true, marka: true
   });
@@ -92,28 +85,26 @@ const KategorieClient = ({
   
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  // ==========================================================
-  // 🔥 INTELIGENTNA OBSŁUGA LINKÓW Z KAFELKÓW (ZAMIAST DWÓCH OSOBNYCH EFFECTÓW)
-  // ==========================================================
+
   useEffect(() => {
     const urlCategorySlug = searchParams.get('category');
     const urlTagName = searchParams.get('tag');
 
     if (urlCategorySlug) {
-      // 1. SCENARIUSZ: Kliknięto w kafalek na stronie głównej (mamy parametry w URL)
+
       const foundCategory = allCategories.find(c => c.slug === urlCategorySlug);
       if (foundCategory) {
         setActiveCategoryId(foundCategory._id);
 
         if (urlTagName) {
-          // Szukamy grupy powiązanej z tym tagiem, by automatycznie ją rozwinąć i zaznaczyć
+
           const foundTag = allTags.find(t => t.name.toLowerCase().trim() === urlTagName.toLowerCase().trim());
           
           if (foundTag) {
             setFilters({
-              [foundTag.group]: [urlTagName] // Aktywujemy zaznaczenie tekstowe
+              [foundTag.group]: [urlTagName] 
             });
-            // Automatycznie otwieramy nową sekcję tagów
+
             setOpenSections(prev => ({ ...prev, [foundTag.group]: true, cena: true, marka: true }));
           } else {
             setFilters({});
@@ -123,7 +114,7 @@ const KategorieClient = ({
         }
       }
     } else {
-      // 2. SCENARIUSZ: Zwykłe przełączenie Pies/Kot w menu głównym (brak filtrów w URL) -> Resetujemy
+
       setActiveCategoryId(null);
       setFilters({});
       setPriceFrom('');
@@ -163,7 +154,7 @@ const KategorieClient = ({
     return allCategories.filter(cat => cat.parent === activeCategoryId).map(cat => cat._id);
   }, [currentType, activeCategoryId, allCategories]);
 
-  // Dynamiczne filtry
+
   const currentTagGroups = useMemo(() => {
     if (!activeCategoryId) return [];
 
@@ -196,7 +187,6 @@ const KategorieClient = ({
     return Array.from(new Set(brands)).sort();
   }, [initialProducts, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
-  // ===== FILTERS LOGIC =====
   const toggleSection = (key: string) => {
     setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -221,7 +211,7 @@ const KategorieClient = ({
   };
 
   const handleResetToMainType = () => {
-    // Przy ręcznym kliknięciu resetu usuwamy parametry z URL za pomocą routera Next.js
+
     router.push(`/ShopPage?type=${currentType}`);
     setActiveCategoryId(null);
     setFilters({});
@@ -229,9 +219,7 @@ const KategorieClient = ({
     setPriceTo('');
   };
 
-  // ==========================================
-  // 📊 LICZNIKI PRODUKTÓW (FACETS)
-  // ==========================================
+
   const facetCounts = useMemo(() => {
     const getCountForOption = (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => {
       return initialProducts.filter(product => {
@@ -290,9 +278,7 @@ const KategorieClient = ({
     };
   }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo, currentType, allCategories, childCategoryIdsForSelectedAnimal]);
 
-  // ==========================================
-  // FILTROWANIE I SORTOWANIE
-  // ==========================================
+
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
 
@@ -340,7 +326,6 @@ const KategorieClient = ({
     return result;
   }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
-  // ==========================================
 
   const DynamicCheckbox = ({ groupKey, type, value, label }: { groupKey: string; type: 'marka' | 'tag'; value: string; label: string }) => {
     const filterValue = type === 'marka' ? value : label;
@@ -366,7 +351,6 @@ const KategorieClient = ({
 
   return (
     <div className={styles.kategorie}>
-      {/* ================= LEFT (PANEL FILTRÓW) ================= */}
       <div className={styles.frameParent}>
         <div className={styles.frameWrapper}>
           <div className={styles.filtrujWrapper}>
@@ -375,7 +359,6 @@ const KategorieClient = ({
         </div>
         <Image src={line} width={216} height={1} alt="" />
 
-        {/* 1. SEKCJA CENA */}
         <Section id="cena" title="Cena" openSections={openSections} toggleSection={toggleSection}>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input type="number" placeholder="od" value={priceFrom} onChange={(e) => setPriceFrom(e.target.value)} style={{ width: '80px' }} />
@@ -383,7 +366,6 @@ const KategorieClient = ({
           </div>
         </Section>
 
-        {/* 2. SEKCJA MARKA */}
         {availableBrands.length > 0 && (
           <Section id="marka" title="Marka" openSections={openSections} toggleSection={toggleSection}>
             {availableBrands.map(brand => (
@@ -392,7 +374,6 @@ const KategorieClient = ({
           </Section>
         )}
 
-        {/* 3. DYNAMICZNE GRUPY TAGÓW - Pojawiają się poprawnie również po wejściu z przekierowania */}
         {activeCategoryId && currentTagGroups.map((group) => {
           const tagsForGroup = allTags.filter(t => t.group === group._id);
           if (tagsForGroup.length === 0) return null;

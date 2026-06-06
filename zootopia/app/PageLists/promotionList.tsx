@@ -4,14 +4,14 @@ import { connectToDatabase } from "@/lib/mongodb";
 import Product from "@/models/Product";
 import "@/models/Company";
 
-export const dynamic = "force-dynamic";  // ← zamiast revalidate = 0
+export const dynamic = "force-dynamic"; 
 
 export default async function Kategorie() {
   await connectToDatabase();
 
   const promoProducts = await Product.find({
     isActive: true,
-    promoPrice: { $ne: null, $exists: true, $gt: 0 }  // ← dodane $gt: 0 dla pewności
+    promoPrice: { $ne: null, $exists: true, $gt: 0 } 
   })
     .populate("company")
     .sort({ updatedAt: -1 })
