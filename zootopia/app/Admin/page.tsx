@@ -1,156 +1,64 @@
-"use client";
+import { connectToDatabase } from "@/lib/mongodb";
+import Order from "@/models/Order";
+import Product from "@/models/Product";
+import AdminClient from "./adminClient";
 
-import type { NextPage } from "next";
-import Image from "next/image";
-import { useState } from "react";
+// Wymuszenie pobierania świeżych danych z bazy przy każdym wejściu na stronę panelu
+export const dynamic = "force-dynamic";
 
-import styles from "./admin.module.css";
-import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
+export default async function AdminPage() {
+  // 1. Połączenie z bazą danych
+  await connectToDatabase();
 
-import { adminData, updateAdminData } from "./adminData";
-import DaneIBezpieczenstwo from "./daneIBezpieczenstwo";
-import ZarzadzanieZamowieniami from "./Zamowienia/zarzadzanieZamowieniami";
-import Zamowienie from "./Zamowienia/zamowienie";
-import Konta from "./Konta/konta";
-import ZarzadzanieProduktami from "./Prosukty/zarzadzanieProduktami";
-import DodajProdukt from "./Prosukty/dodaj";
-import Tags from "./Tags/tags";
+  // 2. Pobranie zamówień z bazy (sortowanie od najnowszych)
+  const rawOrders = await Order.find({}).sort({ createdAt: -1 }).lean();
 
-type TabType = "dane" | "zamowienia" | "produkty" | "uzytkownicy" | "tags";
-
-const ProduktyWKoszyku: NextPage = () => {
-  const [activeTab, setActiveTab] = useState<TabType>("dane");
-
-  // Dynamiczne i poprawne generowanie klas dla menu
-  const getMenuClass = (tabName: TabType) => {
-    // Pierwsza zakładka ma w Figmie klasę "mojeDaneParent", pozostałe mają "listaUlubionychParent"
-    const baseClass = styles.listaUlubionychParent
-    
-    // Sprawdzamy, czy ta konkretna zakładka jest aktualnie aktywna
-    return activeTab === tabName 
-      ? `${baseClass} ${styles.activeTab}` 
-      : baseClass;
-  };
-
-  const renderRightSection = () => {
-    switch (activeTab) {
-      case "dane":
-        return <DaneIBezpieczenstwo />;
-      case "zamowienia":
-        return <ZarzadzanieZamowieniami />;
-      case "produkty":
-        return <ZarzadzanieProduktami />;
-      case "uzytkownicy":
-        return <Konta />;
-      case "tags":
-        return <Tags />;
-      default:
-        return <DaneIBezpieczenstwo />;
+  // Funkcja pomocnicza mapująca statusy z bazy (enum) na stringi w Twoim UI
+  const mapStatusToUI = (status: string): string => {
+    switch (status) {
+      case "IN_PROGRESS": return "w trakcie";
+      case "SHIPPED": return "wysłane";
+      case "CANCELLED": return "anulowane";
+      case "COMPLETED": return "ukończone";
+      default: return "w trakcie";
     }
   };
 
+  // 3. Serializacja danych (konwersja obiektów bazy ObjectId/Date na zwykłe stringi JSON)
+  const serializedOrders = rawOrders.map((order: any) => ({
+    id: order._id.toString(),
+    orderNumber: order.orderNumber,
+    status: mapStatusToUI(order.status),
+    totalAmount: order.totalAmount,
+    deliveryAddress: order.deliveryAddress,
+    shippingMethod: order.shippingMethod,
+    paymentMethod: order.paymentMethod,
+    invoiceData: order.invoiceData,
+    createdAt: order.createdAt ? new Date(order.createdAt).toLocaleDateString("pl-PL") : "",
+    updatedAt: order.updatedAt ? new Date(order.updatedAt).toLocaleDateString("pl-PL") : "",
+    items: (order.items || []).map((item: any) => ({
+      productId: item.productId?.toString(),
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity
+    }))
+  }));
+
+  // (Opcjonalnie) Pobranie produktów dla drugiej zakładki
+  const rawProducts = await Product.find({ isActive: true }).populate("company").sort({ updatedAt: -1 }).lean();
+  const serializedProducts = rawProducts.map((p: any) => ({
+    _id: p._id.toString(),
+    name: p.name,
+    price: p.price,
+    promoPrice: p.promoPrice ?? null,
+    companyName: p.company?.name || "Zootopia"
+  }));
+
+  // Przekazanie bezpiecznych danych serwerowych do głównego layoutu klienta
   return (
-    <div className={styles.produktyWKoszyku}>
-      <div className={styles.frameParent}>
-        
-        {/* LEWE MENU */}
-        <div className={styles.frameWrapper}>
-          <div className={styles.frameGroup}>
-            <div className={styles.mojeKontoParent}>
-              <div className={styles.mojeKonto}>Administrator</div>
-              <div className={styles.frameChild} />
-            </div>
-
-            <div className={styles.frameContainer}>
-              
-              {/* Opcja: Dane i bezpieczeństwo */}
-              <div 
-                className={getMenuClass("dane")} 
-                onClick={() => setActiveTab("dane")}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.mojeDane}>Dane i bezpieczeństwo</div>
-                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
-              </div>
-
-              <div className={styles.frameItem} />
-
-              {/* Opcja: Zarządzanie zamówieniami */}
-              <div 
-                className={getMenuClass("zamowienia")} 
-                onClick={() => setActiveTab("zamowienia")}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.mojeDane}>Zarządzanie zamówieniami</div>
-                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
-              </div>
-
-              <div className={styles.frameItem} />
-
-              {/* Opcja: Zarządzanie produktami */}
-              <div 
-                className={getMenuClass("produkty")} 
-                onClick={() => setActiveTab("produkty")}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.mojeDane}>Zarządzanie produktami</div>
-                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
-              </div>
-
-              <div className={styles.frameItem} />
-
-              {/* Opcja: Zarządzanie użytkownikami */}
-              <div 
-                className={getMenuClass("uzytkownicy")} 
-                onClick={() => setActiveTab("uzytkownicy")}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.mojeDane}>Zarządzanie użytkownikami</div>
-                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
-              </div>
-
-              <div className={styles.frameItem} />
-
-              {/* Opcja: Zarządzanie TAGami */}
-              <div 
-                className={getMenuClass("tags")} 
-                onClick={() => setActiveTab("tags")}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.mojeDane}>Zarządzanie TAGami</div>
-                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
-              </div>
-
-              <div className={styles.frameItem} />
-
-              {/* Opcja: Wyloguj się */}
-              <div 
-                className={styles.listaUlubionychParent}
-                onClick={() => alert("Wylogowywanie...")}
-                style={{ cursor: "pointer" }}
-              >
-                <div className={styles.mojeDane}>Wyloguj się</div>
-                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* PRAWA STRONA */}
-        <div 
-          className={
-            activeTab === "produkty" 
-              ? `${styles.frameDiv} ${styles.fullWidthContainer}` 
-              : styles.frameDiv
-          }
-        >
-            <div className={styles.sortowanieParent}>
-              {renderRightSection()}
-            </div>
-        </div>
-      </div>
-    </div>
+    <AdminClient 
+      ordersData={serializedOrders} 
+      productsData={serializedProducts}
+    />
   );
-};
-
-export default ProduktyWKoszyku;
+}
