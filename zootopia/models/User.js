@@ -9,6 +9,46 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
     },
+    pendingEmail: {
+      type: String,
+      lowercase: true,
+      trim: true,
+    },
+
+    emailChangeToken: {
+      type: String,
+      select: false,
+    },
+
+    emailChangeTokenExpires: {
+      type: Date,
+      select: false,
+    },
+
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerificationToken: {
+      type: String,
+      select: false,
+    },
+
+    emailVerificationTokenExpires: {
+      type: Date,
+      select: false,
+    },
+
+    deleteUnverifiedAt: {
+      type: Date,
+      index: {
+        expires: 0,
+        partialFilterExpression: {
+          isEmailVerified: false,
+        },
+      },
+    },
 
     password: {
       type: String,
@@ -21,6 +61,11 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["user", "admin"],
       default: "user",
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
     },
 
     firstName: {
@@ -57,6 +102,14 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+
+    // 🔥 NOWE POLE: Tablica polubionych produktów powiązana z modelem Product
+    likedProducts: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Product",
+      },
+    ],
   },
   { timestamps: true }
 );

@@ -1,67 +1,74 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Image from "next/image";
 import styles from './Reviews.module.css';
 
-// --- IMPORTY STATYCZNE ---
 import starFull from "@/app/Public/Images/tabler-icon-star.svg";
 import starHalf from "@/app/Public/Images/star-half.svg";
 import starEmpty from "@/app/Public/Images/empty-star.svg";
 import chevronIcon from "@/app/Public/Images/tabler-icon-chevron.svg";
 import lineImg from "@/app/Public/Images/Vector 3.svg";
 
-// Przykładowe dane z połówkami
-const reviewsData = [
-  { name: "Kasia i Riko", date: "21.04.2026", rating: 5, text: "Mój cocker spaniel jest bardzo wybredny..." },
-  { name: "Ania_Z", date: "18.04.2026", rating: 4.5, text: "Bardzo dobra karma, ale puszka mogłaby się łatwiej otwierać." },
-  { name: "Piotr_W-wa", date: "13.04.2026", rating: 5, text: "Szukałem karmy z glukozaminą..." },
-  { name: "DogMom88", date: "13.04.2026", rating: 3.5, text: "Karma ok, ale mojemu psu średnio smakuje." },
-];
+type Review = {
+  _id: string;
+  rating: number;
+  text: string;
+  createdAt: string;
+  user: {
+    firstName: string;
+    lastName: string;
+  };
+};
 
-// FUNKCJA POMOCNICZA DO GWIAZDEK
 const renderStars = (rating: number, className: string) => {
   const stars = [];
   for (let i = 1; i <= 5; i++) {
     let currentIcon = starFull;
-    
     if (i > rating) {
-      // Jeśli różnica jest mniejsza niż 1 (np. 0.5), dajemy połówkę
-      currentIcon = (i - rating <= 0.5) ? starHalf : starEmpty;
+      currentIcon = i - rating <= 0.5 ? starHalf : starEmpty;
     }
-
     stars.push(
-      <Image 
-        key={i} 
-        className={className} 
-        src={currentIcon} 
-        alt={`gwiazdka ${i}`} 
+      <Image
+        key={i}
+        className={className}
+        src={currentIcon}
+        alt="star"
       />
     );
   }
   return stars;
 };
 
-const ReviewItem = ({ name, date, rating, text }: any) => (
+const ReviewItem = ({ review }: { review: Review }) => (
   <>
     <div className={styles.property1opinieZwiniteChild}>
       <div className={styles.frameParent9}>
         <div className={styles.kasiaIRikoWrapper}>
-          <div className={styles.kasiaIRiko}>{name}</div>
+          <div className={styles.kasiaIRiko}>
+            {review.user?.firstName || "Użytkownik"} {review.user?.lastName || ""}
+          </div>
         </div>
+
         <div className={styles.frameParent10}>
           <div className={styles.frameParent11}>
             <div className={styles.frameParent12}>
               <div className={styles.tablerIconStarParent}>
-                {renderStars(rating, styles.tablerIconStar)}
+                {renderStars(review.rating, styles.tablerIconStar)}
               </div>
-              <div className={styles.div}>{rating}/5</div>
+              <div className={styles.div}>
+                {review.rating}/5
+              </div>
             </div>
             <div className={styles.wrapper10}>
-              <div className={styles.div}>{date}</div>
+              <div className={styles.div}>
+                {new Date(review.createdAt).toLocaleDateString()}
+              </div>
             </div>
           </div>
-          <div className={styles.mjCockerSpaniel}>{text}</div>
+          <div className={styles.mjCockerSpaniel}>
+            {review.text}
+          </div>
         </div>
       </div>
     </div>
@@ -69,31 +76,75 @@ const ReviewItem = ({ name, date, rating, text }: any) => (
   </>
 );
 
-const Reviews = () => {
+// 🔥 PRZYJMUJEMY INITIAL REVIEWS Z SERWERA
+export default function Reviews({ productId, initialReviews }: { productId: string; initialReviews: Review[] }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [reviewsData, setReviewsData] = useState<Review[]>(initialReviews);
+
+  // FORMULARZ
+  const [text, setText] = useState("");
+  const [rating, setRating] = useState(5);
+  const [loading, setLoading] = useState(false);
+
+  const fetchReviews = async () => {
+    const res = await fetch(`/api/reviews?productId=${productId}`);
+    const data = await res.json();
+    setReviewsData(data);
+  };
+
+  // Synchronizacja stanu, jeśli ID produktu ulegnie zmianie
+  useEffect(() => {
+    setReviewsData(initialReviews);
+  }, [productId, initialReviews]);
 
   const stats = useMemo(() => {
     const total = reviewsData.length;
-    const avg = total > 0 
-      ? (reviewsData.reduce((acc, r) => acc + r.rating, 0) / total).toFixed(1) 
-      : "0.0";
-    
-    // Słupki (liczymy zaokrąglone w dół oceny do odpowiednich kategorii)
-    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
-    reviewsData.forEach(r => counts[Math.floor(r.rating) as keyof typeof counts]++);
+    const avg = total > 0 ? reviewsData.reduce((acc, r) => acc + r.rating, 0) / total : 0;
 
-    const bars = [5, 4, 3, 2, 1].map(n => {
-      const p = total > 0 ? Math.round((counts[n as keyof typeof counts] / total) * 100) : 0;
+    const counts: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviewsData.forEach((r) => {
+      const key = Math.floor(r.rating);
+      if (counts[key] !== undefined) counts[key]++;
+    });
+
+    const bars = [5, 4, 3, 2, 1].map((n) => {
+      const p = total ? Math.round((counts[n] / total) * 100) : 0;
       return { label: n.toString(), val: `${p}%`, w: p * 2 };
     });
 
-    return { average: parseFloat(avg), total, bars };
-  }, []);
+    return {
+      average: Number(avg.toFixed(1)),
+      total,
+      bars,
+    };
+  }, [reviewsData]);
+
+  const submitReview = async () => {
+    if (!text.trim()) return;
+    setLoading(true);
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("/api/reviews", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ productId, rating, text }),
+    });
+
+    setLoading(false);
+    if (res.ok) {
+      setText("");
+      setRating(5);
+      fetchReviews(); // Pobieramy najnowsze opinie po dodaniu nowej
+    }
+  };
 
   return (
     <div className={`${styles.mainContainer} ${!isOpen ? styles.property1opinieZwinite : styles.property1opinieRozwinite}`}>
-      
-      {/* NAGŁÓWEK */}
+
+      {/* HEADER */}
       <div className={styles.frameParent} onClick={() => setIsOpen(!isOpen)} style={{ cursor: 'pointer' }}>
         <div className={styles.opinieParent}>
           <div className={styles.opinie}>Opinie</div>
@@ -101,16 +152,17 @@ const Reviews = () => {
             <div className={styles.tablerIconStarParent}>
               {renderStars(stats.average, styles.tablerIconStar)}
             </div>
-            <div className={styles.div}>({stats.total})</div>
+              <div className={styles.div}>({stats.total})</div>
           </div>
         </div>
-        <Image 
-          className={`${styles.tablerIconChevronCompactRi} ${isOpen ? styles.rotate : ''}`} 
-          src={chevronIcon} alt="rozwiń" 
+        <Image
+          className={`${styles.tablerIconChevronCompactRi} ${isOpen ? styles.rotate : ''}`}
+          src={chevronIcon}
+          alt="rozwiń"
         />
       </div>
 
-      {/* ŚRODEK */}
+      {/* STATS */}
       <div className={styles.property1opinieZwiniteInner}>
         <div className={styles.frameContainer}>
           <div className={styles.frameDiv}>
@@ -130,27 +182,51 @@ const Reviews = () => {
 
           <div className={styles.frameWrapper}>
             <div className={styles.frameParent3}>
-              {stats.bars.map((row) => (
+              {styles.bars ? stats.bars.map((row) => (
                 <div key={row.label} className={styles.frameParent4}>
-                  <div className={styles.container}><div className={styles.div3}>{row.label}</div></div>
+                  <div className={styles.container}>
+                    <div className={styles.div3}>{row.label}</div>
+                  </div>
                   <div className={styles.rectangleParent}>
                     <div className={styles.frameChild} />
                     {row.w > 0 && <div className={styles.frameItem} style={{ width: row.w }} />}
                   </div>
-                  <div className={styles.frame}><div className={styles.div3}>{row.val}</div></div>
+                  <div className={styles.frame}>
+                    <div className={styles.div3}>{row.val}</div>
+                  </div>
                 </div>
-              ))}
+              )) : null}
             </div>
           </div>
         </div>
       </div>
 
-      {/* LISTA */}
-      {reviewsData.map((review, index) => (
-        <ReviewItem key={index} {...review} />
+      {/* FORMULARZ DODAWANIA */}
+      {isOpen && (
+        <div style={{ padding: "12px 16px" }}>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Napisz opinię..."
+            style={{ width: "100%", minHeight: "70px", borderRadius: "8px", padding: "10px" }}
+          />
+          <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+            <select value={rating} onChange={(e) => setRating(Number(e.target.value))}>
+              {[5,4,3,2,1].map((n) => (
+                <option key={n} value={n}>{n} ⭐</option>
+              ))}
+            </select>
+            <button onClick={submitReview} disabled={loading}>
+              {loading ? "Wysyłanie..." : "Dodaj opinię"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* LISTA OPINII */}
+      {reviewsData.map((review) => (
+        <ReviewItem key={review._id} review={review} />
       ))}
     </div>
   );
-};
-
-export default Reviews;
+}

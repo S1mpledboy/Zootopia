@@ -1,0 +1,205 @@
+.container {
+  width: 100%;
+  padding: 40px 20px;
+  font-family: Poppins;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 30px;
+  padding: 0 20px;
+}
+
+.listWrapper {
+  width: 100%;
+  background: #fff;
+  margin-bottom: 30px;
+  border-top: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  width: 100%;
+}
+
+.list > div {
+  display: flex;
+  align-items: center;
+  padding: 20px 40px;
+  border-bottom: 1px solid #ddd;
+}
+
+.list > div:last-child {
+  border-bottom: none;
+}
+
+.property1ulubione {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  text-align: left;
+  font-size: 14px;
+  color: #565e64;
+}
+
+.imgProduktuIcon {
+  height: 100px;
+  width: 100px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.frameParent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.frameGroup {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+}
+
+.frameWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.krainaNoteciParent {
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.krainaNoteci {
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.karmaLoremIpsum {
+  font-size: 16px;
+  line-height: 150%;
+  color: #000;
+  font-weight: 500;
+}
+
+.zWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: right;
+}
+
+.z {
+  font-size: 24px;
+  letter-spacing: -0.04em;
+  line-height: 120%;
+  font-weight: 600;
+  color: #000;
+}
+
+.frameContainer {
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.parent {
+  display: none;
+}
+
+.div, .div2, .div3 {
+  display: none;
+}
+
+.wrapper {
+  display: none;
+}
+
+.ulubioneParent {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+
+.ulubioneIcon {
+  height: 24px;
+  width: 24px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dodajDoKoszyka {
+  height: 24px;
+  width: 24px;
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.vectorIcon {
+  height: 100%;
+  width: 100%;
+  object-fit: contain;
+}
+
+.summary {
+  display: flex;
+  justify-content: flex-end;
+  gap: 20px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #000;
+  margin-bottom: 30px;
+  padding: 20px 40px;
+  border-bottom: 2px solid #ddd;
+}
+
+.backButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 10px 40px;
+  font-family: Poppins;
+}
+
+.arrow {
+  font-size: 24px;
+  font-weight: 300;
+  line-height: 1;
+}
+
+.backButtonText {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.backButton:hover {
+  opacity: 0.7;
+}
