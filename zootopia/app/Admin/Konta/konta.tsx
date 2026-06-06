@@ -156,79 +156,41 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
         )}
       </div>
 
-      {/* NOWOŚĆ: MODAL POTWIERDZENIA USUNIĘCIA */}
+      {/* ZAKTUALIZOWANY MODAL POTWIERDZENIA USUNIĘCIA */}
       {userToDelete && (
-        <div 
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.7)', // Przyciemnienie
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            zIndex: 9999
-          }}
-          onClick={() => setUserToDelete(null)} // Kliknięcie w tło zamyka modal
-        >
-          <div 
-            style={{
-              backgroundColor: '#1E1E1E', // Możesz dostosować do palety swojej aplikacji
-              padding: '40px',
-              borderRadius: '12px',
-              position: 'relative',
-              textAlign: 'center',
-              boxShadow: '0 4px 20px rgba(0,0,0,0.5)',
-              maxWidth: '400px',
-              width: '90%'
-            }}
-            onClick={(e) => e.stopPropagation()} // Zapobiega zamknięciu przy kliknięciu w SAM modal
-          >
-            {/* Przycisk zamykający (X) */}
-            <button 
-              onClick={() => setUserToDelete(null)}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '15px',
-                background: 'none',
-                border: 'none',
-                color: '#fff',
-                fontSize: '20px',
-                cursor: 'pointer',
-                fontWeight: 'bold'
-              }}
-            >
+        <div className={styles.overlay} onClick={() => setUserToDelete(null)}>
+          <div className={styles.modalUsun} onClick={(e) => e.stopPropagation()}>
+            
+            {/* Przycisk X zamykający */}
+            <button className={styles.przyciskX} onClick={() => setUserToDelete(null)}>
               ✕
             </button>
 
-            <h3 style={{ color: '#fff', fontSize: '18px', marginBottom: '30px', fontWeight: 'normal', lineHeight: '1.5' }}>
-              Czy na pewno chcesz usunąć użytkownika <br/>
-              <strong style={{ fontWeight: 'bold' }}>
+            {/* Treść */}
+            <div className={styles.modalTytul}>
+              Czy na pewno chcesz usunąć użytkownika <br />
+              <span style={{ color: '#e74c3c' }}>
                 {`${userToDelete.firstName} ${userToDelete.lastName}`.trim() || userToDelete.email}
-              </strong>?
-            </h3>
+              </span>?
+            </div>
 
-            <button 
-              onClick={confirmDelete}
-              style={{
-                backgroundColor: '#e74c3c', // Czerwony kolor akcji destrukcyjnej
-                color: '#fff',
-                border: 'none',
-                padding: '12px 30px',
-                borderRadius: '6px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'pointer',
-                transition: 'background-color 0.2s ease'
-              }}
-              onMouseOver={(e) => e.currentTarget.style.backgroundColor = '#c0392b'}
-              onMouseOut={(e) => e.currentTarget.style.backgroundColor = '#e74c3c'}
-            >
-              TAK
-            </button>
+            {/* Przyciski ułożone poziomo */}
+            <div className={styles.frameParentModal}>
+              <button 
+                className={styles.przyciskAnuluj} 
+                onClick={() => setUserToDelete(null)}
+              >
+                Anuluj
+              </button>
+              
+              <button 
+                className={styles.przyciskUsun} 
+                onClick={confirmDelete}
+              >
+                TAK, usuń
+              </button>
+            </div>
+
           </div>
         </div>
       )}

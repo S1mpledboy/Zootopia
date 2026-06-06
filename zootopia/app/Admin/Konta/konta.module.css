@@ -88,11 +88,9 @@
 }
 .dividerChild {
   	align-self: stretch;
-  	height: 1px;
   	position: relative;
   	max-width: 100%;
   	overflow: hidden;
-  	max-height: 100%;
   	width: 100%;
 }
 .sortowanieZamwie {
@@ -215,3 +213,106 @@
   	box-sizing: border-box;
 }
 
+/* CIEMNE TŁO - OVERLAY */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* GŁÓWNE OKNO MODALA DO USUWANIA */
+.modalUsun {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 30px;
+  box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90vw;
+  font-family: 'Poppins', sans-serif;
+  color: #000;
+  position: relative;
+}
+
+.modalTytul {
+  font-size: 20px;
+  font-weight: 600;
+  text-align: center;
+  letter-spacing: -0.02em;
+  margin-bottom: 25px;
+  line-height: 1.4;
+}
+
+.frameParentModal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+}
+
+/* PRZYCISKI W MODALU (Na bazie .doKasy oraz .karmyWrapper) */
+.przyciskAnuluj {
+  flex: 1;
+  height: 45px;
+  border-radius: 20px;
+  background-color: #d9d9d9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+  border: none;
+}
+
+.przyciskAnuluj:hover {
+  background-color: #c8c8c8;
+}
+
+.przyciskUsun {
+  flex: 1;
+  height: 45px;
+  border-radius: 20px;
+  background-color: #e74c3c;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 24px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 14px;
+  font-weight: 500;
+  color: #fff;
+  border: none;
+}
+
+.przyciskUsun:hover {
+  background-color: #c0392b;
+}
+
+.przyciskX {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: none;
+  border: none;
+  color: #000;
+  font-size: 18px;
+  cursor: pointer;
+  font-weight: bold;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.przyciskX:hover {
+  opacity: 1;
+}
