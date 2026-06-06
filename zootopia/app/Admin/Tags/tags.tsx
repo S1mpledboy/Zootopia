@@ -2,18 +2,29 @@
 
 import type { NextPage } from 'next';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './tags.module.css';
 
 import line from '@/app/Public/Images/line.svg';
 import add from '@/app/Public/Images/+icon.svg';
 import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
 
-import { tagsData as initialTagsData } from './testTags';
 import DodawanieModal from './dodaj';
 
-const Tags: NextPage = () => {
-  const [data, setData] = useState(initialTagsData);
+// Struktura danych dostosowana do bazy (każdy element ma swoje _id)
+interface ITag { _id: string; name: string; }
+interface ISubcategory { _id: string; name: string; tags: ITag[]; }
+interface ICategory { _id: string; name: string; subcategories: ISubcategory[]; }
+interface IMainCategory { _id: string; mainCategory: string; categories: ICategory[]; }
+
+interface TagsProps {
+  initialCategories: any[];
+  initialTagGroups: any[];
+  initialTags: any[];
+}
+
+const Tags: React.FC<TagsProps> = ({ initialCategories, initialTagGroups, initialTags }) => {
+  const [data, setData] = useState<IMainCategory[]>([]);
   const [collapsedState, setCollapsedState] = useState<Record<string, boolean>>({});
 
   // Stan Modala
@@ -24,6 +35,39 @@ const Tags: NextPage = () => {
     buttonLabel: 'DODAJ',
     onConfirm: (val: string) => {},
   });
+
+  // Budowanie drzewa z płaskich danych z bazy przy montowaniu komponentu
+  useEffect(() => {
+    const mainCategories = initialCategories.filter(c => !c.parent);
+    
+    const tree = mainCategories.map(main => {
+      const level1Cats = initialCategories.filter(c => c.parent === main._id);
+      
+      return {
+        _id: main._id,
+        mainCategory: main.name,
+        categories: level1Cats.map(cat => {
+          const subGroups = initialTagGroups.filter(g => g.category === cat._id);
+          
+          return {
+            _id: cat._id,
+            name: cat.name,
+            subcategories: subGroups.map(group => {
+              const groupTags = initialTags.filter(t => t.group === group._id);
+              
+              return {
+                _id: group._id,
+                name: group.name,
+                tags: groupTags.map(t => ({ _id: t._id, name: t.name }))
+              };
+            })
+          };
+        })
+      };
+    });
+
+    setData(tree);
+  }, [initialCategories, initialTagGroups, initialTags]);
 
   const closeModal = () => {
     setModalConfig(prev => ({ ...prev, isOpen: false }));
@@ -46,9 +90,10 @@ const Tags: NextPage = () => {
     setCollapsedState(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // ==========================================
-  // FUNKCJE USUWANIA (DELETE)
-  // ==========================================
+  // =========================================================================
+  // LOKALNE FUNKCJE MODYFIKACJI (Wygląd i zachowanie UI przed podpięciem API)
+  // =========================================================================
+  
   const deleteMainCategory = (mainIdx: number) => {
     if(confirm("Czy na pewno chcesz usunąć tę główną kategorię wraz z całą zawartością?")) {
       setData(data.filter((_, idx) => idx !== mainIdx));
@@ -91,7 +136,7 @@ const Tags: NextPage = () => {
             <button 
               className={styles.globalAddBtn}
               onClick={() => openModal("Dodaj nową główną kategorię", "", "DODAJ", (newVal) => {
-                setData([...data, { mainCategory: newVal, categories: [] }]);
+                setData([...data, { _id: Math.random().toString(), mainCategory: newVal, categories: [] }]);
               })}
             >
               + NOWA GŁÓWNA KATEGORIA
@@ -108,18 +153,15 @@ const Tags: NextPage = () => {
           const isMainCollapsed = collapsedState[mainKey];
 
           return (
-            <div key={mainIndex} className={styles.pies}>
+            <div key={mainItem._id || mainIndex} className={styles.pies}>
               
               {/* 1. GŁÓWNA KATEGORIA */}
               <div className={styles.piesParent}>
                 <div className={styles.mainCategoryFlex}>
-                  {/* Nowa strzałka SVG - obraca się, gdy jest otwarta */}
                   <Image 
                     src={arrow} 
                     className={`${styles.arrowIcon} ${isMainCollapsed ? '' : styles.arrowExpanded}`}
-                    width={18} 
-                    height={18} 
-                    alt="Rozwiń/Zwiń"
+                    width={18} height={18} alt="Rozwiń/Zwiń"
                     onClick={() => toggleCollapse(mainKey)}
                   />
                   
@@ -140,7 +182,7 @@ const Tags: NextPage = () => {
                   className={styles.doKasy} 
                   onClick={() => openModal(`Dodaj kategorię do: ${mainItem.mainCategory}`, "", "DODAJ", (newVal) => {
                     const newData = [...data];
-                    newData[mainIndex].categories.push({ name: newVal, subcategories: [] });
+                    newData[mainIndex].categories.push({ _id: Math.random().toString(), name: newVal, subcategories: [] });
                     setData(newData);
                   })}
                 >
@@ -151,7 +193,7 @@ const Tags: NextPage = () => {
                 </div>
               </div>
 
-              {/* LISTA KATEGORII (Posiada wcięcie określone w klasie .frameParent) */}
+              {/* LISTA KATEGORII */}
               {!isMainCollapsed && (
                 <div className={styles.frameParent}>
                   {mainItem.categories.map((category, catIndex) => {
@@ -159,16 +201,14 @@ const Tags: NextPage = () => {
                     const isCatCollapsed = collapsedState[catKey];
 
                     return (
-                      <div key={catIndex} className={styles.categoryLevelWrapper}>
+                      <div key={category._id || catIndex} className={styles.categoryLevelWrapper}>
                         
-                        {/* 2. KATEGORIA (np. Karmy) */}
+                        {/* 2. KATEGORIA */}
                         <div className={styles.karmyParent}>
                           <Image 
                             src={arrow} 
                             className={`${styles.arrowIcon} ${isCatCollapsed ? '' : styles.arrowExpanded}`}
-                            width={16} 
-                            height={16} 
-                            alt="Rozwiń/Zwiń"
+                            width={16} height={16} alt="Rozwiń/Zwiń"
                             onClick={() => toggleCollapse(catKey)}
                           />
 
@@ -189,14 +229,14 @@ const Tags: NextPage = () => {
                             width={14} height={14} alt="" 
                             onClick={() => openModal(`Dodaj podkategorię do: ${category.name}`, "", "DODAJ", (newVal) => {
                               const newData = [...data];
-                              newData[mainIndex].categories[catIndex].subcategories.push({ name: newVal, tags: [] });
+                              newData[mainIndex].categories[catIndex].subcategories.push({ _id: Math.random().toString(), name: newVal, tags: [] });
                               setData(newData);
                             })}
                           />
                           <span className={styles.globalDeleteX} onClick={() => deleteCategory(mainIndex, catIndex)}>✕</span>
                         </div>
 
-                        {/* LISTA PODKATEGORII (Ukrywana, posiada kolejne wcięcie w .frameGroup) */}
+                        {/* LISTA PODKATEGORII */}
                         {!isCatCollapsed && (
                           <div className={styles.subcategoriesContainer}>
                             {category.subcategories.map((subcat, subIndex) => {
@@ -204,16 +244,14 @@ const Tags: NextPage = () => {
                               const isSubCollapsed = collapsedState[subKey];
 
                               return (
-                                <div key={subIndex} className={styles.frameGroup}>
+                                <div key={subcat._id || subIndex} className={styles.frameGroup}>
                                   
-                                  {/* 3. PODKATEGORIA (np. WIELKOŚĆ RASY) */}
+                                  {/* 3. PODKATEGORIA (GRUPA TAGÓW) */}
                                   <div className={styles.wielkoRasyParent}>
                                     <Image 
                                       src={arrow} 
                                       className={`${styles.arrowIcon} ${isSubCollapsed ? '' : styles.arrowExpanded}`}
-                                      width={14} 
-                                      height={14} 
-                                      alt="Rozwiń/Zwiń"
+                                      width={14} height={14} alt="Rozwiń/Zwiń"
                                       onClick={() => toggleCollapse(subKey)}
                                     />
 
@@ -234,27 +272,27 @@ const Tags: NextPage = () => {
                                       width={14} height={14} alt="" 
                                       onClick={() => openModal(`Dodaj TAG do: ${subcat.name}`, "", "DODAJ", (newVal) => {
                                         const newData = [...data];
-                                        newData[mainIndex].categories[catIndex].subcategories[subIndex].tags.push(newVal);
+                                        newData[mainIndex].categories[catIndex].subcategories[subIndex].tags.push({ _id: Math.random().toString(), name: newVal });
                                         setData(newData);
                                       })}
                                     />
                                     <span className={styles.globalDeleteX} onClick={() => deleteSubcategory(mainIndex, catIndex, subIndex)}>✕</span>
                                   </div>
                                   
-                                  {/* 4. TAGI (Posiadają wcięcie zdefiniowane w .tagsContainer) */}
+                                  {/* 4. TAGI */}
                                   {!isSubCollapsed && (
                                     <div className={styles.tagsContainer}>
-                                      {subcat.tags.map((tag, tagIndex) => (
-                                        <div key={tagIndex} className={styles.tagWrapper}>
+                                      {subcat.tags.map((tagObj, tagIndex) => (
+                                        <div key={tagObj._id || tagIndex} className={styles.tagWrapper}>
                                           <span 
                                             className={styles.tagText}
-                                            onClick={() => openModal(`Edytuj TAG`, tag, "ZAPISZ", (newVal) => {
+                                            onClick={() => openModal(`Edytuj TAG`, tagObj.name, "ZAPISZ", (newVal) => {
                                               const newData = [...data];
-                                              newData[mainIndex].categories[catIndex].subcategories[subIndex].tags[tagIndex] = newVal;
+                                              newData[mainIndex].categories[catIndex].subcategories[subIndex].tags[tagIndex].name = newVal;
                                               setData(newData);
                                             })}
                                           >
-                                            {tag}
+                                            {tagObj.name}
                                           </span>
                                           <span className={styles.tagDeleteX} onClick={() => deleteTag(mainIndex, catIndex, subIndex, tagIndex)}>✕</span>
                                         </div>
