@@ -30,7 +30,7 @@ const ProduktyWKoszyku: NextPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [isValidating, setIsValidating] = useState<boolean>(false);
 
-  // 🔥 NOWE: Lista ID produktów które przekraczają dostępny stock
+  
   const [stockErrors, setStockErrors] = useState<{ productId: string; name: string; available: number; inCart: number }[]>([]);
 
   const fetchCart = useCallback(async () => {
@@ -43,7 +43,7 @@ const ProduktyWKoszyku: NextPage = () => {
         const data = await res.json();
         setCartItems(data);
 
-        // 🔥 Po każdym pobraniu koszyka od razu sprawdź stock
+        
         const errors = data
           .filter((item: CartItemFromServer) => item.product && item.quantity > item.product.stock)
           .map((item: CartItemFromServer) => ({
@@ -85,7 +85,7 @@ const ProduktyWKoszyku: NextPage = () => {
   const onCheckoutClick = useCallback(async () => {
     if (cartItems.length === 0) return;
 
-    // 🔥 WALIDACJA STOCKU: świeże dane z serwera tuż przed przejściem
+   
     setIsValidating(true);
     try {
       const token = localStorage.getItem('token');
@@ -108,7 +108,7 @@ const ProduktyWKoszyku: NextPage = () => {
 
         setStockErrors(errors);
 
-        // Jeśli są błędy stocku – blokujemy przejście
+        
         if (errors.length > 0) {
           setIsValidating(false);
           return;
@@ -134,7 +134,6 @@ const ProduktyWKoszyku: NextPage = () => {
     <div className={styles.produktyWKoszyku}>
       <Etapy currentStep={1} />
 
-      {/* 🔥 BANNER Z BŁĘDAMI STOCKU */}
       {hasStockErrors && (
         <div style={{
           backgroundColor: '#fff3f5',
@@ -191,7 +190,6 @@ const ProduktyWKoszyku: NextPage = () => {
                 images={item.product.images}
                 quantity={item.quantity}
                 onCartChanged={fetchCart}
-                // 🔥 NOWE: podświetl produkt jeśli ma błąd stocku
                 hasStockError={stockErrors.some(e => e.productId === item.product._id)}
               />
               <div className={styles.wszystkieProduktyChild} />

@@ -27,7 +27,7 @@ const Nawigacja: NextPage = () => {
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
-  // Status logowania
+
   useEffect(() => {
     const token = localStorage.getItem('token'); 
     if (!token) {
@@ -44,7 +44,7 @@ const Nawigacja: NextPage = () => {
       .catch(() => setIsLoggedIn(false));
   }, []);
 
-  // Wyszukiwanie
+
   useEffect(() => {
     if (searchQuery.trim().length < 2) {
       setProducts([]);
@@ -70,7 +70,7 @@ const Nawigacja: NextPage = () => {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  // Zamknięcie po kliknięciu poza obszar
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (searchContainerRef.current && !searchContainerRef.current.contains(event.target as Node)) {
@@ -90,7 +90,7 @@ const Nawigacja: NextPage = () => {
           </Link>
         </div>
         
-        {/* Wyszukiwarka - wymuszone overflow visible */}
+
         <div 
           className={styles.szukajParent} 
           ref={searchContainerRef} 
@@ -98,7 +98,7 @@ const Nawigacja: NextPage = () => {
             position: 'relative', 
             display: 'flex', 
             alignItems: 'center',
-            overflow: 'visible', // Zapobiega obcinaniu dropdownu przez style rodzica
+            overflow: 'visible', 
             zIndex: 999999
           }}
         >
@@ -121,19 +121,19 @@ const Nawigacja: NextPage = () => {
           />
           <Image src={searchicon} className={styles.tablerIconSearch} width={24} height={24} sizes="100vw" alt="" />
 
-          {/* Ostatecznie ostylowany Dropdown przebijający się przez CSS Modules */}
+
           {isOpen && products.length > 0 && (
             <div style={{
               position: 'absolute',
               top: 'calc(100% + 5px)',
               left: '0px',
               width: '100%',
-              minWidth: '280px', // Gwarantuje minimalną czytelną szerokość
+              minWidth: '280px',
               backgroundColor: '#ffffff',
               borderRadius: '8px',
               boxShadow: '0px 10px 30px rgba(0, 0, 0, 0.25)',
               border: '1px solid #cbd5e1',
-              zIndex: 9999999, // Ekstremalnie wysoki, by być nad wszystkim na stronie
+              zIndex: 9999999, 
               maxHeight: '350px',
               overflowY: 'auto',
               display: 'block'

@@ -11,7 +11,6 @@ import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
 
 const ProduktyWKoszyku: NextPage = () => {
   const { logout, user, refreshUser } = useAuth();
-  // 1. Inicjalizujemy stan pustymi wartościami, aby placeholdery mogły działać
   const [formData, setFormData] = useState({
     imie: "",
     nazwisko: "",
@@ -185,7 +184,7 @@ const ProduktyWKoszyku: NextPage = () => {
 
               <div className={styles.frameItem} />
               
-              {/* POPRAWIONA SEKCJA: Lista ulubionych jako link do /Liked */}
+
               <Link href="/Liked" style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }}>
                 <div className={styles.listaUlubionychParent}>
                   <div className={styles.mojeDane}>Lista ulubionych</div>
@@ -251,7 +250,7 @@ const ProduktyWKoszyku: NextPage = () => {
           </div>
         </div>
 
-        {/* PRAWA STRONA */}
+
         <div className={styles.frameDiv}>
           <div className={styles.sortowanieParent}>
             <div className={styles.sortowanie}>

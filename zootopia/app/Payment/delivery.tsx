@@ -127,9 +127,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
     }
   };
 
-  // ==========================================================================
-  // 🔥 CZYSZCZENIE KOSZYKA PO STRONIE FRONTENDU (safety net)
-  // ==========================================================================
+
   const clearCartOnFrontend = async () => {
     const token = localStorage.getItem('token');
     try {
@@ -227,10 +225,10 @@ const WyborDostawyIPlatnosci: NextPage = () => {
       const result = await response.json();
 
       if (response.ok) {
-        // 🔥 Safety net: wyczyść koszyk również przez frontend
+
         await clearCartOnFrontend();
 
-        // Wyczyść lokalny stan
+
         setCartItems([]);
         setAppliedDiscount(null);
         setPromoCode('');
@@ -328,7 +326,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
         </div>
       </div>
 
-      {/* PODSUMOWANIE */}
+
       <div className={styles.frameParent8}>
         <div className={styles.metodyDostawyParent}>
           <div className={styles.metodyDostawy}>Podsumowanie:</div>
@@ -358,7 +356,7 @@ const WyborDostawyIPlatnosci: NextPage = () => {
           </div>
         </div>
 
-        {/* KOD RABATOWY */}
+
         <div style={{ marginTop: '20px', marginBottom: '10px' }}>
           <div style={{ display: 'flex', gap: '10px' }}>
             <input

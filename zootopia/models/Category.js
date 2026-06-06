@@ -11,13 +11,10 @@ const CategorySchema = new mongoose.Schema(
     slug: {
       type: String,
       required: true,
-      unique: true, // Niezbędne do ładnych linków np. domena.pl/sklep/pies/karma-sucha
+      unique: true, 
       trim: true,
       lowercase: true,
     },
-    // Relacja rodzic-dziecko. 
-    // Jeśli parent to null -> to jest główny dział (Pies, Kot, Małe zwierzęta)
-    // Jeśli parent ma ID -> to jest podkategoria (Karma sucha, Akcesoria itp.)
     parent: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",

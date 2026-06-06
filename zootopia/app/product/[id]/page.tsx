@@ -86,15 +86,14 @@ export default async function ProductPage({
     <div className={styles.kategorie}>
       <div className={styles.produktKaruzelaParent}>
 
-        {/* LEWA KOLUMNA - CAROUSEL */}
+
         <div className={styles.produktKaruzela}>
           <Carousel images={product.images || []} />
         </div>
 
-        {/* PRAWA KOLUMNA */}
         <div className={styles.frameGroup}>
 
-          {/* KATEGORIA + SERCE */}
+
           <div className={styles.frameContainer}>
             <div className={styles.alphawolfParent}>
               <div className={styles.alphawolf}>
@@ -107,7 +106,7 @@ export default async function ProductPage({
             <div className={styles.divider} />
           </div>
 
-          {/* NAZWA */}
+
           <div className={styles.alphawolf400gBezzboowaMokrWrapper}>
             <h1 className={styles.alphawolf400gBezzboowa}>
               {product.name}
@@ -116,7 +115,6 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* GWIAZDKI */}
           <div className={styles.frameDiv}>
             <div className={styles.tablerIconStarParent}>
               {getServerStars(avgRating, styles.tablerIconStar)}
@@ -124,7 +122,7 @@ export default async function ProductPage({
             <div className={styles.div}>({totalReviews})</div>
           </div>
 
-          {/* CENA */}
+
           <div className={styles.frameParent2}>
             <div className={styles.alphawolfParent} style={{ alignItems: 'baseline', justifyContent: 'flex-start', gap: '12px' }}>
               <div className={`${styles.z} ${hasValidPromo ? styles.przekreslona : ""}`}>
@@ -157,14 +155,14 @@ export default async function ProductPage({
 
           <div className={styles.divider} />
 
-          {/* ILOŚĆ + KOSZYK */}
+
           <div className={styles.frameWrapper}>
             <ProductActions productId={product._id.toString()} />
           </div>
         </div>
       </div>
 
-      {/* DÓŁ */}
+
       <div className={styles.vectorParent}>
         <div className={styles.dividerFull} />
 

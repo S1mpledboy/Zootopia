@@ -137,18 +137,18 @@
   	font-weight: 500;
 }
 .lineParent {
-    align-self: stretch; /* To sprawi, że kontener linii będzie tak wysoki jak formularze obok */
+    align-self: stretch; 
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 0px 20px;
-    gap: 20px; /* Zmniejszyłem gap z 48px, żeby kreski miały więcej miejsca */
+    gap: 20px; 
     font-size: 16px;
 }
 .frameItem {
-    width: 0px; /* Szerokość 0, bo używamy border-right */
-    flex: 1;    /* To najważniejsza zmiana - kreski zajmą tyle miejsca, ile się da */
+    width: 0px; 
+    flex: 1;    
     position: relative;
     border-right: 1px solid #000;
     box-sizing: border-box;

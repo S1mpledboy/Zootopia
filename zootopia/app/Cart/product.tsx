@@ -1,6 +1,6 @@
 import React from 'react';
 import Image from "next/image";
-import Link from "next/link"; // 🔥 DODANE: Import komponentu Link
+import Link from "next/link";
 import styles from './product.module.css';
 
 import hearticon from "@/app/Public/Images/tabler-icon-heart.svg";
@@ -90,7 +90,6 @@ const Property1Koszyk: React.FC<CartItemProps> = ({
       className={styles.property1koszyk}
       style={hasStockError ? { border: '1.5px solid #fc5773', borderRadius: '8px' } : {}}
     >
-      {/* 🔥 ZMIANA: Opakowanie obrazka w Link i dodanie kursora "pointer" */}
       <Link href={`/product/${id}`} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
         <Image 
           className={styles.imgProduktuIcon} 

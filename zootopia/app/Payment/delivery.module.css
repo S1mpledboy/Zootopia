@@ -1,6 +1,4 @@
-/* ==========================================================================
-   GŁÓWNY UKŁAD STRONY (ROZDZIAŁ NA KOLUMNY)
-   ========================================================================== */
+
 .frameParent {
   width: 100%;
   max-width: 1200px;
@@ -13,7 +11,7 @@
   font-family: 'Poppins', sans-serif;
 }
 
-/* Lewa kolumna (Dostawa i Płatności) */
+
 .produktyWKoszykuParent {
   flex: 1;
   display: flex;
@@ -21,7 +19,7 @@
   gap: 40px;
 }
 
-/* Prawa kolumna (Podsumowanie) */
+
 .frameParent8 {
   width: 440px;
   display: flex;
@@ -29,16 +27,14 @@
   gap: 20px;
 }
 
-/* Wspólny styl dla bloków */
+
 .produktyWKoszyku {
   width: 100%;
   display: flex;
   flex-direction: column;
 }
 
-/* ==========================================================================
-   NAGŁÓWKI I LINIE ODDZIELAJĄCE
-   ========================================================================== */
+
 .metodyDostawyParent {
   width: 100%;
   display: flex;
@@ -56,14 +52,11 @@
 .lineDivider {
   width: 100%;
   height: 1px;
-  background-color: #cbd5e1; /* Cienka szara linia jak na zdjęciu */
+  background-color: #cbd5e1; 
   border: none;
   margin-bottom: 16px;
 }
 
-/* ==========================================================================
-   LISTA WYBORU (DOSTAWA I PŁATNOŚCI)
-   ========================================================================== */
 .frameGroup, .produktyWKoszykuInner {
   width: 100%;
   display: flex;
@@ -74,10 +67,9 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Odstępy pionowe między opcjami */
+  gap: 16px; 
 }
 
-/* Wiersz opcji (BRAK KAFELKÓW/OBRAMOWAŃ) */
 .frameDiv {
   width: 100%;
   display: flex;
@@ -96,14 +88,14 @@
   gap: 12px;
 }
 
-/* Teksty opcji */
+
 .kurierInpost {
   font-size: 15px;
   color: #565e64;
   font-weight: 400;
 }
 
-/* Ceny po prawej stronie opcji */
+
 .od999Z {
   font-size: 15px;
   color: #a7acb1;
@@ -111,16 +103,15 @@
   text-align: right;
 }
 
-/* Stan aktywny (zaznaczony) */
 .boldText {
   font-weight: 700 !important;
   color: #000000 !important;
 }
 
-/* Przycisk dla paczkomatu */
+
 .wybierzPunktOdbioruWrapper {
   width: 100%;
-  background-color: #fd798f; /* Różowy kolor przycisku */
+  background-color: #fd798f; 
   border-radius: 20px;
   padding: 14px 0;
   display: flex;
@@ -136,9 +127,6 @@
   color: #000000;
 }
 
-/* ==========================================================================
-   TABELA PODSUMOWANIA (PRAWA KOLUMNA)
-   ========================================================================== */
 .frameParent9 {
   width: 100%;
   display: flex;
@@ -164,7 +152,7 @@
   text-align: right;
 }
 
-/* Sekcja Sumy Całkowitej */
+
 .metodyDostawyParentTotal {
   width: 100%;
   display: flex;
@@ -182,7 +170,7 @@
 }
 
 .cakowitaSumaZContainer {
-  font-size: 22px; /* Większy tekst dla głównej sumy */
+  font-size: 22px; 
 }
 
 .cakowitaSuma {
@@ -196,7 +184,7 @@
   color: #565e64;
 }
 
-/* Wielka pogrubiona kwota na samym dole */
+
 .totalAmountBig {
   font-size: 26px;
   font-weight: 700;

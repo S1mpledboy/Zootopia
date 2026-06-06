@@ -1,21 +1,18 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
-// Poprawne importy domyślne z Twoich plików modeli
+
 import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
 
-// Pełna, zaktualizowana struktura danych ze wszystkimi zwierzętami
 const fullShopStructure = [
-  // ============================================================
-  // SEKCJA: PIES
-  // ============================================================
+
   {
     mainCategory: "Pies",
     subCategory: "Karma",
     groups: [
-      { name: "Typ", tags: ["Karma sucha", "Karma mokra"] }, // <-- NOWOŚĆ DLA PSA
+      { name: "Typ", tags: ["Karma sucha", "Karma mokra"] }, 
       { name: "Wiek", tags: ["Szczenię", "Dorosły", "Senior"] },
       { name: "Wielkość rasy", tags: ["Mini/mała <10kg", "Średnia 10-25kg", "Duża >25kg"] },
       { name: "Specjalne potrzeby", tags: ["Bezzbożowa", "Dla alergików", "Wysoka aktywność", "Nadwaga"] }
@@ -78,15 +75,12 @@ const fullShopStructure = [
     ]
   },
 
-  // ============================================================
-  // SEKCJA: KOT
-  // ============================================================
   {
     mainCategory: "Kot",
     subCategory: "Karma Kot",
     displayName: "Karma",
     groups: [
-      { name: "Typ", tags: ["Karma sucha", "Karma mokra"] }, // <-- NOWOŚĆ DLA KOTA
+      { name: "Typ", tags: ["Karma sucha", "Karma mokra"] },
       { name: "Wiek", tags: ["Kocię", "Dorosły", "Senior"] },
       { name: "Wielkość rasy", tags: ["Mini/mała <4kg", "Średnia 4-6kg", "Duża >6kg"] },
       { name: "Specjalne potrzeby", tags: ["Bezzbożowa", "Dla alergików", "Wysoka aktywność", "Nadwaga"] }
@@ -164,9 +158,7 @@ const fullShopStructure = [
     ]
   },
 
-  // ============================================================
-  // SEKCJA: MAŁE ZWIERZĘTA
-  // ============================================================
+
   {
     mainCategory: "Małe zwierzęta",
     subCategory: "Karma Małe Zwierzęta",
@@ -255,7 +247,7 @@ export async function GET() {
     const baseUri = process.env.MONGODB_URI;
     if (!baseUri) return NextResponse.json({ success: false, error: "Brak MONGODB_URI!" }, { status: 500 });
 
-    console.log("🔗 Otwieranie połączenia i wymuszanie bazy mydb...");
+    console.log(" Otwieranie połączenia i wymuszanie bazy mydb...");
     const conn = await mongoose.createConnection(baseUri, {
       dbName: "mydb"
     }).asPromise();
@@ -264,12 +256,12 @@ export async function GET() {
     const TagGroup = conn.models.TagGroup || conn.model("TagGroup", TagGroupModel.schema, "taggroups");
     const Tag = conn.models.Tag || conn.model("Tag", TagModel.schema, "tags");
 
-    console.log("🧹 Reset bazy mydb (czyszczenie kolekcji)...");
+    console.log("Reset bazy mydb (czyszczenie kolekcji)...");
     await Category.deleteMany({});
     await TagGroup.deleteMany({});
     await Tag.deleteMany({});
 
-    console.log("🚀 Rozpoczynam masowy zapis zaktualizowanych struktur...");
+    console.log(" Rozpoczynam masowy zapis zaktualizowanych struktur...");
 
     const mainCategoryIds: Record<string, mongoose.Types.ObjectId> = {};
     const categoriesToInsert: any[] = [];
@@ -324,7 +316,7 @@ export async function GET() {
     });
 
   } catch (error: any) {
-    console.error("❌ Błąd:", error);
+    console.error(" Błąd:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

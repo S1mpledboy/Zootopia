@@ -15,21 +15,21 @@ export const items: CatCategoryItem[] = [
     id: 1,
     name: "Karma mokra",
     image: mokra,
-    // Przenosi do sekcji Kot -> Kategoria Karma Kot -> Aktywuje filtr "Karma mokra"
+  
     link: "/ShopPage?type=kot&category=karma-kot&tag=Karma+mokra"
   },
   {
     id: 2,
     name: "Karma sucha",
     image: sucha,
-    // Przenosi do sekcji Kot -> Kategoria Karma Kot -> Aktywuje filtr "Karma sucha"
+
     link: "/ShopPage?type=kot&category=karma-kot&tag=Karma+sucha"
   },
   {
     id: 3,
     name: "Legowiska",
     image: legowiska,
-    // Przenosi do sekcji Kot -> Kategoria Legowiska Kot
+
     link: "/ShopPage?type=kot&category=legowiska-kot"
   },
 

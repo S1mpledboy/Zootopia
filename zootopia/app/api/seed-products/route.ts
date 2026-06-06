@@ -1,18 +1,18 @@
 import { NextResponse } from "next/server";
 import mongoose from "mongoose";
 
-// Import oficjalnych modeli z Twojego projektu Next.js
+
 import ProductModel from "@/models/Product";
 import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
 
-// Definicja uproszczonego schematu dla marek/firm
+
 const CompanySchema = new mongoose.Schema({
   name: { type: String, required: true, unique: true }
 }, { timestamps: true });
 
-// Sformatowane produkty z Twojego Excela
+
 const excelProducts = [
   {
     name: "AlphaWolf 400g Bezzbożowa Mokra Karma Dla Szczenięt Rasy Średniej Delikatny Mus Z Jagnięciną Batatami I Glukozaminą",
@@ -668,7 +668,7 @@ export async function GET() {
     const baseUri = process.env.MONGODB_URI;
     if (!baseUri) return NextResponse.json({ success: false, error: "Brak MONGODB_URI!" }, { status: 500 });
 
-    console.log("🔗 Łączenie z bazą mydb...");
+    console.log("Łączenie z bazą mydb...");
     const conn = await mongoose.createConnection(baseUri, { dbName: "mydb" }).asPromise();
 
     const Category = conn.models.Category || conn.model("Category", CategoryModel.schema, "categories");
@@ -677,7 +677,7 @@ export async function GET() {
     const Product = conn.models.Product || conn.model("Product", ProductModel.schema, "products");
     const Company = conn.models.Company || conn.model("Company", CompanySchema, "companies");
 
-    // Opcjonalnie: czyścimy bazę produktów przed zasileniem, żeby nie było duplikatów
+  
     await Product.deleteMany({});
 
     const allCategories = await Category.find({}).lean();
@@ -690,7 +690,7 @@ export async function GET() {
       let rawSubCat = item.subCategory;
       let finalTags = [...item.tags];
 
-      // Konwersja typów karmy pod strukturę Twoich kategorii i tagów
+      
       if (rawSubCat.toLowerCase().includes("karma")) {
         if (rawSubCat.toLowerCase().includes("mokra") && !finalTags.includes("Karma mokra")) finalTags.push("Karma mokra");
         if (rawSubCat.toLowerCase().includes("sucha") && !finalTags.includes("Karma sucha")) finalTags.push("Karma sucha");
@@ -700,22 +700,22 @@ export async function GET() {
         else rawSubCat = "Karma";
       }
 
-      // 1. Szukanie ID kategorii
+      
       const expectedSlug = generateSlug(rawSubCat);
       const matchedCategory = allCategories.find(c => c.slug === expectedSlug);
 
       if (!matchedCategory) {
-        console.warn(`⚠️ Pomijam produkt "${item.name}". Brak podkategorii dla sluga: ${expectedSlug}`);
+        console.warn(` Pomijam produkt "${item.name}". Brak podkategorii dla sluga: ${expectedSlug}`);
         continue;
       }
 
-      // 2. Automatyczne zarządzanie marką (Company)
+      
       let companyDoc = await Company.findOne({ name: item.company });
       if (!companyDoc) {
         companyDoc = await Company.create({ name: item.company });
       }
 
-      // 3. Dynamiczne filtrowanie grup przypisanych TYLKO do tej podkategorii
+      
       const allowedGroupIds = allTagGroups
         .filter(g => g.category.toString() === matchedCategory._id.toString())
         .map(g => g._id.toString());
@@ -723,10 +723,10 @@ export async function GET() {
       const matchedTagIds: mongoose.Types.ObjectId[] = [];
 
       for (const rawTagName of finalTags) {
-        // Obcinanie członów "Wiek: ", "Rozmiar: " itp.
+        
         const cleanTagName = rawTagName.includes(":") ? rawTagName.split(":")[1].trim() : rawTagName.trim();
 
-        // 🔥 KLUCZOWE ZABEZPIECZENIE: foundTag szuka nazwy, ale TYLKO w dozwolonych grupach tej podkategorii
+        
         const foundTag = allTags.find(t => 
           t.name.toLowerCase().trim() === cleanTagName.toLowerCase().trim() && 
           allowedGroupIds.includes(t.group.toString())
@@ -735,12 +735,11 @@ export async function GET() {
         if (foundTag) {
           matchedTagIds.push(foundTag._id as mongoose.Types.ObjectId);
         } else {
-          console.warn(`⚠️ Pomijam tag "${cleanTagName}" w produkcie "${item.name}" (Nie pasuje do filtrów tej kategorii).`);
+          console.warn(`Pomijam tag "${cleanTagName}" w produkcie "${item.name}" (Nie pasuje do filtrów tej kategorii).`);
         }
       }
 
-      // 4. Budowanie dokumentu produktu
-      // 4. Budowanie ostatecznego dokumentu zgodnie z ProductSchema
+    
       productsToInsert.push({
         name: item.name,
         description: item.description,
@@ -757,7 +756,7 @@ export async function GET() {
         rating: 0,
         popularity: 0,
         tags: finalTags, 
-        isActive: 'isActive' in item ? item.isActive : true // 🔥 TUTAJ: Bezpieczna linijka usuwająca błąd TS
+        isActive: 'isActive' in item ? item.isActive : true 
       });
     }
 
@@ -773,7 +772,7 @@ export async function GET() {
     });
 
   } catch (error: any) {
-    console.error("❌ Błąd:", error);
+    console.error("Błąd:", error);
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }

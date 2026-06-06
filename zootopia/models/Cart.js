@@ -22,7 +22,6 @@ const CartSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Blokada, żeby ten sam użytkownik nie miał dwóch osobnych wpisów dla tego samego produktu
 CartSchema.index({ user: 1, product: 1 }, { unique: true });
 
 export default mongoose.models.Cart || mongoose.model("Cart", CartSchema);
