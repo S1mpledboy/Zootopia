@@ -111,7 +111,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
         </div>
 
         <div className={styles.divider}>
-          <Image src={line} alt="" />
+          <Image src={line} className={styles.dividerChild} alt="" />
         </div>
 
         {/* STRUKTURA FILTRÓW */}
@@ -133,7 +133,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
         </div>
 
         <div className={styles.divider}>
-          <Image src={line} alt="" />
+          <Image src={line} className={styles.dividerChild} alt="" />
         </div>
 
         {/* DYNAMICZNA LISTA UŻYTKOWNIKÓW */}
@@ -144,7 +144,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
               
               {index < filteredUsers.length - 1 && (
                 <div className={styles.produktyWKoszyku}>
-                  <Image src={line} alt="" />
+                  <Image src={line} className={styles.dividerChild} alt="" />
                 </div>
               )}
             </div>

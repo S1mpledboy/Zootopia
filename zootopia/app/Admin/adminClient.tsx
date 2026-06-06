@@ -104,7 +104,7 @@ const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData, use
         </div>
 
         {/* PRAWA STRONA */}
-        <div className={activeTab === "produkty" ? `${styles.frameDiv} ${styles.fullWidthContainer}` : styles.frameDiv}>
+        <div className={styles.frameDiv}>
             <div className={styles.sortowanieParent}>
               {renderRightSection()}
             </div>
