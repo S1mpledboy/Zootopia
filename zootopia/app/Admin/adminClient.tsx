@@ -19,9 +19,12 @@ interface AdminClientProps {
   ordersData: any[];
   productsData: any[];
   usersData: any[]; // NOWOŚĆ: Przekazujemy tablicę użytkowników pobraną z bazy MongoDB
+  categoriesData: any[]; // NOWOŚĆ
+  tagGroupsData: any[];  // NOWOŚĆ
+  tagsData: any[];       // NOWOŚĆ
 }
 
-const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData, usersData }) => {
+const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData, usersData, categoriesData, tagGroupsData, tagsData }) => {
   const [activeTab, setActiveTab] = useState<TabType>("dane");
 
   const getMenuClass = (tabName: TabType) => {
@@ -41,7 +44,11 @@ const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData, use
         // ZMIANA: Przekazujemy tablicę użytkowników do komponentu Konta
         return <Konta initialUsers={usersData} />;
       case "tags":
-        return <Tags />;
+        return <Tags 
+          initialCategories={categoriesData} 
+          initialTagGroups={tagGroupsData} 
+          initialTags={tagsData} 
+        />;
       default:
         return <DaneIBezpieczenstwo />;
     }
