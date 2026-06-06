@@ -15,16 +15,8 @@ const Kategorie: NextPage = () => {
         				<div className={styles.piesWrapper}>
           					<b className={styles.pies}>Małe zwierzęta</b>
         				</div>
-        				<div className={styles.piesWrapper}>
-          					<b className={styles.pies}>VET</b>
-        				</div>
         				<div className={styles.promocjeWrapper}>
           					<b className={styles.pies}>Promocje</b>
-        				</div>
-      			</div>
-      			<div className={styles.kategorieInner}>
-        				<div className={styles.piesWrapper}>
-          					<b className={styles.pies}>Adoptuj Przyjaciela</b>
         				</div>
       			</div>
     		</div>);

@@ -1,0 +1,226 @@
+.prawa {
+  	width: 100%;
+  	position: relative;
+  	background-color: #fff;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 0px 0px 40px;
+  	box-sizing: border-box;
+  	text-align: left;
+  	font-size: 16px;
+  	color: #000;
+  	font-family: Poppins;
+}
+.content {
+  	align-self: stretch;
+  	background-color: #fff;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 20px;
+  	gap: 8px;
+}
+.menuMiejsce {
+  	align-self: stretch;
+  	background-color: #fff;
+  	overflow: hidden;
+  	display: flex;
+  	align-items: flex-start;
+  	padding: 4px 0px;
+  	gap: 8px;
+  	font-size: 12px;
+  	color: #366f15;
+}
+.administrator {
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 140%;
+}
+.tytul {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 20px 0px 0px;
+  	text-align: center;
+  	font-size: 29px;
+}
+.zarzdzanieZamwieniamiParent {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+}
+.zarzdzanieZamwieniami2 {
+  	position: relative;
+  	letter-spacing: -0.04em;
+  	line-height: 120%;
+  	font-weight: 600;
+}
+.szukajZamwieniaParent {
+  	height: 35px;
+  	border-radius: 50px;
+  	background-color: #f0f0f0;
+  	overflow: hidden;
+  	display: flex;
+  	align-items: center;
+  	padding: 0px 16px;
+  	box-sizing: border-box;
+  	gap: 24px;
+  	text-align: left;
+  	font-size: 12px;
+  	color: #366f15;
+}
+.tablerIconSearch {
+  	height: 20px;
+  	width: 20px;
+  	position: relative;
+}
+.divider {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 8px 0px;
+}
+.dividerChild {
+  	align-self: stretch;
+  	height: 1px;
+  	position: relative;
+  	max-width: 100%;
+  	overflow: hidden;
+  	max-height: 100%;
+  	width: 100%;
+}
+.sortowanieZamwie {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	justify-content: center;
+  	font-size: 14px;
+  	color: #899197;
+}
+.wszystkieParent {
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	gap: 4px;
+  	color: #000;
+}
+.wszystkie {
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+}
+.ukoczoneParent {
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	gap: 4px;
+}
+.frameGroup {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 23px;
+}
+.zamwienieNr1111 {
+  	position: relative;
+  	letter-spacing: 0.2em;
+  	text-transform: uppercase;
+}
+.ukoczoneWrapper {
+  	height: 25px;
+  	background-color: #b0d898;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 4px 4px 3px;
+  	box-sizing: border-box;
+  	min-width: 140px;
+  	font-size: 12px;
+}
+.frameWrapper {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	font-size: 12px;
+  	color: #6c757d;
+}
+.frameDiv {
+  	display: flex;
+  	align-items: center;
+  	gap: 38px;
+}
+.dataZamwieniaParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	justify-content: center;
+  	gap: 10px;
+}
+.z {
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+  	color: #000;
+}
+.szczegyParent {
+  	display: flex;
+  	align-items: center;
+  	justify-content: flex-end;
+  	gap: 8px;
+  	text-align: center;
+  	color: #fc5773;
+}
+.tablerIconChevronCompactRi {
+  	height: 24px;
+  	width: 24px;
+  	position: relative;
+}
+.produktyWKoszyku {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 12px 0px;
+}
+.wTrakcieWrapper {
+  	height: 25px;
+  	background-color: #a2c6d3;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 4px 4px 3px;
+  	box-sizing: border-box;
+  	min-width: 140px;
+  	font-size: 12px;
+}
+.anulowaneWrapper {
+  	height: 25px;
+  	background-color: #fc5773;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 4px 4px 3px;
+  	box-sizing: border-box;
+  	min-width: 140px;
+  	font-size: 12px;
+}
+.wysaneWrapper {
+  	height: 25px;
+  	background-color: #c7abc8;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 4px 4px 3px;
+  	box-sizing: border-box;
+  	min-width: 140px;
+  	font-size: 12px;
+}
+
