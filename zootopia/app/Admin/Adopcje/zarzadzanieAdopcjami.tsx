@@ -71,6 +71,134 @@ const statusAppLabel: Record<ApplicationStatus, string> = {
   rejected: "ODRZUCONY",
 };
 
+// ── Formularz wyciągnięty na zewnątrz, aby uniknąć utraty fokusu ──────────────────
+interface PetFormProps {
+  onSubmit: (e: React.FormEvent) => void;
+  submitLabel: string;
+  form: typeof emptyPetForm;
+  setForm: React.Dispatch<React.SetStateAction<typeof emptyPetForm>>;
+  formError: string;
+  formLoading: boolean;
+  imagePreview: string;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
+  handleImageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onCancel: () => void;
+}
+
+function PetForm({
+  onSubmit,
+  submitLabel,
+  form,
+  setForm,
+  formError,
+  formLoading,
+  imagePreview,
+  fileInputRef,
+  handleImageChange,
+  onCancel
+}: PetFormProps) {
+  return (
+    <form onSubmit={onSubmit} className={styles.addForm}>
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Imię *</label>
+          <input className={styles.formInput} value={form.name}
+            onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="np. Pimpek" />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Rasa</label>
+          <input className={styles.formInput} value={form.breed}
+            onChange={(e) => setForm({ ...form, breed: e.target.value })} placeholder="np. Mieszaniec" />
+        </div>
+      </div>
+
+      <div className={styles.formRow}>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Wiek (miesiące) *</label>
+          <input className={styles.formInput} type="number" min={0} value={form.age}
+            onChange={(e) => setForm({ ...form, age: e.target.value })} placeholder="np. 24" />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Płeć</label>
+          <select className={styles.formInput} value={form.gender}
+            onChange={(e) => setForm({ ...form, gender: e.target.value as "male" | "female" })}>
+            <option value="male">Samiec</option>
+            <option value="female">Samica</option>
+          </select>
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.formLabel}>Rozmiar</label>
+          <select className={styles.formInput} value={form.size}
+            onChange={(e) => setForm({ ...form, size: e.target.value as "small" | "medium" | "large" })}>
+            <option value="small">Mały</option>
+            <option value="medium">Średni</option>
+            <option value="large">Duży</option>
+          </select>
+        </div>
+      </div>
+
+      <div className={styles.formGroup}>
+        <label className={styles.formLabel}>Opis *</label>
+        <textarea className={styles.formTextarea} rows={3} value={form.description}
+          onChange={(e) => setForm({ ...form, description: e.target.value })}
+          placeholder="Opisz charakter i historię zwierzęcia..." />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label className={styles.formLabel}>Info zdrowotne</label>
+        <input className={styles.formInput} value={form.healthInfo}
+          onChange={(e) => setForm({ ...form, healthInfo: e.target.value })}
+          placeholder="np. Zaszczepiony, wykastrowany" />
+      </div>
+
+      <div className={styles.formGroup}>
+        <label className={styles.formLabel}>Tagi (oddziel przecinkami)</label>
+        <input className={styles.formInput} value={form.tags}
+          onChange={(e) => setForm({ ...form, tags: e.target.value })}
+          placeholder="np. Przyjazny dzieciom, Aktywny" />
+      </div>
+
+      {/* Upload zdjęcia */}
+      <div className={styles.formGroup}>
+        <label className={styles.formLabel}>Zdjęcie</label>
+        <div className={styles.uploadArea} onClick={() => fileInputRef.current?.click()}>
+          {imagePreview ? (
+            <div className={styles.previewWrapper}>
+              <img src={imagePreview} alt="Podgląd" className={styles.previewImg} />
+              <span className={styles.previewChange}>Kliknij, aby zmienić</span>
+            </div>
+          ) : (
+            <div className={styles.uploadPlaceholder}>
+              <span className={styles.uploadIcon}>📷</span>
+              <span className={styles.uploadText}>Kliknij, aby dodać zdjęcie</span>
+              <span className={styles.uploadHint}>JPG, PNG, WEBP</span>
+            </div>
+          )}
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageChange}
+          style={{ display: "none" }}
+        />
+      </div>
+
+      {formError && <p className={styles.errorMsg}>{formError}</p>}
+
+      <div className={styles.modalButtons}>
+        <button type="button" className={styles.przyciskAnuluj} onClick={onCancel}>
+          Anuluj
+        </button>
+        <button type="submit" className={styles.przyciskZapisz} disabled={formLoading}>
+          {formLoading ? "Zapisywanie..." : submitLabel}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ── Główny Komponent ─────────────────────────────────────────────────────────────
 export default function ZarzadzanieAdopcjami() {
   const [tab, setTab] = useState<AdoptionTab>("zwierzeta");
   const [pets, setPets] = useState<Pet[]>([]);
@@ -308,111 +436,6 @@ export default function ZarzadzanieAdopcjami() {
     (a.petName || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  // ── Formularz (wspólny dla dodaj i edytuj) ────────────────────────────────
-
-  function PetForm({ onSubmit, submitLabel }: { onSubmit: (e: React.FormEvent) => void; submitLabel: string }) {
-    return (
-      <form onSubmit={onSubmit} className={styles.addForm}>
-        <div className={styles.formRow}>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Imię *</label>
-            <input className={styles.formInput} value={form.name}
-              onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="np. Pimpek" />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Rasa</label>
-            <input className={styles.formInput} value={form.breed}
-              onChange={(e) => setForm({ ...form, breed: e.target.value })} placeholder="np. Mieszaniec" />
-          </div>
-        </div>
-
-        <div className={styles.formRow}>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Wiek (miesiące) *</label>
-            <input className={styles.formInput} type="number" min={0} value={form.age}
-              onChange={(e) => setForm({ ...form, age: e.target.value })} placeholder="np. 24" />
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Płeć</label>
-            <select className={styles.formInput} value={form.gender}
-              onChange={(e) => setForm({ ...form, gender: e.target.value as "male" | "female" })}>
-              <option value="male">Samiec</option>
-              <option value="female">Samica</option>
-            </select>
-          </div>
-          <div className={styles.formGroup}>
-            <label className={styles.formLabel}>Rozmiar</label>
-            <select className={styles.formInput} value={form.size}
-              onChange={(e) => setForm({ ...form, size: e.target.value as "small" | "medium" | "large" })}>
-              <option value="small">Mały</option>
-              <option value="medium">Średni</option>
-              <option value="large">Duży</option>
-            </select>
-          </div>
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Opis *</label>
-          <textarea className={styles.formTextarea} rows={3} value={form.description}
-            onChange={(e) => setForm({ ...form, description: e.target.value })}
-            placeholder="Opisz charakter i historię zwierzęcia..." />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Info zdrowotne</label>
-          <input className={styles.formInput} value={form.healthInfo}
-            onChange={(e) => setForm({ ...form, healthInfo: e.target.value })}
-            placeholder="np. Zaszczepiony, wykastrowany" />
-        </div>
-
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Tagi (oddziel przecinkami)</label>
-          <input className={styles.formInput} value={form.tags}
-            onChange={(e) => setForm({ ...form, tags: e.target.value })}
-            placeholder="np. Przyjazny dzieciom, Aktywny" />
-        </div>
-
-        {/* Upload zdjęcia */}
-        <div className={styles.formGroup}>
-          <label className={styles.formLabel}>Zdjęcie</label>
-          <div className={styles.uploadArea} onClick={() => fileInputRef.current?.click()}>
-            {imagePreview ? (
-              <div className={styles.previewWrapper}>
-                <img src={imagePreview} alt="Podgląd" className={styles.previewImg} />
-                <span className={styles.previewChange}>Kliknij, aby zmienić</span>
-              </div>
-            ) : (
-              <div className={styles.uploadPlaceholder}>
-                <span className={styles.uploadIcon}>📷</span>
-                <span className={styles.uploadText}>Kliknij, aby dodać zdjęcie</span>
-                <span className={styles.uploadHint}>JPG, PNG, WEBP</span>
-              </div>
-            )}
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            style={{ display: "none" }}
-          />
-        </div>
-
-        {formError && <p className={styles.errorMsg}>{formError}</p>}
-
-        <div className={styles.modalButtons}>
-          <button type="button" className={styles.przyciskAnuluj}
-            onClick={() => { setShowAddModal(false); setEditPet(null); }}>
-            Anuluj
-          </button>
-          <button type="submit" className={styles.przyciskZapisz} disabled={formLoading}>
-            {formLoading ? "Zapisywanie..." : submitLabel}
-          </button>
-        </div>
-      </form>
-    );
-  }
-
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
@@ -583,7 +606,18 @@ export default function ZarzadzanieAdopcjami() {
           <div className={styles.modalLarge} onClick={(e) => e.stopPropagation()}>
             <button className={styles.przyciskX} onClick={() => setShowAddModal(false)}>✕</button>
             <div className={styles.modalTytul}>Dodaj nowe zwierzę</div>
-            <PetForm onSubmit={handleAddPet} submitLabel="Dodaj zwierzę" />
+            <PetForm
+              onSubmit={handleAddPet}
+              submitLabel="Dodaj zwierzę"
+              form={form}
+              setForm={setForm}
+              formError={formError}
+              formLoading={formLoading}
+              imagePreview={imagePreview}
+              fileInputRef={fileInputRef}
+              handleImageChange={handleImageChange}
+              onCancel={() => setShowAddModal(false)}
+            />
           </div>
         </div>
       )}
@@ -594,7 +628,18 @@ export default function ZarzadzanieAdopcjami() {
           <div className={styles.modalLarge} onClick={(e) => e.stopPropagation()}>
             <button className={styles.przyciskX} onClick={() => setEditPet(null)}>✕</button>
             <div className={styles.modalTytul}>Edytuj: {editPet.name}</div>
-            <PetForm onSubmit={handleEditPet} submitLabel="Zapisz zmiany" />
+            <PetForm
+              onSubmit={handleEditPet}
+              submitLabel="Zapisz zmiany"
+              form={form}
+              setForm={setForm}
+              formError={formError}
+              formLoading={formLoading}
+              imagePreview={imagePreview}
+              fileInputRef={fileInputRef}
+              handleImageChange={handleImageChange}
+              onCancel={() => setEditPet(null)}
+            />
           </div>
         </div>
       )}

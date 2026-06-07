@@ -153,11 +153,13 @@
   letter-spacing: 0.04em;
 }
 
+/* Poprawione akcje - elementy układają się równo od prawej */
 .petActions {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   flex-shrink: 0;
+  justify-content: flex-end;
 }
 
 /* Select statusu */
@@ -172,38 +174,25 @@
   color: #333;
 }
 
-/* Statusy */
-.statusAvailable {
-  font-size: 13px;
-  font-weight: 700;
-  color: #2d8a4e;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.statusReserved {
-  font-size: 13px;
-  font-weight: 700;
-  color: #b07d00;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
-.statusAdopted {
-  font-size: 13px;
-  font-weight: 700;
-  color: #e74c3c;
-  letter-spacing: 0.04em;
-  white-space: nowrap;
-}
-
+/* Poprawione statusy - dodana stała szerokość (140px) i wyrównanie tekstu, 
+   dzięki czemu "ZAREZERWOWANY" nie rozpycha już pozostałych przycisków.
+*/
+.statusAvailable,
+.statusReserved,
+.statusAdopted,
 .statusPending {
   font-size: 13px;
   font-weight: 700;
-  color: #888;
   letter-spacing: 0.04em;
   white-space: nowrap;
+  width: 140px;
+  text-align: left;
 }
+
+.statusAvailable { color: #2d8a4e; }
+.statusReserved { color: #b07d00; }
+.statusAdopted { color: #e74c3c; }
+.statusPending { color: #888; }
 
 /* Edytuj / Szczegóły */
 .editBtn {
@@ -536,5 +525,9 @@
   .detailGrid { grid-template-columns: 1fr 1fr; }
   .formRow { flex-direction: column; }
   .petRow { flex-direction: column; align-items: flex-start; }
-  .petActions { flex-wrap: wrap; }
+  .petActions { flex-wrap: wrap; justify-content: flex-start; }
+  .statusAvailable,
+  .statusReserved,
+  .statusAdopted,
+  .statusPending { width: auto; } /* Na małych ekranach resetujemy stałą szerokość */
 }
