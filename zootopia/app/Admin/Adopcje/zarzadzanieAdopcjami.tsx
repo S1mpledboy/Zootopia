@@ -570,7 +570,7 @@ export default function ZarzadzanieAdopcjami() {
                       {statusAppLabel[app.status]}
                     </b>
                     <span className={styles.editBtn} onClick={() => setSelectedApp(app)}>
-                      SZCZEGÓŁY {`)`}
+                      SZCZEGÓŁY
                     </span>
                   </div>
                 </div>
