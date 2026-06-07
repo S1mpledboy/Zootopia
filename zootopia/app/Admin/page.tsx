@@ -46,17 +46,56 @@ const getCachedStructures = unstable_cache(
 );
 
 export default async function AdminPage() {
-  // 1. Pobieramy drzewo kategorii i tagów z cache
   const { serializedCategories, serializedTagGroups, serializedTags } = await getCachedStructures();
 
   await getDatabaseConnection();
 
-  // 2. Pobieramy równolegle dane z bazy
   const [rawProducts, rawOrders, rawUsers] = await Promise.all([
     ProductModel.find({}).populate("company").sort({ updatedAt: -1 }).lean(),
     OrderModel.find({}).sort({ createdAt: -1 }).lean(),
     UserModel.find({}).sort({ createdAt: -1 }).lean()
   ]);
+
+  // 1. Mapowanie zamówień (Status -> string, Data -> RRRR-MM-DD)
+  const sanitizedOrders = rawOrders.map((order: any) => {
+    let orderStatus = "w trakcie";
+    if (order.status) {
+      orderStatus = typeof order.status === "object" ? order.status.name || "w trakcie" : order.status;
+    }
+
+    let formattedDate = "";
+    if (order.createdAt) {
+      const dateObj = new Date(order.createdAt);
+      if (!isNaN(dateObj.getTime())) {
+        formattedDate = dateObj.toISOString().split('T')[0]; // Format: "YYYY-MM-DD"
+      }
+    }
+
+    return {
+      ...order,
+      id: order._id.toString(), 
+      _id: order._id.toString(), 
+      status: orderStatus.toLowerCase(), 
+      createdAt: formattedDate
+    };
+  });
+
+  // 2. Mapowanie użytkowników (Data -> RRRR-MM-DD)
+  const sanitizedUsers = rawUsers.map((user: any) => {
+    let formattedDate = "";
+    if (user.createdAt) {
+      const dateObj = new Date(user.createdAt);
+      if (!isNaN(dateObj.getTime())) {
+        formattedDate = dateObj.toISOString().split('T')[0]; // Format: "YYYY-MM-DD"
+      }
+    }
+    return {
+      ...user,
+      id: user._id.toString(),
+      _id: user._id.toString(),
+      createdAt: formattedDate
+    };
+  });
 
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
@@ -66,7 +105,7 @@ export default async function AdminPage() {
     return "/fallback-image.png";
   };
 
-  // 3. Mapujemy produkty zachowując absolutnie wszystkie oryginalne właściwości bazy (...product)
+  // 3. Mapowanie produktów
   const mappedProducts = rawProducts.map((product: any) => {
     let catId = null;
     if (product.category) {
@@ -84,12 +123,7 @@ export default async function AdminPage() {
     };
   });
 
-  // 4. Bezpieczna konwersja obiektów na stringi (w tym obiektów Date)
-  // Przejście przez JSON.stringify automatycznie zamienia obiekty typu Date na stringi ISO, 
-  // eliminując błąd "Objects are not valid as a React child" na froncie, bez uszkadzania statusów i struktur.
   const sanitizedProducts = JSON.parse(JSON.stringify(mappedProducts));
-  const sanitizedOrders = JSON.parse(JSON.stringify(rawOrders));
-  const sanitizedUsers = JSON.parse(JSON.stringify(rawUsers));
 
   const finalCategories = JSON.parse(JSON.stringify(
     serializedCategories.map((cat: any) => ({

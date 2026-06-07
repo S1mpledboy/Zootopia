@@ -1,277 +1,319 @@
 .dodajProduktNieskoczone {
     box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.25);
-  	position: relative;
-  	background-color: #ffffff;
-  	width: 40%;
-  	overflow: hidden;
-  	display: flex;
-  	align-items: center;
-  	padding: 64px;
-  	box-sizing: border-box;
-  	text-align: center;
-  	font-size: 19px;
-  	color: #000;
-  	font-family: Poppins;
+    position: relative;
+    background-color: #ffffff;
+    width: 40%;
+    
+    /* --- KLUCZOWE POPRAWKI DLA WYSOKOŚCI I SCROLLA --- */
+    max-height: 90vh;        /* Okno zajmie maksymalnie 90% wysokości ekranu */
+    overflow-y: auto;        /* Jeśli treść się nie mieści, pojawi się pionowy scroll */
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;  /* Zmiana z row/center na column dla poprawnego przewijania */
+    align-items: stretch;    /* Rozciągaj elementy wewnętrzne do pełnej szerokości */
+    padding: 40px;          /* Zmniejszono z 64px, aby odzyskać przestrzeń na mniejszych ekranach */
+    /* ------------------------------------------------- */
+    
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 19px;
+    color: #000;
+    font-family: Poppins;
+    border-radius: 20px;     /* Opcjonalnie: zaokrąglenie rogów okna pasujące do reszty interfejsu */
 }
+
 .dodajProduktParent {
-  	width: 100%;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-start;
-  	gap: 24px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
 }
+
 .dodajProdukt {
-  	align-self: stretch;
-  	position: relative;
-  	font-size: 29px;
-  	letter-spacing: -0.04em;
-  	line-height: 120%;
-  	font-weight: 600;
-  	text-align: left;
+    align-self: stretch;
+    position: relative;
+    font-size: 29px;
+    letter-spacing: -0.04em;
+    line-height: 120%;
+    font-weight: 600;
+    text-align: left;
 }
+
 .frameParent {
-  	align-self: stretch;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-start;
-  	gap: 24px;
-  	color: #565e64;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+    color: #565e64;
 }
+
 .frameParent1 {
-  	align-self: stretch;
-  	display: flex;
-  	flex-direction: row;
-  	align-items: center;
+    align-self: stretch;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     justify-content: space-between;
     gap: 35px;
-  	color: #565e64;
+    color: #565e64;
 }
+
 .frameGroup {
-  	align-self: stretch;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-start;
-  	gap: 35px;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 35px;
 }
+
 .frameContainer {
-  	align-self: stretch;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-start;
-  	gap: 24px;
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
 }
+
 .frameDiv {
-  	align-self: stretch;
-  	display: flex;
-  	align-items: center;
-  	justify-content: space-between;
-  	gap: 20px;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
 }
+
 .markaWrapper {
-  	height: 58px;
-  	width: 230px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
+    height: 58px;
+    width: 230px;
+    border-radius: 20px;
+    border: 1px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
 }
+
 .marka {
-  	position: relative;
-  	line-height: 150%;
+    position: relative;
+    line-height: 150%;
 }
+
 .kategoriaParent {
-  	height: 58px;
-  	width: 230px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	justify-content: space-between;
-  	padding: 10px 20px;
-  	gap: 20px;
+    height: 58px;
+    width: 230px;
+    border-radius: 20px;
+    border: 1px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    gap: 20px;
 }
+
 .vectorIcon {
-  	height: 3px;
-  	width: 16px;
-  	position: relative;
-  	object-fit: contain;
+    height: 3px;
+    width: 16px;
+    position: relative;
+    object-fit: contain;
 }
+
+/* Usunięto sztywne height: 150px, aby grid dopasowywał się elastycznie */
 .frameParent2 {
-  	align-self: stretch;
-  	height: 150px;
-  	display: grid;
-  	box-sizing: border-box;
-  	grid-template-columns: repeat(2, 1fr);
-
-  	column-gap: 35px;
-  	row-gap: 34px;
+    align-self: stretch;
+    min-height: 58px; 
+    display: grid;
+    box-sizing: border-box;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 35px;
+    row-gap: 24px;     /* Zmniejszono delikatnie z 34px dla lepszej zwartości */
 }
+
 .frameParent3 {
-  	align-self: stretch;
-  	display: grid;
-  	box-sizing: border-box;
-  	grid-template-columns: repeat(2, 1fr);
+    align-self: stretch;
+    display: grid;
+    box-sizing: border-box;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 35px;
+    row-gap: 24px;     /* Zmniejszono delikatnie z 34px */
+}
 
-  	column-gap: 35px;
-  	row-gap: 34px;
-}
 .tagParent {
-  	height: 58px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	justify-content: space-between;
-  	padding: 10px 20px;
-  	gap: 20px;
-  	grid-column: 1;
-  	grid-row: 1;
+    height: 58px;
+    border-radius: 20px;
+    border: 1px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    gap: 20px;
+    grid-column: 1;
+    grid-row: 1;
 }
+
 .tagParent2 {
-  	height: 58px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	justify-content: space-between;
-  	padding: 10px 20px;
-  	gap: 20px;
+    height: 58px;
+    border-radius: 20px;
+    border: 1px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    gap: 20px;
     width: 100%;
 }
+
 .vectorIcon2 {
-  	height: 14px;
-  	width: 14px;
-  	position: relative;
-}
-.frameChild {
-  	height: 150px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-  	grid-column: 2;
-  	grid-row: 1;
-}
-.frameParent4 {
-  	align-self: stretch;
-  	display: flex;
-  	align-items: center;
-  	gap: 64px;
-}
-.rectangleParent {
-  	display: flex;
-  	align-items: center;
-  	gap: 20px;
-  	font-size: 16px;
-  	color: #000;
-}
-.frameItem {
-  	height: 20px;
-  	width: 20px;
-  	position: relative;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-}
-.promocja {
-  	position: relative;
-  	letter-spacing: 0.02em;
-  	line-height: 140%;
-}
-.dodajGrafikeParent {
-  	width: 100%;
-  	height: 58px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	justify-content: space-between;
-  	padding: 10px 20px;
-  	gap: 20px;
-}
-.vectorIcon3 {
-  	height: 18px;
-  	width: 19px;
-  	position: relative;
-}
-.frameParent5 {
-  	align-self: stretch;
-  	display: flex;
-  	align-items: center;
-  	gap: 24px;
-}
-.vectorWrapper {
-  	height: 120px;
-  	width: 120px;
-  	background-color: #d9d9d9;
-  	display: flex;
-  	align-items: flex-start;
-  	padding: 45px;
-  	box-sizing: border-box;
-}
-.vectorIcon4 {
-  	height: 30px;
-  	width: 100%;
-  	position: relative;
-}
-.frameParent6 {
-  	align-self: stretch;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-start;
-  	justify-content: center;
-  	gap: 16px;
-  	color: #565e64;
-}
-.nazwaWrapper {
-  	align-self: stretch;
-  	height: 120px;
-  	border-radius: 20px;
-  	border: 1px solid #000;
-  	box-sizing: border-box;
-  	display: flex;
-  	align-items: center;
-  	padding: 10px 20px;
-}
-.doKasyWrapper {
-  	align-self: stretch;
-  	display: flex;
-  	flex-direction: column;
-  	align-items: flex-end;
-  	font-size: 16px;
-}
-.doKasy {
-  	border-radius: 20px;
-  	background-color: #91be77;
-  	display: flex;
-  	align-items: center;
-  	justify-content: flex-end;
-  	padding: 12px 44px;
-}
-.vectorParent {
-  	width: 175px;
-  	display: flex;
-  	align-items: center;
-  	justify-content: center;
-  	gap: 13px;
-}
-.vectorParent1 {
-  	width: 100%;
-  	display: flex;
-  	align-items: flex-start;
-  	justify-content: space-between;
-  	gap:300px;
-}
-.dodajProdukt2 {
-  	position: relative;
-  	letter-spacing: -0.01em;
-  	font-weight: 500;
+    height: 14px;
+    width: 14px;
+    position: relative;
 }
 
+/* Usunięto sztywne height: 150px, zastąpiono min-height dla elastyczności pól tekstowych */
+.frameChild {
+    min-height: 100px;
+    border-radius: 20px;
+    border: 1px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    grid-column: 2;
+    grid-row: 1;
+}
+
+.frameParent4 {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    gap: 64px;
+}
+
+.rectangleParent {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 16px;
+    color: #000;
+}
+
+.frameItem {
+    height: 20px;
+    width: 20px;
+    position: relative;
+    border: 1px solid #000;
+    box-sizing: border-box;
+}
+
+.promocja {
+    position: relative;
+    letter-spacing: 0.02em;
+    line-height: 140%;
+}
+
+.dodajGrafikeParent {
+    width: 100%;
+    height: 58px;
+    border-radius: 20px;
+    border: 1px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    gap: 20px;
+}
+
+.vectorIcon3 {
+    height: 18px;
+    width: 19px;
+    position: relative;
+}
+
+.frameParent5 {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.vectorWrapper {
+    height: 120px;
+    width: 120px;
+    background-color: #d9d9d9;
+    display: flex;
+    align-items: flex-start;
+    padding: 45px;
+    box-sizing: border-box;
+}
+
+.vectorIcon4 {
+    height: 30px;
+    width: 100%;
+    position: relative;
+}
+
+.frameParent6 {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 16px;
+    color: #565e64;
+}
+
+/* Zmieniono sztywne height na min-height, aby opis dłuższego produktu nie wypychał okna */
+.nazwaWrapper {
+    align-self: stretch;
+    min-height: 80px;
+    border-radius: 20px;
+    border: 1px solid #000;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+}
+
+.doKasyWrapper {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    font-size: 16px;
+}
+
+.doKasy {
+    border-radius: 20px;
+    background-color: #91be77;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 12px 44px;
+}
+
+.vectorParent {
+    width: 175px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 13px;
+}
+
+/* Zmiejszono gap z ogromnych 300px na flex-współdzielony, aby przycisk zapisu nie uciekał za daleko na mniejszych ekranach */
+.vectorParent1 {
+    width: 100%;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.dodajProdukt2 {
+    position: relative;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+}
