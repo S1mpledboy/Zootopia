@@ -29,28 +29,29 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
   };
 
   // Funkcja ostatecznie usuwająca użytkownika po kliknięciu "TAK"
+  // Funkcja ostatecznie usuwająca użytkownika po kliknięciu "TAK"
   const confirmDelete = async () => {
     if (!userToDelete) return;
 
     try {
-      // Strzał do API usuwający użytkownika z bazy danych
-      // Upewnij się, że ścieżka do API jest poprawna (często to /api/admin/users/...)
+      // Strzał do nowo utworzonego endpointu JS
       const response = await fetch(`/api/users/${userToDelete._id}`, { 
         method: 'DELETE' 
       });
 
+      // Jeśli serwer zwrócił kod błędu (np. 404 lub 500), rzucamy błąd do bloku catch
       if (!response.ok) {
-        throw new Error('Błąd podczas usuwania z bazy danych.');
+        throw new Error('Błąd po stronie serwera');
       }
 
-      // Usunięcie z lokalnego stanu (aby zniknął z listy na ekranie)
+      // Usunięcie z lokalnego stanu dopiero, gdy baza potwierdzi sukces
       setUsers(prev => prev.filter(user => user._id !== userToDelete._id));
       
       // Zamknięcie modala
       setUserToDelete(null);
     } catch (error) {
       console.error("Wystąpił błąd podczas usuwania użytkownika", error);
-      alert("Błąd podczas usuwania użytkownika.");
+      alert("Błąd podczas usuwania."); // Komunikat identyczny jak w handleDeletePet
     }
   };
 
