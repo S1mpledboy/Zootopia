@@ -8,6 +8,7 @@ import styles from './zarzadzanieProduktami.module.css';
 import arrowDown from '@/app/Public/Images/arrowDown.svg';
 import arrowRight from '@/app/Public/Images/arrowRight.svg';
 import line from '@/app/Public/Images/line.svg';
+import closeIcon from '@/app/Public/Images/Xicon.svg';
 
 import ProductModal from './dodaj';
 
@@ -31,7 +32,9 @@ interface ProductProps {
   promoPrice?: number | null;
   image: string;
   companyName: string;
+  company?: string; 
   petCategoryId: string | null; 
+  category?: string;
   tags: string[];
   description?: string;
   ingredients?: string;
@@ -56,6 +59,7 @@ const AdminProductsTab = ({
   const searchParams = useSearchParams();
   const currentType = searchParams.get('type') || 'pies';
 
+  const [products, setProducts] = useState<ProductProps[]>(initialProducts);
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ cena: true, marka: true });
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sort, setSort] = useState<string>('popularność');
@@ -65,6 +69,10 @@ const AdminProductsTab = ({
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+
+  useEffect(() => {
+    setProducts(initialProducts);
+  }, [initialProducts]);
 
   useEffect(() => {
     const urlCategorySlug = searchParams.get('category');
@@ -135,15 +143,16 @@ const AdminProductsTab = ({
   }, [activeCategoryId, allTagGroups, currentType, childCategoryIdsForSelectedAnimal, openSections]);
 
   const availableBrands = useMemo(() => {
-    const brands = initialProducts
+    const brands = products
       .filter(p => {
+        const catId = p.category || p.petCategoryId || '';
         if (!activeCategoryId) return true;
-        if (currentType === 'promocje') return childCategoryIdsForSelectedAnimal.includes(p.petCategoryId || '');
-        return p.petCategoryId === activeCategoryId;
+        if (currentType === 'promocje') return childCategoryIdsForSelectedAnimal.includes(catId);
+        return catId === activeCategoryId;
       })
-      .map(p => p.companyName);
+      .map(p => p.companyName || p.company || 'Nieznana marka');
     return Array.from(new Set(brands)).sort();
-  }, [initialProducts, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
+  }, [products, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
   const toggleSection = (key: string) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
   
@@ -170,26 +179,30 @@ const AdminProductsTab = ({
 
   const facetCounts = useMemo(() => {
     const getCountForOption = (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => {
-      return initialProducts.filter(product => {
-        if (!product.petCategoryId) return false;
+      return products.filter(product => {
+        const catId = product.category || product.petCategoryId;
+        if (!catId) return false;
+        
+        const prBrand = product.companyName || product.company || '';
+
         if (currentType === 'promocje') {
           if (groupType === 'category') {
             const subIds = allCategories.filter(cat => cat.parent === value).map(cat => cat._id);
-            if (!subIds.includes(product.petCategoryId)) return false;
+            if (!subIds.includes(catId)) return false;
           } else if (activeCategoryId) {
-            if (!childCategoryIdsForSelectedAnimal.includes(product.petCategoryId)) return false;
+            if (!childCategoryIdsForSelectedAnimal.includes(catId)) return false;
           }
         } else {
           if (groupType !== 'category' && activeCategoryId) {
-            if (product.petCategoryId !== activeCategoryId) return false;
+            if (catId !== activeCategoryId) return false;
           }
           if (groupType === 'category') {
-            if (product.petCategoryId !== value) return false;
+            if (catId !== value) return false;
           }
         }
 
-        if (groupType !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(product.companyName)) return false;
-        if (groupType === 'marka' && product.companyName !== value) return false;
+        if (groupType !== 'marka' && filters.marka && filters.marka.length > 0 && !filters.marka.includes(prBrand)) return false;
+        if (groupType === 'marka' && prBrand !== value) return false;
 
         const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
         const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
@@ -220,20 +233,22 @@ const AdminProductsTab = ({
     };
 
     return { get: (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => getCountForOption(groupType, value, groupKey) };
-  }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo, currentType, allCategories, childCategoryIdsForSelectedAnimal]);
+  }, [products, filters, activeCategoryId, priceFrom, priceTo, currentType, allCategories, childCategoryIdsForSelectedAnimal]);
 
   const filteredAndSortedProducts = useMemo(() => {
-    let result = [...initialProducts];
+    let result = [...products];
 
     if (activeCategoryId) {
       if (currentType === 'promocje') {
-        result = result.filter(p => childCategoryIdsForSelectedAnimal.includes(p.petCategoryId || ''));
+        result = result.filter(p => childCategoryIdsForSelectedAnimal.includes(p.category || p.petCategoryId || ''));
       } else {
-        result = result.filter(p => p.petCategoryId === activeCategoryId);
+        result = result.filter(p => (p.category || p.petCategoryId) === activeCategoryId);
       }
     }
 
-    if (filters.marka && filters.marka.length > 0) result = result.filter(p => filters.marka.includes(p.companyName));
+    if (filters.marka && filters.marka.length > 0) {
+      result = result.filter(p => filters.marka.includes(p.companyName || p.company || ''));
+    }
 
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
     const maxPrice = priceTo ? parseFloat(priceTo) : Infinity;
@@ -262,11 +277,59 @@ const AdminProductsTab = ({
     });
 
     return result;
-  }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
+  }, [products, filters, priceFrom, priceTo, sort, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
   const openAddModal = () => { setSelectedProduct(null); setIsModalOpen(true); };
   const openEditModal = (product: any) => { setSelectedProduct(product); setIsModalOpen(true); };
   const closeModal = () => { setIsModalOpen(false); setSelectedProduct(null); };
+
+  // ── INTEGRACJA Z ENDPOINTAMI API ──────────────────────────────────────────
+
+  const handleCreateOrUpdateProduct = async (payload: any, isEdit: boolean) => {
+    const url = isEdit ? `/api/products/${selectedProduct._id}` : '/api/products';
+    const method = isEdit ? 'PATCH' : 'POST';
+
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Wystąpił problem z operacją zapisu.');
+    }
+
+    const updatedData = await response.json();
+    
+    // Normalizacja obiektu pod interfejs widoku przed zapisem w state
+    const normalizedProduct = {
+      ...updatedData.data,
+      companyName: payload.brand, 
+      petCategoryId: payload.category
+    };
+
+    if (isEdit) {
+      setProducts(prev => prev.map(p => p._id === selectedProduct._id ? normalizedProduct : p));
+    } else {
+      setProducts(prev => [normalizedProduct, ...prev]);
+    }
+  };
+
+  const handleDeleteProduct = async (id: string, name: string) => {
+    if (!window.confirm(`Czy na pewno chcesz bezpowrotnie usunąć produkt "${name}"?`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Błąd serwera podczas usuwania.');
+      
+      setProducts(prev => prev.filter(p => p._id !== id));
+    } catch (error: any) {
+      alert(error.message || 'Nie udało się usunąć produktu.');
+    }
+  };
 
   const DynamicCheckbox = ({ groupKey, type, value, label }: { groupKey: string; type: 'marka' | 'tag'; value: string; label: string }) => {
     const filterValue = type === 'marka' ? value : label;
@@ -286,7 +349,7 @@ const AdminProductsTab = ({
   return (
     <div className={styles.kategorie}>
       
-      {/* --- FILTRY (LEWA FLANKA) --- */}
+      {/* --- FILTRY --- */}
       <div className={styles.frameParent}>
         <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Filtruj (Admin)</div></div></div>
         <Image src={line} width={216} height={1} alt="" />
@@ -340,7 +403,7 @@ const AdminProductsTab = ({
         </div>
       </div>
 
-      {/* --- PRODUKTY (PRAWA STRONA) --- */}
+      {/* --- PRODUKTY --- */}
       <div className={styles.frameParent25}>
         <div className={styles.sortowanieParent}>
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
@@ -372,7 +435,7 @@ const AdminProductsTab = ({
           <div className={styles.sortowanie3}><div className={styles.stronaGwna}>{filteredAndSortedProducts.length} produktów</div></div>
         </div>
 
-        {/* --- SIATKA KART PRODUKTOWYCH DLA ADMINA --- */}
+        {/* --- SIATKA KART PRODUKTOWYCH --- */}
         <div className={styles.produktPromocjaPiesParent} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
           {filteredAndSortedProducts.length > 0 ? (
             filteredAndSortedProducts.map((product) => (
@@ -385,11 +448,31 @@ const AdminProductsTab = ({
                   background: '#fff', 
                   display: 'flex', 
                   flexDirection: 'column', 
-                  justifyContent: 'space-between' 
+                  //justify: 'space-between',
+                  position: 'relative' // Potrzebne do pozycjonowania X
                 }}
               >
+                {/* PRZYCISK USUNIĘCIA (X) */}
+                <div 
+                  onClick={() => handleDeleteProduct(product._id, product.name)}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    cursor: 'pointer',
+                    zIndex: 10,
+                    padding: '4px',
+                    borderRadius: '50%',
+                    backgroundColor: '#f3f4f6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Image src={closeIcon} width={10} height={10} alt="Usuń" />
+                </div>
+
                 <div>
-                  {/* Grafika produktu */}
                   <div style={{ width: '100%', height: '160px', position: 'relative', marginBottom: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                     <img 
                       src={product.image} 
@@ -398,17 +481,14 @@ const AdminProductsTab = ({
                     />
                   </div>
 
-                  {/* Nazwa firmy/marki */}
                   <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontWeight: 600, marginBottom: '4px' }}>
-                    {product.companyName}
+                    {product.companyName || product.company}
                   </div>
 
-                  {/* Nazwa przedmiotu */}
                   <div style={{ fontSize: '14px', fontWeight: 500, color: '#1f2937', marginBottom: '8px', minHeight: '40px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                     {product.name}
                   </div>
 
-                  {/* Ceny (Promocyjna vs Standardowa) */}
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
                     {product.promoPrice ? (
                       <>
@@ -421,7 +501,6 @@ const AdminProductsTab = ({
                   </div>
                 </div>
                 
-                {/* PRZYCISK EDYCJI ZAMIAST "DO KOSZYKA" */}
                 <button 
                   onClick={() => openEditModal(product)}
                   style={{
@@ -450,7 +529,13 @@ const AdminProductsTab = ({
         </div>
       </div>
 
-      <ProductModal isOpen={isModalOpen} onClose={closeModal} productData={selectedProduct} allCategories={allCategories} />
+      <ProductModal 
+        isOpen={isModalOpen} 
+        onClose={closeModal} 
+        productData={selectedProduct} 
+        allCategories={allCategories} 
+        onSave={handleCreateOrUpdateProduct}
+      />
     </div>
   );
 };
