@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ImageNext from 'next/image';
 import styles from './dodaj.module.css';
 
@@ -14,12 +14,25 @@ interface ProductModalProps {
   onClose: () => void;
   productData?: any; 
   allCategories?: any[];
+  onSave: (product: any, isEdit: boolean) => Promise<void>;
 }
 
-const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productData, allCategories = [] }) => {
+const ProductModal: React.FC<ProductModalProps> = ({ 
+  isOpen, 
+  onClose, 
+  productData, 
+  allCategories = [],
+  onSave
+}) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formError, setFormError] = useState('');
+
   const [formData, setFormData] = useState({
     name: '',
-    brand: '',
+    company: '', 
     category: '',
     price: '',
     promoPrice: '',
@@ -30,21 +43,37 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productDat
 
   useEffect(() => {
     if (productData) {
+      // Bezpieczne wyciąganie nazwy marki, jeśli backend zwraca obiekt zamiast stringa
+      let extractedBrand = '';
+      if (productData.company && typeof productData.company === 'object') {
+        extractedBrand = productData.company.name || '';
+      } else if (typeof productData.company === 'string') {
+        extractedBrand = productData.company;
+      } else if (productData.companyName) {
+        extractedBrand = typeof productData.companyName === 'object' 
+          ? productData.companyName.name 
+          : productData.companyName;
+      }
+
       setFormData({
         name: productData.name || '',
-        brand: productData.companyName || '',
-        category: productData.petCategoryId || '',
-        price: productData.price || '',
-        promoPrice: productData.promoPrice || '',
+        company: extractedBrand,
+        category: productData.category || productData.petCategoryId || '',
+        price: productData.price ? String(productData.price) : '',
+        promoPrice: productData.promoPrice ? String(productData.promoPrice) : '',
         description: productData.description || '',
         ingredients: productData.ingredients || '',
         additionalInfo: productData.additionalInfo || ''
       });
+      setImagePreview(productData.image || (productData.images && productData.images[0]) || '');
     } else {
       setFormData({
-        name: '', brand: '', category: '', price: '', promoPrice: '', description: '', ingredients: '', additionalInfo: ''
+        name: '', company: '', category: '', price: '', promoPrice: '', description: '', ingredients: '', additionalInfo: ''
       });
+      setImagePreview('');
     }
+    setImageFile(null);
+    setFormError('');
   }, [productData, isOpen]);
 
   if (!isOpen) return null;
@@ -53,9 +82,54 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productDat
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    console.log("Zapisywanie danych: ", formData);
-    onClose();
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
+
+  async function uploadImage(): Promise<string | null> {
+    if (!imageFile) return null;
+    const dataForm = new FormData();
+    dataForm.append("file", imageFile);
+    const res = await fetch("/api/upload", { method: "POST", body: dataForm });
+    if (!res.ok) throw new Error("Błąd uploadu zdjęcia");
+    const data = await res.json();
+    return data.url;
+  }
+
+  const handleSaveClick = async () => {
+    setFormError('');
+    if (!formData.name || !formData.price || !formData.category || !formData.company) {
+      setFormError('Wypełnij wymagane pola (Nazwa, Marka, Kategoria, Cena).');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      let finalImageUrl = imagePreview;
+
+      if (imageFile) {
+        const uploadedUrl = await uploadImage();
+        if (uploadedUrl) finalImageUrl = uploadedUrl;
+      }
+
+      const payload = {
+        ...formData,
+        price: parseFloat(formData.price),
+        promoPrice: formData.promoPrice ? parseFloat(formData.promoPrice) : null,
+        image: finalImageUrl,
+        images: finalImageUrl ? [finalImageUrl] : []
+      };
+
+      await onSave(payload, !!productData);
+      onClose();
+    } catch (err: any) {
+      setFormError(err.message || 'Wystąpił błąd podczas zapisywania produktu.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -67,13 +141,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productDat
       }}
       onClick={onClose}
     >
-      <div 
-        className={styles.dodajProduktNieskoczone} 
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className={styles.dodajProduktNieskoczone} onClick={(e) => e.stopPropagation()}>
         <div className={styles.dodajProduktParent}>
           
-          {/* Nagłówek okna */}
           <div className={styles.vectorParent1}>
             <div className={styles.dodajProdukt}>
               {productData ? 'Edytuj produkt' : 'Dodaj produkt'}
@@ -81,15 +151,17 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productDat
             <ImageNext src={close} className={styles.vectorIcon1} width={14} height={14} alt="Zamknij" onClick={onClose} />
           </div>
 
+          {formError && <div style={{ color: '#ef4444', padding: '0 24px', fontSize: '14px', fontWeight: 'bold' }}>{formError}</div>}
+
           <div className={styles.frameParent}>
             <div className={styles.frameGroup}>
               <div className={styles.frameContainer}>
                 
-                {/* Pierwsza linia: Marka i Kategoria */}
                 <div className={styles.frameParent1}>
                   <div className={styles.tagParent2}>
                     <div className={styles.marka}>Marka</div>
-                    <input name="brand" value={formData.brand} onChange={handleChange} placeholder="Wpisz markę" />
+                    {/* NAPRAWIONO: zmiana name="brand" na name="company", aby pasowało do klucza w stanie formData */}
+                    <input name="company" value={formData.company} onChange={handleChange} placeholder="Wpisz markę" />
                   </div>
                   <div className={styles.tagParent2}>
                     <div className={styles.marka}>Kategoria</div>
@@ -102,7 +174,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productDat
                   </div>
                 </div>
 
-                {/* Druga linia: Tagi */}
                 <div className={styles.frameParent2}>
                   <div className={styles.tagParent}>
                     <div className={styles.marka}>TAG</div>
@@ -111,7 +182,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productDat
                   <div className={styles.frameChild} />
                 </div>
 
-                {/* Trzecia linia: Ceny */}
                 <div className={styles.frameParent3}>
                   <div className={styles.tagParent2}>
                     <div className={styles.marka}>Cena (PLN)</div>
@@ -125,21 +195,35 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productDat
 
               </div>
 
-              {/* Sekcja grafiki */}
-              <div className={styles.dodajGrafikeParent}>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageChange} 
+                accept="image/*" 
+                style={{ display: 'none' }} 
+              />
+              
+              <div 
+                className={styles.dodajGrafikeParent} 
+                onClick={() => fileInputRef.current?.click()} 
+                style={{ cursor: 'pointer' }}
+              >
                 <div className={styles.marka}>Dodaj grafikę</div>
                 <ImageNext src={aparat} className={styles.vectorIcon3} width={19} height={18} alt="Aparat" />
               </div>
             </div>
 
             <div className={styles.frameParent5}>
-              <div className={styles.vectorWrapper}><ImageNext src={zdj} className={styles.vectorIcon4} width={30} height={30} alt="Zdj" /></div>
-              <div className={styles.vectorWrapper}><ImageNext src={zdj} className={styles.vectorIcon4} width={30} height={30} alt="Zdj" /></div>
-              <div className={styles.vectorWrapper}><ImageNext src={zdj} className={styles.vectorIcon4} width={30} height={30} alt="Zdj" /></div>
+              {imagePreview ? (
+                <div className={styles.vectorWrapper} style={{ overflow: 'hidden', position: 'relative' }}>
+                  <img src={imagePreview} alt="Podgląd" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ) : (
+                <div className={styles.vectorWrapper}><ImageNext src={zdj} className={styles.vectorIcon4} width={30} height={30} alt="Zdj" /></div>
+              )}
             </div>
           </div>
 
-          {/* Pola tekstowe */}
           <div className={styles.frameParent6}>
             <div className={styles.nazwaWrapper}>
               <div className={styles.marka}>Nazwa</div>
@@ -159,13 +243,16 @@ const ProductModal: React.FC<ProductModalProps> = ({ isOpen, onClose, productDat
             </div>
           </div>
 
-          {/* Przycisk akcji */}
           <div className={styles.doKasyWrapper}>
-            <div className={styles.doKasy} onClick={handleSave} style={{ cursor: 'pointer' }}>
+            <div 
+              className={styles.doKasy} 
+              onClick={isSubmitting ? undefined : handleSaveClick} 
+              style={{ cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.5 : 1 }}
+            >
               <div className={styles.vectorParent}>
                 <ImageNext src={add} width={14} height={14} alt="" />
                 <div className={styles.dodajProdukt2}>
-                  {productData ? 'ZAPISZ ZMIANY' : 'DODAJ PRODUKT'}
+                  {isSubmitting ? 'TRWA ZAPISYWANIE...' : productData ? 'ZAPISZ ZMIANY' : 'DODAJ PRODUKT'}
                 </div>
               </div>
             </div>
