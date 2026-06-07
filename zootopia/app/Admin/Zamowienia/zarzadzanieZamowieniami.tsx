@@ -10,7 +10,7 @@ import line from '@/app/Public/Images/line.svg';
 import OrderCard from './zamowienieKarta';
 import ZamowienieModal from './zamowienie';
 
-type FilterType = 'wszystkie' | 'ukończone' | 'w trakcie' | 'wysłane' | 'anulowane';
+type FilterType = 'wszystkie' | 'FINISHED' | 'IN_PROGRESS' | 'SHIPPED' | 'CANCELLED';
 
 interface ZarzadzanieZamowieniamiProps {
   initialOrders: any[];
@@ -31,10 +31,10 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
 
   // KROK 2: Statystyki obliczamy z przefiltrowanych przez wyszukiwarkę zamówień (teraz liczby będą się zmieniać!)
   const countAll = searchedOrders.length;
-  const countCompleted = searchedOrders.filter(o => o.status === 'ukończone').length;
-  const countInProgress = searchedOrders.filter(o => o.status === 'w trakcie').length;
-  const countShipped = searchedOrders.filter(o => o.status === 'wysłane').length;
-  const countCancelled = searchedOrders.filter(o => o.status === 'anulowane').length;
+  const countCompleted = searchedOrders.filter(o => o.status === 'FINISHED').length;
+  const countInProgress = searchedOrders.filter(o => o.status === 'IN_PROGRESS').length;
+  const countShipped = searchedOrders.filter(o => o.status === 'SHIPPED').length;
+  const countCancelled = searchedOrders.filter(o => o.status === 'CANCELLED').length;
 
   // KROK 3: Do końcowego wyrenderowania na liście bierzemy zamówienia spełniające też kryterium zakładki statusu
   const filteredOrders = activeFilter === 'wszystkie'
@@ -106,19 +106,19 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
               <b className={styles.wszystkie}>Wszystkie</b>
               <b className={styles.wszystkie}>({countAll})</b>
             </div>
-            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('ukończone')} style={getFilterStyle('ukończone')}>
+            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('FINISHED')} style={getFilterStyle('FINISHED')}>
               <b className={styles.wszystkie}>Ukończone</b>
               <b className={styles.wszystkie}>({countCompleted})</b>
             </div>
-            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('w trakcie')} style={getFilterStyle('w trakcie')}>
+            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('IN_PROGRESS')} style={getFilterStyle('IN_PROGRESS')}>
               <b className={styles.wszystkie}>W trakcie</b>
               <b className={styles.wszystkie}>({countInProgress})</b>
             </div>
-            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('wysłane')} style={getFilterStyle('wysłane')}>
+            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('SHIPPED')} style={getFilterStyle('SHIPPED')}>
               <b className={styles.wszystkie}>Wysłane</b>
               <b className={styles.wszystkie}>({countShipped})</b>
             </div>
-            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('anulowane')} style={getFilterStyle('anulowane')}>
+            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('CANCELLED')} style={getFilterStyle('CANCELLED')}>
               <b className={styles.wszystkie}>Anulowane</b>
               <b className={styles.wszystkie}>({countCancelled})</b>
             </div>

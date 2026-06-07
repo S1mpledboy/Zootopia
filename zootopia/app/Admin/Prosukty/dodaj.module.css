@@ -14,7 +14,7 @@
     text-align: center;
     font-size: 19px;
     color: #000;
-    font-family: Poppins;
+    font-family: Poppins, sans-serif;
     border-radius: 20px;
 }
 
@@ -45,13 +45,13 @@
     color: #565e64;
 }
 
+/* Wiersz dla Marki i Kategorii - spięty z siatką pozostałych sekcji */
 .frameParent1 {
     align-self: stretch;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 35px;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    column-gap: 35px;
+    row-gap: 24px;
     color: #565e64;
 }
 
@@ -71,56 +71,15 @@
     gap: 24px;
 }
 
-/* GÓRNY WIERSZ (Marka i Kategoria) */
-.frameDiv {
-    align-self: stretch;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 35px; /* Zrównano gap do 35px, aby idealnie pasował do siatek poniżej (gridów) */
-}
-
-/* POPRAWKA: Usunięto sztywne width: 230px, dodano flex: 1 dla równego podziału */
-.markaWrapper {
-    height: 58px;
-    flex: 1; 
-    border-radius: 20px;
-    border: 1px solid #000;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    padding: 10px 20px;
-}
-
 .marka {
     position: relative;
     line-height: 150%;
-}
-
-/* POPRAWKA: Usunięto sztywne width: 230px, dodano flex: 1 */
-.kategoriaParent {
-    height: 58px;
-    flex: 1; 
-    border-radius: 20px;
-    border: 1px solid #000;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 20px;
-}
-
-.vectorIcon {
-    height: 3px;
-    width: 16px;
-    position: relative;
-    object-fit: contain;
+    font-weight: 500;
+    white-space: nowrap;
 }
 
 .frameParent2 {
     align-self: stretch;
-    min-height: 58px; 
     display: grid;
     box-sizing: border-box;
     grid-template-columns: repeat(2, 1fr);
@@ -147,8 +106,6 @@
     justify-content: space-between;
     padding: 10px 20px;
     gap: 20px;
-    grid-column: 1;
-    grid-row: 1;
 }
 
 .tagParent2 {
@@ -160,7 +117,20 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px;
-    gap: 20px;
+    gap: 15px;
+    width: 100%;
+}
+
+/* Wewnętrzne stylowanie natywnych pól formularza */
+.tagParent2 input,
+.tagParent2 select {
+    flex: 1;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 16px;
+    text-align: right;
     width: 100%;
 }
 
@@ -171,44 +141,13 @@
 }
 
 .frameChild {
-    min-height: 100px;
+    min-height: 58px;
     border-radius: 20px;
     border: 1px solid #000;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     padding: 10px 20px;
-    grid-column: 2;
-    grid-row: 1;
-}
-
-.frameParent4 {
-    align-self: stretch;
-    display: flex;
-    align-items: center;
-    gap: 64px;
-}
-
-.rectangleParent {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    font-size: 16px;
-    color: #000;
-}
-
-.frameItem {
-    height: 20px;
-    width: 20px;
-    position: relative;
-    border: 1px solid #000;
-    box-sizing: border-box;
-}
-
-.promocja {
-    position: relative;
-    letter-spacing: 0.02em;
-    line-height: 140%;
 }
 
 .dodajGrafikeParent {
@@ -242,14 +181,15 @@
     width: 120px;
     background-color: #d9d9d9;
     display: flex;
-    align-items: flex-start;
-    padding: 45px;
+    align-items: center;
+    justify-content: center;
     box-sizing: border-box;
+    border-radius: 15px;
 }
 
 .vectorIcon4 {
     height: 30px;
-    width: 100%;
+    width: 30px;
     position: relative;
 }
 
@@ -261,17 +201,40 @@
     justify-content: center;
     gap: 16px;
     color: #565e64;
+    width: 100%;
 }
 
 .nazwaWrapper {
     align-self: stretch;
-    min-height: 80px;
     border-radius: 20px;
     border: 1px solid #000;
     box-sizing: border-box;
     display: flex;
-    align-items: center;
-    padding: 10px 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 12px 20px;
+    gap: 4px;
+    width: 100%;
+}
+
+.nazwaWrapper input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 16px;
+}
+
+.nazwaWrapper textarea {
+    width: 100%;
+    min-height: 60px;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-family: inherit;
+    font-size: 16px;
+    resize: vertical;
 }
 
 .doKasyWrapper {
@@ -280,6 +243,7 @@
     flex-direction: column;
     align-items: flex-end;
     font-size: 16px;
+    margin-top: 10px;
 }
 
 .doKasy {
@@ -287,28 +251,42 @@
     background-color: #91be77;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
-    padding: 12px 44px;
+    justify-content: center;
+    padding: 14px 44px;
+    transition: background-color 0.2s ease;
+}
+
+.doKasy:hover {
+    background-color: #80aa67;
 }
 
 .vectorParent {
-    width: 175px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 13px;
+    color: #ffffff;
 }
 
 .vectorParent1 {
     width: 100%;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 20px;
+}
+
+.vectorIcon1 {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.vectorIcon1:hover {
+    opacity: 0.7;
 }
 
 .dodajProdukt2 {
     position: relative;
     letter-spacing: -0.01em;
-    font-weight: 500;
+    font-weight: 600;
 }

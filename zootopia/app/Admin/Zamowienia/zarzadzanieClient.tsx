@@ -21,10 +21,10 @@ const ZarzadzanieZamowieniamiClient: React.FC<ZarzadzanieZamowieniamiClientProps
 
   // Dynamiczne przeliczanie statystyk na podstawie danych z bazy
   const countAll = orders.length;
-  const countCompleted = orders.filter(o => o.status === 'ukończone').length;
-  const countInProgress = orders.filter(o => o.status === 'w trakcie').length;
-  const countShipped = orders.filter(o => o.status === 'wysłane').length;
-  const countCancelled = orders.filter(o => o.status === 'anulowane').length;
+  const countCompleted = orders.filter(o => o.status === 'FINISHED').length;
+  const countInProgress = orders.filter(o => o.status === 'IN_PROGRESS').length;
+  const countShipped = orders.filter(o => o.status === 'SHIPPED').length;
+  const countCancelled = orders.filter(o => o.status === 'CANCELLED').length;
 
   return (
     <div className={styles.prawa}>
