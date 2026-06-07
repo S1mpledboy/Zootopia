@@ -4,8 +4,8 @@ import ProductModel from "@/models/Product";
 import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
-import OrderModel from "@/models/Order"; // Upewnij się, że ścieżka do modelu zamówień jest poprawna
-import UserModel from "@/models/User";   // Upewnij się, że ścieżka do modelu użytkowników jest poprawna
+import OrderModel from "@/models/Order"; 
+import UserModel from "@/models/User";   
 import AdminClient from "./adminClient";
 import { unstable_cache } from "next/cache";
 
@@ -59,17 +59,30 @@ const getCachedStructures = unstable_cache(
 );
 
 export default async function AdminPage() {
-  // 1. Pobieramy drzewo kategorii i tagów z cache
+  // 1. Pobieramy struktury z cache
   const { serializedCategories, serializedTagGroups, serializedTags } = await getCachedStructures();
 
   await getDatabaseConnection();
 
-  // 2. Pobieramy równolegle produkty, zamówienia i użytkowników z bazy danych
+  // 2. Pobieramy dane z bazy. Używamy .lean(), aby uzyskać czyste obiekty JS,
+  // ale NIE zmieniamy formatu dat ani statusów, aby zachować kompatybilność z Twoimi komponentami.
   const [rawProducts, rawOrders, rawUsers] = await Promise.all([
     ProductModel.find({}).populate("company").sort({ updatedAt: -1 }).lean(),
     OrderModel.find({}).sort({ createdAt: -1 }).lean(),
     UserModel.find({}).sort({ createdAt: -1 }).lean()
   ]);
+
+  // Mapujemy TYLKO _id na string (wymóg Next.js dla komponentów klienckich),
+  // pozostawiając daty jako obiekty Date i nienaruszone statusy zamówień.
+  const ordersData = rawOrders.map((order: any) => ({
+    ...order,
+    _id: order._id.toString()
+  }));
+
+  const usersData = rawUsers.map((user: any) => ({
+    ...user,
+    _id: user._id.toString()
+  }));
 
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
@@ -79,7 +92,7 @@ export default async function AdminPage() {
     return "/fallback-image.png";
   };
 
-  // 3. Serializacja danych dla bezpiecznego przekazania Client Component (Next.js)
+  // Formatowanie dedykowane dla nowej zakładki produktów
   const productsData = rawProducts.map((product: any) => {
     let catId = null;
     if (product.category) {
@@ -100,27 +113,14 @@ export default async function AdminPage() {
     };
   });
 
-  const ordersData = rawOrders.map((order: any) => ({
-    ...order,
-    _id: order._id.toString(),
-    createdAt: order.createdAt ? order.createdAt.toISOString() : null,
-    updatedAt: order.updatedAt ? order.updatedAt.toISOString() : null
-  }));
-
-  const usersData = rawUsers.map((user: any) => ({
-    ...user,
-    _id: user._id.toString(),
-    createdAt: user.createdAt ? user.createdAt.toISOString() : null
-  }));
-
   return (
     <AdminClient
       productsData={productsData}
       categoriesData={serializedCategories}
       tagGroupsData={serializedTagGroups}
       tagsData={serializedTags}
-      ordersData={ordersData}
-      usersData={usersData}
+      ordersData={ordersData} // Przekazane w nienaruszonym formacie
+      usersData={usersData}   // Przekazane w nienaruszonym formacie
     />
   );
 }
