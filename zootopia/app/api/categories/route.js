@@ -1,41 +1,22 @@
+import { NextResponse } from 'next/server';
 import { connectToDatabase } from "@/lib/mongodb";
-import Category from "@/models/Category";
+import Category from '@/models/Category';
+import mongoose from 'mongoose'; // <-- WAŻNE: Dodane do weryfikacji formatu ID
 
 function generateBaseSlug(text) {
+  if (!text) return '';
   const polishMap = {
     'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n', 'ó': 'o', 'ś': 's', 'ź': 'z', 'ż': 'z'
   };
-
   return text
     .toLowerCase()
     .split('')
-    .map(char => polishMap[char] || char) // Zamiana polskich znaków
+    .map(char => polishMap[char] || char)
     .join('')
-    .replace(/[^a-z0-9\s-]/g, '')       // Usunięcie innych znaków specjalnych
+    .replace(/[^a-z0-9\s-]/g, '')
     .trim()
-    .replace(/\s+/g, '-')               // Spacje na myślniki
-    .replace(/-+/g, '-');               // Usunięcie podwójnych myślników
-}
-
-export async function GET() {
-  try {
-    await connectToDatabase();
-
-    const categories = await Category.find().sort({ createdAt: -1 });
-
-    return Response.json({
-      ok: true,
-      data: categories,
-    });
-  } catch (error) {
-    return Response.json(
-      {
-        ok: false,
-        error: error.message,
-      },
-      { status: 500 }
-    );
-  }
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
 
 export async function POST(request) {
@@ -44,21 +25,23 @@ export async function POST(request) {
     const { name, parent } = await request.json();
 
     if (!name) {
-      return NextResponse.json({ message: "Nazwa jest wymagana." }, { status: 400 });
+      return NextResponse.json({ message: "Nazwa kategorii jest wymagana." }, { status: 400 });
     }
 
-    // 1. Generujemy bazowy slug dla nowej kategorii
     let finalSlug = generateBaseSlug(name);
 
-    // 2. Jeśli kategoria posiada rodzica, pobieramy go z bazy i doklejamy jego slug
-    if (parent) {
+    // BEZPIECZNY WARUNEK: Sprawdzamy, czy parent istnieje ORAZ czy jest poprawnym ObjectId.
+    // Jeśli z frontendu przyjdzie "" (pusty string), ten blok zostanie bezpiecznie pominięty.
+    const hasValidParent = parent && mongoose.Types.ObjectId.isValid(parent);
+
+    if (hasValidParent) {
       const parentCategory = await Category.findById(parent);
       if (parentCategory) {
         finalSlug = `${finalSlug}-${parentCategory.slug}`;
       }
     }
 
-    // 3. Sprawdzamy, czy taki slug już przypadkiem nie istnieje (wymóg unique: true)
+    // Sprawdzenie, czy generowany slug nie dubluje się w kolekcji
     const existingCategory = await Category.findOne({ slug: finalSlug });
     if (existingCategory) {
       return NextResponse.json(
@@ -67,16 +50,16 @@ export async function POST(request) {
       );
     }
 
-    // 4. Zapis do bazy z wygenerowanym polem slug
+    // Zapis do bazy danych
     const newCategory = await Category.create({ 
       name, 
       slug: finalSlug, 
-      parent: parent || null 
+      parent: hasValidParent ? parent : null 
     });
 
     return NextResponse.json({ data: newCategory }, { status: 201 });
   } catch (error) {
-    console.error("Błąd przy tworzeniu kategorii:", error);
-    return NextResponse.json({ message: "Błąd serwera." }, { status: 500 });
+    console.error("Krytyczny błąd podczas tworzenia kategorii:", error);
+    return NextResponse.json({ message: "Błąd serwera.", error: error.message }, { status: 500 });
   }
 }
