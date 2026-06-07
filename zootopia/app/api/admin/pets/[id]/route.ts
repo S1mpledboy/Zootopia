@@ -8,15 +8,23 @@ async function connect() {
   cachedDb = await mongoose.connect(process.env.MONGODB_URI!, { dbName: "mydb" });
 }
 
-export async function DELETE(_: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(
+  _: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connect();
-  await PetModel.findByIdAndDelete(params.id);
+  const { id } = await params;
+  await PetModel.findByIdAndDelete(id);
   return NextResponse.json({ success: true });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connect();
+  const { id } = await params;
   const body = await req.json();
-  await PetModel.findByIdAndUpdate(params.id, body);
+  await PetModel.findByIdAndUpdate(id, body);
   return NextResponse.json({ success: true });
 }

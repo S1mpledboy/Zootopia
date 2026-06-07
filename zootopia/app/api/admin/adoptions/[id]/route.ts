@@ -8,9 +8,13 @@ async function connect() {
   cachedDb = await mongoose.connect(process.env.MONGODB_URI!, { dbName: "mydb" });
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   await connect();
+  const { id } = await params;
   const body = await req.json();
-  await AdoptionModel.findByIdAndUpdate(params.id, body);
+  await AdoptionModel.findByIdAndUpdate(id, body);
   return NextResponse.json({ success: true });
 }
