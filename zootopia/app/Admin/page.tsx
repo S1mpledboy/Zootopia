@@ -46,12 +46,12 @@ const getCachedStructures = unstable_cache(
 );
 
 export default async function AdminPage() {
-  // 1. Pobieramy drzewo kategorii i tagów
+  // 1. Pobieramy drzewo kategorii i tagów z cache
   const { serializedCategories, serializedTagGroups, serializedTags } = await getCachedStructures();
 
   await getDatabaseConnection();
 
-  // 2. Pobieramy równolegle komplety danych z bazy (.lean() zwraca czyste obiekty)
+  // 2. Pobieramy równolegle dane z bazy
   const [rawProducts, rawOrders, rawUsers] = await Promise.all([
     ProductModel.find({}).populate("company").sort({ updatedAt: -1 }).lean(),
     OrderModel.find({}).sort({ createdAt: -1 }).lean(),
@@ -66,16 +66,14 @@ export default async function AdminPage() {
     return "/fallback-image.png";
   };
 
-  // 3. Mapujemy produkty zachowując absolutnie WSZYSTKIE oryginalne pola poprzez `...product`
-  // (dzięki temu stara zakładka produktów oraz inne podsystemy nie stracą dodatkowych właściwości),
-  // a jednocześnie wstrzykujemy formatowanie dla nowej karty admina.
+  // 3. Mapujemy produkty zachowując absolutnie wszystkie oryginalne właściwości bazy (...product)
   const mappedProducts = rawProducts.map((product: any) => {
     let catId = null;
     if (product.category) {
       catId = product.category._id ? product.category._id.toString() : product.category.toString();
     }
     return {
-      ...product, // Zachowanie oryginalnych pól bazy (np. quantity, isActive itp.)
+      ...product, 
       _id: product._id.toString(),
       image: extractImage(product.images), 
       companyName: product.company?.name || "Inna marka",
@@ -86,9 +84,9 @@ export default async function AdminPage() {
     };
   });
 
-  // 4. DEEP-SERIALIZACJA (Rozwiązanie błędu Error #31)
-  // Przejście przez JSON czyści obiekty Date/ObjectId do bezpiecznych stringów,
-  // pozostawiając statusy zamówień i nienaruszoną głęboką strukturę dokumentów.
+  // 4. Bezpieczna konwersja obiektów na stringi (w tym obiektów Date)
+  // Przejście przez JSON.stringify automatycznie zamienia obiekty typu Date na stringi ISO, 
+  // eliminując błąd "Objects are not valid as a React child" na froncie, bez uszkadzania statusów i struktur.
   const sanitizedProducts = JSON.parse(JSON.stringify(mappedProducts));
   const sanitizedOrders = JSON.parse(JSON.stringify(rawOrders));
   const sanitizedUsers = JSON.parse(JSON.stringify(rawUsers));
@@ -123,8 +121,8 @@ export default async function AdminPage() {
       categoriesData={finalCategories}
       tagGroupsData={finalTagGroups}
       tagsData={finalTags}
-      ordersData={sanitizedOrders} // Przekazane w 100% oryginalnej formie (bezpieczne dla komponentu Zamówienia)
-      usersData={sanitizedUsers}   // Przekazane w 100% oryginalnej formie (bezpieczne dla komponentu Konta)
+      ordersData={sanitizedOrders} 
+      usersData={sanitizedUsers}   
     />
   );
 }
