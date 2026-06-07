@@ -24,13 +24,45 @@ interface OrderCardProps {
 }
 
 const ZamowienieKarta: React.FC<OrderCardProps> = ({ order, onOpenDetails }) => {
+  // 1. Mapowanie surowego statusu z bazy na odpowiednią klasę CSS
   const getStatusWrapperClass = (status: string) => {
-    switch (status) {
-      case 'ukończone': return styles.ukoczoneWrapper;
-      case 'w trakcie': return styles.wTrakcieWrapper;
-      case 'anulowane': return styles.anulowaneWrapper;
-      case 'wysłane': return styles.wysaneWrapper;
-      default: return styles.wTrakcieWrapper;
+    const normalizedStatus = status.toUpperCase();
+    switch (normalizedStatus) {
+      case 'COMPLETED':
+      case 'UKOŃCZONE': 
+        return styles.ukoczoneWrapper;
+      case 'IN_PROGRESS':
+      case 'W TRAKCIE': 
+        return styles.wTrakcieWrapper;
+      case 'CANCELLED':
+      case 'ANULOWANE': 
+        return styles.anulowaneWrapper;
+      case 'SHIPPED':
+      case 'WYSŁANE': 
+        return styles.wysaneWrapper;
+      default: 
+        return styles.wTrakcieWrapper;
+    }
+  };
+
+  // 2. Mapowanie surowego statusu z bazy na ładny polski tekst wyświetlany użytkownikowi
+  const getStatusLabel = (status: string) => {
+    const normalizedStatus = status.toUpperCase();
+    switch (normalizedStatus) {
+      case 'COMPLETED':
+      case 'UKOŃCZONE': 
+        return 'ukończone';
+      case 'IN_PROGRESS':
+      case 'W TRAKCIE': 
+        return 'w trakcie';
+      case 'CANCELLED':
+      case 'ANULOWANE': 
+        return 'anulowane';
+      case 'SHIPPED':
+      case 'WYSŁANE': 
+        return 'wysłane';
+      default: 
+        return status; // Zwraca oryginalny status, jeśli nie pasuje do żadnego wzorca
     }
   };
 
@@ -43,8 +75,10 @@ const ZamowienieKarta: React.FC<OrderCardProps> = ({ order, onOpenDetails }) => 
     <div className={styles.frameGroup}>
       <div className={styles.zarzdzanieZamwieniamiParent}>
         <b className={styles.zamwienieNr1111}>zamówienie nr {order.orderNumber}</b>
+        {/* Przekazujemy status do funkcji wybierającej klasę CSS */}
         <div className={getStatusWrapperClass(order.status)}>
-          <b className={styles.wszystkie}>{order.status}</b>
+          {/* Wyświetlamy przetłumaczony tekst statusu */}
+          <b className={styles.wszystkie}>{getStatusLabel(order.status)}</b>
         </div>
       </div>
       <div className={styles.frameWrapper}>

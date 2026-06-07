@@ -10,21 +10,30 @@ import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
 import DaneIBezpieczenstwo from "./daneIBezpieczenstwo";
 import ZarzadzanieZamowieniami from "./Zamowienia/zarzadzanieZamowieniami";
 import Konta from "./Konta/konta";
-import ZarzadzanieProduktami from "./Prosukty/zarzadzanieProduktami";
 import Tags from "./Tags/tags";
+
+// IMPORT NOWEGO KOMPONENTU ZAKŁADKI PRODUKTÓW
+import AdminProductsTab from "./Prosukty/zarzadzanieProduktami";
 
 type TabType = "dane" | "zamowienia" | "produkty" | "uzytkownicy" | "tags";
 
 interface AdminClientProps {
   ordersData: any[];
   productsData: any[];
-  usersData: any[]; // NOWOŚĆ: Przekazujemy tablicę użytkowników pobraną z bazy MongoDB
-  categoriesData: any[]; // NOWOŚĆ
-  tagGroupsData: any[];  // NOWOŚĆ
-  tagsData: any[];       // NOWOŚĆ
+  usersData: any[]; 
+  categoriesData: any[]; 
+  tagGroupsData: any[];  
+  tagsData: any[];       
 }
 
-const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData, usersData, categoriesData, tagGroupsData, tagsData }) => {
+const AdminClient: React.FC<AdminClientProps> = ({ 
+  ordersData, 
+  productsData, 
+  usersData, 
+  categoriesData, 
+  tagGroupsData, 
+  tagsData 
+}) => {
   const [activeTab, setActiveTab] = useState<TabType>("dane");
 
   const getMenuClass = (tabName: TabType) => {
@@ -39,9 +48,16 @@ const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData, use
       case "zamowienia":
         return <ZarzadzanieZamowieniami initialOrders={ordersData} />;
       case "produkty":
-        //return <ZarzadzanieProduktami initialProducts={productsData} />;
+        // PODMIANA: Zamiast starego komponentu renderujemy pełny panel zarządzania z filtrami i modalem
+        return (
+          <AdminProductsTab 
+            initialProducts={productsData} 
+            allCategories={categoriesData}
+            allTagGroups={tagGroupsData}
+            allTags={tagsData}
+          />
+        );
       case "uzytkownicy":
-        // ZMIANA: Przekazujemy tablicę użytkowników do komponentu Konta
         return <Konta initialUsers={usersData} />;
       case "tags":
         return <Tags 
@@ -112,9 +128,7 @@ const AdminClient: React.FC<AdminClientProps> = ({ ordersData, productsData, use
 
         {/* PRAWA STRONA */}
         <div className={styles.frameDiv}>
-            <div className={styles.sortowanieParent}>
-              {renderRightSection()}
-            </div>
+          {renderRightSection()}
         </div>
 
       </div>
