@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useMemo, useEffect } from 'react';
-import styles from './shopPage.module.css';
+import styles from './zarzadzanieProduktami.module.css';
 
 import arrowDown from '@/app/Public/Images/arrowDown.svg';
 import arrowRight from '@/app/Public/Images/arrowRight.svg';
