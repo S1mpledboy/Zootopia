@@ -10,7 +10,8 @@ import line from '@/app/Public/Images/line.svg';
 import OrderCard from './zamowienieKarta';
 import ZamowienieModal from './zamowienie';
 
-type FilterType = 'wszystkie' | 'FINISHED' | 'IN_PROGRESS' | 'SHIPPED' | 'CANCELLED';
+// Zmiana typów filtrów na wartości generowane przez Twój plik serwerowy (page.tsx)
+type FilterType = 'wszystkie' | 'ukończone' | 'w trakcie' | 'wysłane' | 'anulowane';
 
 interface ZarzadzanieZamowieniamiProps {
   initialOrders: any[];
@@ -22,21 +23,21 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
 
-  // KROK 1: Najpierw filtrujemy całą bazę TYLKO po wpisanym numerze zamówienia
+  // KROK 1: Filtrowanie bazy po wpisanym numerze zamówienia
   const searchedOrders = orders.filter(order =>
     order.orderNumber
-      .toLowerCase()
-      .includes(searchQuery.trim().toLowerCase())
+      ? order.orderNumber.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      : false
   );
 
-  // KROK 2: Statystyki obliczamy z przefiltrowanych przez wyszukiwarkę zamówień (teraz liczby będą się zmieniać!)
+  // KROK 2: Dynamiczne statystyki (Dopasowane dokładnie do małych liter ze skryptu serwera)
   const countAll = searchedOrders.length;
-  const countCompleted = searchedOrders.filter(o => o.status === 'FINISHED').length;
-  const countInProgress = searchedOrders.filter(o => o.status === 'IN_PROGRESS').length;
-  const countShipped = searchedOrders.filter(o => o.status === 'SHIPPED').length;
-  const countCancelled = searchedOrders.filter(o => o.status === 'CANCELLED').length;
+  const countCompleted = searchedOrders.filter(o => o.status === 'ukończone' || o.status === 'completed').length;
+  const countInProgress = searchedOrders.filter(o => o.status === 'w trakcie' || o.status === 'in_progress').length;
+  const countShipped = searchedOrders.filter(o => o.status === 'wysłane' || o.status === 'shipped').length;
+  const countCancelled = searchedOrders.filter(o => o.status === 'anulowane' || o.status === 'cancelled').length;
 
-  // KROK 3: Do końcowego wyrenderowania na liście bierzemy zamówienia spełniające też kryterium zakładki statusu
+  // KROK 3: Selekcja końcowa na podstawie wybranej zakładki statusu
   const filteredOrders = activeFilter === 'wszystkie'
     ? searchedOrders
     : searchedOrders.filter(order => order.status === activeFilter);
@@ -99,26 +100,26 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
           <Image src={line} className={styles.dividerChild} width={760} height={1} sizes="100vw" alt="" />
         </div>
 
-        {/* STATYSTYKI (Teraz z dynamicznymi wartościami) */}
+        {/* ZAKŁADKI FILTRÓW Z POPRAWIONYMI KLUCZAMI ORAZ LICZNIKAMI */}
         <div className={styles.sortowanieZamwie}>
           <div className={styles.zarzdzanieZamwieniamiParent}>
             <div className={styles.wszystkieParent} onClick={() => setActiveFilter('wszystkie')} style={getFilterStyle('wszystkie')}>
               <b className={styles.wszystkie}>Wszystkie</b>
               <b className={styles.wszystkie}>({countAll})</b>
             </div>
-            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('FINISHED')} style={getFilterStyle('FINISHED')}>
+            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('ukończone')} style={getFilterStyle('ukończone')}>
               <b className={styles.wszystkie}>Ukończone</b>
               <b className={styles.wszystkie}>({countCompleted})</b>
             </div>
-            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('IN_PROGRESS')} style={getFilterStyle('IN_PROGRESS')}>
+            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('w trakcie')} style={getFilterStyle('w trakcie')}>
               <b className={styles.wszystkie}>W trakcie</b>
               <b className={styles.wszystkie}>({countInProgress})</b>
             </div>
-            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('SHIPPED')} style={getFilterStyle('SHIPPED')}>
+            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('wysłane')} style={getFilterStyle('wysłane')}>
               <b className={styles.wszystkie}>Wysłane</b>
               <b className={styles.wszystkie}>({countShipped})</b>
             </div>
-            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('CANCELLED')} style={getFilterStyle('CANCELLED')}>
+            <div className={styles.ukoczoneParent} onClick={() => setActiveFilter('anulowane')} style={getFilterStyle('anulowane')}>
               <b className={styles.wszystkie}>Anulowane</b>
               <b className={styles.wszystkie}>({countCancelled})</b>
             </div>
@@ -132,7 +133,7 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
         {/* LISTA ZAMÓWIEŃ */}
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order, index) => (
-            <div key={order.id} style={{ width: '100%' }}>
+            <div key={order.id || order._id} style={{ width: '100%' }}>
               <OrderCard order={order} onOpenDetails={() => setActiveOrder(order)} />
               
               {index < filteredOrders.length - 1 && (
@@ -150,7 +151,7 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
 
       </div>
 
-      {/* WARUNKOWE RENDEROWANIE MODALA */}
+      {/* MODAL SZCZEGÓŁÓW ZAMÓWIENIA */}
       {activeOrder && (
         <ZamowienieModal 
           order={activeOrder} 
