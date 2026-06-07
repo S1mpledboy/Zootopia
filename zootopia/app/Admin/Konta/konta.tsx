@@ -20,7 +20,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
   const [activeFilter, setActiveFilter] = useState<FilterType>('wszystkie');
   const [searchQuery, setSearchQuery] = useState<string>('');
   
-  // NOWOŚĆ: Stan przechowujący użytkownika, którego admin chce usunąć
+  // Stan przechowujący użytkownika, którego admin chce usunąć
   const [userToDelete, setUserToDelete] = useState<DbUser | null>(null);
 
   // Funkcja wywoływana po kliknięciu kosza (otwiera modal)
@@ -33,8 +33,15 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
     if (!userToDelete) return;
 
     try {
-      // TUTAJ UMIEŚĆ STRZAŁ DO API, NP:
-      // await fetch(`/api/users/${userToDelete._id}`, { method: 'DELETE' });
+      // Strzał do API usuwający użytkownika z bazy danych
+      // Upewnij się, że ścieżka do API jest poprawna (często to /api/admin/users/...)
+      const response = await fetch(`/api/users/${userToDelete._id}`, { 
+        method: 'DELETE' 
+      });
+
+      if (!response.ok) {
+        throw new Error('Błąd podczas usuwania z bazy danych.');
+      }
 
       // Usunięcie z lokalnego stanu (aby zniknął z listy na ekranie)
       setUsers(prev => prev.filter(user => user._id !== userToDelete._id));
@@ -43,7 +50,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
       setUserToDelete(null);
     } catch (error) {
       console.error("Wystąpił błąd podczas usuwania użytkownika", error);
-      alert("Nie udało się usunąć użytkownika.");
+      alert("Błąd podczas usuwania użytkownika.");
     }
   };
 
