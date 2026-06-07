@@ -286,35 +286,43 @@ const AdminProductsTab = ({
   // ── INTEGRACJA Z ENDPOINTAMI API ──────────────────────────────────────────
 
   const handleCreateOrUpdateProduct = async (payload: any, isEdit: boolean) => {
-    const url = isEdit ? `/api/products/${selectedProduct._id}` : '/api/products';
-    const method = isEdit ? 'PATCH' : 'POST';
+  const url = isEdit ? `/api/products/${selectedProduct._id}` : '/api/products';
+  const method = isEdit ? 'PATCH' : 'POST';
 
-    const response = await fetch(url, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
+  const response = await fetch(url, {
+    method,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.message || 'Wystąpił problem z operacją zapisu.');
-    }
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.message || 'Wystąpił problem z operacją zapisu.');
+  }
 
-    const updatedData = await response.json();
-    
-    // Normalizacja obiektu pod interfejs widoku przed zapisem w state
-    const normalizedProduct = {
-      ...updatedData.data,
-      companyName: payload.brand, 
-      petCategoryId: payload.category
-    };
+  const updatedData = await response.json();
+  
+  // Wyciągamy czysty tekst dla widoku admina, identycznie jak w kafelkach sklepowych
+  const serverProduct = updatedData.data || updatedData;
+  let brandString = payload.company; 
+  if (serverProduct.company && typeof serverProduct.company === 'object') {
+    brandString = serverProduct.company.name;
+  }
 
-    if (isEdit) {
-      setProducts(prev => prev.map(p => p._id === selectedProduct._id ? normalizedProduct : p));
-    } else {
-      setProducts(prev => [normalizedProduct, ...prev]);
-    }
+  const normalizedProduct = {
+    ...serverProduct,
+    companyName: brandString, 
+    company: brandString,
+    petCategoryId: payload.category,
+    category: payload.category
   };
+
+  if (isEdit) {
+    setProducts(prev => prev.map(p => p._id === selectedProduct._id ? normalizedProduct : p));
+  } else {
+    setProducts(prev => [normalizedProduct, ...prev]);
+  }
+};
 
   const handleDeleteProduct = async (id: string, name: string) => {
     if (!window.confirm(`Czy na pewno chcesz bezpowrotnie usunąć produkt "${name}"?`)) {

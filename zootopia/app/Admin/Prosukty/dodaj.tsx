@@ -32,7 +32,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   const [formData, setFormData] = useState({
     name: '',
-    brand: '', // Na backendzie zmapujemy to jako 'company'
+    company: '', 
     category: '',
     price: '',
     promoPrice: '',
@@ -43,9 +43,21 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   useEffect(() => {
     if (productData) {
+      // Bezpieczne wyciąganie nazwy marki, jeśli backend zwraca obiekt zamiast stringa
+      let extractedBrand = '';
+      if (productData.company && typeof productData.company === 'object') {
+        extractedBrand = productData.company.name || '';
+      } else if (typeof productData.company === 'string') {
+        extractedBrand = productData.company;
+      } else if (productData.companyName) {
+        extractedBrand = typeof productData.companyName === 'object' 
+          ? productData.companyName.name 
+          : productData.companyName;
+      }
+
       setFormData({
         name: productData.name || '',
-        brand: productData.company || productData.companyName || '',
+        company: extractedBrand,
         category: productData.category || productData.petCategoryId || '',
         price: productData.price ? String(productData.price) : '',
         promoPrice: productData.promoPrice ? String(productData.promoPrice) : '',
@@ -56,7 +68,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setImagePreview(productData.image || (productData.images && productData.images[0]) || '');
     } else {
       setFormData({
-        name: '', brand: '', category: '', price: '', promoPrice: '', description: '', ingredients: '', additionalInfo: ''
+        name: '', company: '', category: '', price: '', promoPrice: '', description: '', ingredients: '', additionalInfo: ''
       });
       setImagePreview('');
     }
@@ -89,7 +101,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   const handleSaveClick = async () => {
     setFormError('');
-    if (!formData.name || !formData.price || !formData.category || !formData.brand) {
+    if (!formData.name || !formData.price || !formData.category || !formData.company) {
       setFormError('Wypełnij wymagane pola (Nazwa, Marka, Kategoria, Cena).');
       return;
     }
@@ -98,7 +110,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
     try {
       let finalImageUrl = imagePreview;
 
-      // Jeśli wybrano nowy plik, najpierw wrzucamy go na serwer
       if (imageFile) {
         const uploadedUrl = await uploadImage();
         if (uploadedUrl) finalImageUrl = uploadedUrl;
@@ -149,7 +160,8 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 <div className={styles.frameParent1}>
                   <div className={styles.tagParent2}>
                     <div className={styles.marka}>Marka</div>
-                    <input name="brand" value={formData.brand} onChange={handleChange} placeholder="Wpisz markę" />
+                    {/* NAPRAWIONO: zmiana name="brand" na name="company", aby pasowało do klucza w stanie formData */}
+                    <input name="company" value={formData.company} onChange={handleChange} placeholder="Wpisz markę" />
                   </div>
                   <div className={styles.tagParent2}>
                     <div className={styles.marka}>Kategoria</div>
@@ -183,7 +195,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
               </div>
 
-              {/* Ukryty input i strefa klikalna dla przesyłania grafiki */}
               <input 
                 type="file" 
                 ref={fileInputRef} 
