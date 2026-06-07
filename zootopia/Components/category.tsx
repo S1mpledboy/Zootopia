@@ -32,7 +32,7 @@ const Kategorie: NextPage = () => {
             </div>
 
             {/* Prawa strona: Nowy przycisk Adopcji */}
-            <Link href="/adoptuj" className={styles.promocjeWrapper}>
+            <Link href="/adoptuj" className={styles.piesWrapper}>
                 Adoptuj Przyjaciela
             </Link>
         </div>
