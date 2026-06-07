@@ -27,12 +27,10 @@ export async function GET(req: Request) {
   return NextResponse.json(reviews);
 }
 
-// POST REVIEW
 export async function POST(req: Request) {
   try {
     await connectToDatabase();
 
-    // 🔥 WAŻNE: Twój auth musi dostać req
     const user = await getAuthUser(req);
 
     if (!user) {
@@ -62,7 +60,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // 1 review per user
+    
     const existing = await Review.findOne({
       user: user._id,
       product: productId,

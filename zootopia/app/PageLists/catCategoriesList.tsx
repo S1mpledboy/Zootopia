@@ -1,10 +1,10 @@
 import type { NextPage } from 'next';
 import Image from "next/image";
-import Link from "next/link"; // Oficjalny komponent linkowania Next.js
+import Link from "next/link"; 
 import styles from '@/app/modulesCSS/categoryItem.module.css';
 
 import Category from "@/app/ItemBlocks/categoryItem";
-import { items } from "@/app/Public/Data/catCategories"; // Pobieranie czystej tablicy z pliku powyżej
+import { items } from "@/app/Public/Data/catCategories"; 
 
 import cat from "@/app/Public/Images/KotCat.png";
 
@@ -12,20 +12,20 @@ const Kategorie: NextPage = () => {
   return (
     <div className={styles.kategorie}>
       
-      {/* 1. Pierwszy kafelek: Wszystko dla kota */}
+
       <Link 
         href="/ShopPage?type=kot" 
         style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}
       >
         <Category
           id={0}
-          name={"Wszystko dla kota"} // Poprawione z "Wszystko dla psa"
+          name={"Wszystko dla kota"} 
           image={cat}
           bgColor="#ecb3c0"
         />
       </Link>
       
-      {/* 2. Dynamiczne renderowanie kafelków dla kota */}
+
       {items.map((item) => {
         const targetLink = item.link || "/ShopPage?type=kot";
         

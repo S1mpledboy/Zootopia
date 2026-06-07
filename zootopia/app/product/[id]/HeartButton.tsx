@@ -1,4 +1,4 @@
-// Ścieżka: app/Product/HeartButton.tsx
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -6,8 +6,8 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 // Importy obu ikon
-import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg"; // Puste serce
-import FavoriteIcon from "@/app/Public/Images/Vector.svg";      // Pokolorowane serce
+import heartIcon from "@/app/Public/Images/tabler-icon-heart.svg";
+import FavoriteIcon from "@/app/Public/Images/Vector.svg";    
 import styles from "./product.module.css";
 
 interface HeartButtonProps {
@@ -19,10 +19,9 @@ export default function HeartButton({ productId }: HeartButtonProps) {
   const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
-  // 🔄 Po załadowaniu strony sprawdź, czy produkt jest już w ulubionych
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (!token) return; // Jeśli niezalogowany, domyślnie puste serce
+    if (!token) return; 
 
     fetch("/api/likedList", {
       method: "GET",
@@ -35,14 +34,14 @@ export default function HeartButton({ productId }: HeartButtonProps) {
         return [];
       })
       .then((likedProducts: any[]) => {
-        // Sprawdź, czy ID tego produktu znajduje się w tablicy ulubionych
+
         const found = likedProducts.some((item) => item.id === productId);
         setIsLiked(found);
       })
       .catch((err) => console.error("Błąd sprawdzania statusu polubienia:", err));
   }, [productId]);
 
-  // 👆 Obsługa kliknięcia (Dodawanie / Usuwanie)
+
   const handleFavoriteClick = async () => {
     const token = localStorage.getItem("token");
 
@@ -54,11 +53,10 @@ export default function HeartButton({ productId }: HeartButtonProps) {
     if (loading) return;
     setLoading(true);
 
-    // Decydujemy o metodzie: jeśli już lubi, to usuwamy (DELETE), jeśli nie, to dodajemy (POST)
-    // Uwaga: Możesz użyć POST do obu akcji i obsłużyć to w API (toggle)
+
     try {
       const res = await fetch("/api/likedList", {
-        method: "POST", // Wysyłamy POST do naszego API, które przełącza stan
+        method: "POST", 
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
@@ -67,7 +65,7 @@ export default function HeartButton({ productId }: HeartButtonProps) {
       });
 
       if (res.ok) {
-        // Zmień stan wizualny na przeciwny po udanej odpowiedzi z serwera
+
         setIsLiked(!isLiked);
       } else {
         const data = await res.json();
@@ -83,9 +81,9 @@ export default function HeartButton({ productId }: HeartButtonProps) {
 
   return (
     <Image
-      // Jeśli produkt jest polubiony, opcjonalnie możesz też dodać klasę aktywnego serca dla stylów CSS
+
       className={`${styles.ulubioneIcon} ${isLiked ? styles.ulubioneIconActive : ""}`}
-      // Dynamiczna zmiana ikony w zależności od stanu isLiked
+
       src={isLiked ? FavoriteIcon : heartIcon}
       alt="Ulubione"
       onClick={handleFavoriteClick}

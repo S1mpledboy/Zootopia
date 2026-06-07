@@ -1,0 +1,324 @@
+.szczegyZamowienia1 {
+  	width: 40%;
+  	position: relative;
+  	box-shadow: 0px 0px 10px 5px rgba(0, 0, 0, 0.25);
+  	background-color: #fff;
+  	overflow: hidden;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 64px 40px;
+  	box-sizing: border-box;
+  	isolation: isolate;
+  	gap: 57px;
+  	text-align: left;
+  	font-size: 16px;
+  	color: #000;
+  	font-family: Poppins;
+}
+.frameParent {
+  	width: 100%;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+  	z-index: 0;
+}
+.zamwienieNr1111Parent {
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	gap: 24px;
+}
+.zamwienieNr1111 {
+  	position: relative;
+  	letter-spacing: 0.2em;
+  	text-transform: uppercase;
+}
+.ukoczoneWrapper {
+  	height: 25px;
+  	background-color: #b0d898;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 4px 4px 3px;
+  	box-sizing: border-box;
+  	min-width: 140px;
+  	font-size: 12px;
+}
+.ukoczone {
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+}
+.vectorParent {
+  	display: flex;
+  	align-items: center;
+  	gap: 24px;
+}
+.vectorIcon {
+  	height: 18px;
+  	width: 16px;
+  	position: relative;
+}
+.vectorIcon2 {
+  	height: 10px;
+  	width: 10px;
+  	position: relative;
+}
+.szczegoweInformacje {
+  	width: 100%;
+  	display: grid;
+  	box-sizing: border-box;
+  	grid-template-columns: repeat(3, 1fr);
+  	align-content: start;
+  	gap: 40px;
+  	z-index: 1;
+  	font-size: 12px;
+  	color: #6c757d;
+}
+.dataZamwieniaParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 1;
+  	grid-row: 1;
+}
+.dataZamwienia {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+}
+.dataZakoczeniaParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 2;
+  	grid-row: 1;
+}
+.numerFakturyParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 1;
+  	grid-row: 2;
+}
+.numerFaktury {
+  	align-self: stretch;
+  	height: 18px;
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+  	display: inline-block;
+  	flex-shrink: 0;
+}
+.kosztCakowityParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 2;
+  	grid-row: 2;
+}
+.z {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+  	color: #000;
+}
+.kosztDostawyParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 3;
+  	grid-row: 2;
+}
+.osobaPrywatnaParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 1;
+  	grid-row: 3;
+}
+.adresParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 2;
+  	grid-row: 3;
+  	color: #000;
+}
+.adres {
+  	align-self: stretch;
+  	position: relative;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+  	color: #6c757d;
+}
+.parent {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	gap: 30px;
+  	text-align: center;
+}
+.sposbDostawyParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 3;
+  	grid-row: 3;
+}
+.firmaParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 1;
+  	grid-row: 4;
+}
+.nipParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 2;
+  	grid-row: 4;
+}
+.sposbPatnociParent {
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 5px;
+  	grid-column: 3;
+  	grid-row: 1;
+}
+.zamwienieParent {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 15px;
+  	z-index: 2;
+  	font-size: 14px;
+}
+.zamwienie {
+  	align-self: stretch;
+  	position: relative;
+  	font-size: 12px;
+  	letter-spacing: 0.1em;
+  	text-transform: uppercase;
+  	color: #6c757d;
+}
+.frameGroup {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: center;
+  	gap: 20px;
+}
+.frameWrapper {
+  	width: 528px;
+  	display: flex;
+  	align-items: center;
+}
+.frameContainer {
+  	width: 528px;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+}
+.alphawolfParent {
+  	height: 41px;
+  	width: 314px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 5px;
+}
+.alphawolf {
+  	align-self: stretch;
+  	height: 18px;
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+  	display: inline-block;
+  	flex-shrink: 0;
+}
+.alphawolf15kgSucha {
+  	align-self: stretch;
+  	height: 18px;
+  	position: relative;
+  	font-size: 12px;
+  	letter-spacing: 0.02em;
+  	line-height: 140%;
+  	display: inline-block;
+  	flex-shrink: 0;
+}
+.x2 {
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+}
+.z2 {
+  	height: 18px;
+  	width: 75px;
+  	position: relative;
+  	font-size: 13px;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+  	text-transform: uppercase;
+  	text-align: center;
+  	display: inline-block;
+  	flex-shrink: 0;
+}
+.frameChild {
+  	width: 100%;
+  	position: relative;
+}
+.text {
+  	width: 0px;
+  	height: 17px;
+  	position: absolute;
+  	margin: 0 !important;
+  	top: 628px;
+  	left: 479px;
+  	font-size: 13px;
+  	letter-spacing: 0.02em;
+  	line-height: 130%;
+  	text-transform: uppercase;
+  	text-align: center;
+  	display: inline-block;
+  	z-index: 3;
+}
+
+.modalBackdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* Przyciemnienie tła o 50% */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* Wysoki indeks, aby był nad wszystkim innym */
+}
+
+/* Twoja klasa bazowa z Figmy musi mieć ustawione np. maksymalną wysokość lub przewijanie, jeśli kontent jest długi */
+.szczegyZamowienia1 {
+  background-color: #fff;
+  max-height: 90vh;
+  overflow-y: auto; /* Przewijanie zawartości, jeśli produkty nie mieszczą się na ekranie */
+  /* Pozostałe style wygenerowane z Twojego projektu (padding, border-radius itd.) */
+}

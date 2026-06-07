@@ -7,7 +7,6 @@ export async function GET(req, { params }) {
   try {
     await connectToDatabase();
 
-    // Next.js App Router: params mogą być Promise w nowszych wersjach
     const { id } = await params;
 
     const user = await getAuthUser(req);

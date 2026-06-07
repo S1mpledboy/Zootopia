@@ -16,14 +16,12 @@ const ProductSchema = new mongoose.Schema(
       maxlength: 3000,
     },
 
-    // 🔥 DODANE: Składniki produktu jako prosty tekst
     ingredients: {
       type: String,
       default: "",
       maxlength: 3000,
     },
 
-    // 🔥 DODANE: Dodatkowe informacje jako prosty tekst
     additionalInfo: {
       type: String,
       default: "",
@@ -105,7 +103,7 @@ const ProductSchema = new mongoose.Schema(
   }
 );
 
-// 👇 Opcjonalnie: Jeśli chcesz, aby wyszukiwarka tekstowa przeszukiwała też składniki i dodatkowe info, możesz je tutaj dopisać:
+
 ProductSchema.index({ name: "text", description: "text", ingredients: "text", additionalInfo: "text" });
 
 ProductSchema.index({ category: 1 });

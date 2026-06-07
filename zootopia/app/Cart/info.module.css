@@ -1,40 +1,39 @@
 .banerek {
-  width: 100%;                /* Zajmie całą dostępną szerokość od lewej do prawej */
-  background-color: #e0f2fe;  /* Jasnoniebieskie tło */
-  padding: 24px 0;            /* Odpowiedni odstęp od góry i dołu */
+  width: 100%;                
+  background-color: #e0f2fe;  
+  padding: 24px 0;            
   box-sizing: border-box;
   display: flex;
-  justify-content: center;    /* Centruje wewnętrzny kontener na środku ekranu */
+  justify-content: center;   
   align-items: center;
 }
 
 .frameParent {
   width: 100%;
-  max-width: 1200px;          /* Maksymalna szerokość zawartości baneru */
-  padding: 0 40px;            /* Bezpieczny margines boczny, żeby ikony nie dotykały krawędzi na mniejszych ekranach */
+  max-width: 1200px;         
+  padding: 0 40px;            
   box-sizing: border-box;
   display: flex;
-  flex-direction: row;        /* Wszystkie 4 elementy ładnie w jednym rzędzie */
-  justify-content: space-between; /* Rozsuwa je równomiernie */
+  flex-direction: row;        
+  justify-content: space-between; 
   align-items: center;
 }
 
-/* Pojedynczy boks (ikona + tekst) */
+
 .boxElement {
   display: flex;
-  flex-direction: row;        /* Ikona OBOK tekstu */
-  align-items: center;        /* Centrowanie ikony i tekstu względem siebie w pionie */
-  gap: 12px;                  /* Odstęp między ikoną a napisem */
+  flex-direction: row;        
+  align-items: center;        
+  gap: 12px;                
 }
 
-/* Kontener na ikonę – stabilizuje wymiary */
 .iconContainer {
   width: 50px;
   height: 50px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;             /* Ikona nie zmniejszy się, jeśli zabraknie miejsca */
+  flex-shrink: 0;          
 }
 
 /* Styl tekstu */
@@ -44,7 +43,7 @@
   font-weight: 700;
   line-height: 1.2;
   color: #000000;
-  text-align: left;           /* Tekst wyrównany do lewej (obok ikony) */
-  text-transform: uppercase;  /* Zamienia małe litery na WIELKIE */
+  text-align: left;          
+  text-transform: uppercase;  
   letter-spacing: 0.02em;
 }

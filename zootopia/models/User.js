@@ -103,7 +103,7 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    // 🔥 NOWE POLE: Tablica polubionych produktów powiązana z modelem Product
+
     likedProducts: [
       {
         type: mongoose.Schema.Types.ObjectId,

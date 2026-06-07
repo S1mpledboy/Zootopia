@@ -6,7 +6,6 @@ import { getAuthUser } from "@/middleware/auth";
 import "@/models/Company";
 import "@/models/Category";
 
-// 1. POBIERANIE ZAWARTOŚCI KOSZYKA
 export async function GET(req: Request) {
   try {
     await connectToDatabase();
@@ -33,7 +32,7 @@ export async function GET(req: Request) {
   }
 }
 
-// 2. DODAWANIE PRODUKTU DO KOSZYKA
+
 export async function POST(req: Request) {
   try {
     await connectToDatabase();
@@ -74,7 +73,7 @@ export async function POST(req: Request) {
   }
 }
 
-// 3. AKTUALIZACJA ILOŚCI
+
 export async function PATCH(req: Request) {
   try {
     await connectToDatabase();
@@ -126,7 +125,7 @@ export async function DELETE(req: Request) {
     const { searchParams } = new URL(req.url);
     const productId = searchParams.get("productId");
 
-    // Jeśli do endpointu nie dołączono id produktu -> czyścimy cały koszyk dla zalogowanego użytkownika
+  
     if (!productId) {
       await Cart.deleteMany({ user: user._id });
       return NextResponse.json({ message: "Cart cleared successfully" });

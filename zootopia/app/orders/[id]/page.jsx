@@ -76,7 +76,6 @@ export default function OrderDetailPage() {
         Wróć do listy
       </button>
 
-      {/* Order header */}
       <div className={styles.header}>
         <div className={styles.headerLeft}>
           <h1 className={styles.orderNumber}>Zamówienie nr {order.orderNumber}</h1>
@@ -106,7 +105,7 @@ export default function OrderDetailPage() {
           </div>
         </section>
 
-        {/* Delivery address */}
+
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Adres dostawy</h2>
           <div className={styles.addressBlock}>
@@ -119,7 +118,7 @@ export default function OrderDetailPage() {
           </div>
         </section>
 
-        {/* Shipping & payment */}
+
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Dostawa i płatność</h2>
           <div className={styles.metaRow}>
@@ -132,7 +131,7 @@ export default function OrderDetailPage() {
           </div>
         </section>
 
-        {/* Invoice data (optional) */}
+
         {order.invoiceData?.nip && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Dane do faktury</h2>
@@ -147,7 +146,7 @@ export default function OrderDetailPage() {
           </section>
         )}
 
-        {/* Notes (optional) */}
+
         {order.notes && (
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Uwagi</h2>

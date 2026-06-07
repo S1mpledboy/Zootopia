@@ -1,0 +1,302 @@
+.prawa {
+    width: 100%;
+    position: relative;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0px 0px 64px;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 25px;
+    color: #000;
+    font-family: 'Poppins', sans-serif;
+}
+.sortowanieParent {
+    align-self: stretch;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    gap: 15px;
+}
+.sortowanie {
+    align-self: stretch;
+    background-color: #fff;
+    overflow: hidden;
+    display: flex;
+    align-items: flex-start;
+    padding: 4px 0px;
+    gap: 8px;
+    text-align: left;
+    font-size: 12px;
+    color: #366f15;
+}
+.administrator {
+    position: relative;
+    letter-spacing: 0.02em;
+    line-height: 140%;
+}
+.produktyWKoszykuParent {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    font-size: 29px;
+}
+.headerRow {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0px;
+    width: 100%;
+}
+.zarzdzanieTagami2 {
+    position: relative;
+    letter-spacing: -0.04em;
+    line-height: 120%;
+    font-weight: 600;
+}
+.globalAddBtn {
+    background-color: #366f15;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+.globalAddBtn:hover {
+    background-color: #28530f;
+}
+.vectorWrapper {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.frameChild {
+    align-self: stretch;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+.pies {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 0px 16px;
+    gap: 30px;
+}
+.piesParent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    align-self: stretch;
+}
+.mainCategoryFlex {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.doKasy {
+    border-radius: 20px;
+    background-color: #91be77;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px;
+    box-sizing: border-box;
+    font-size: 16px;
+    cursor: pointer;
+}
+.vectorParent {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+.vectorIcon, .vectorIcon2 {
+    height: 14px;
+    width: 14px;
+    position: relative;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+.dodajKategori {
+    position: relative;
+    letter-spacing: -0.01em;
+    font-weight: 500;
+    white-space: pre-wrap;
+}
+.karmyParent {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 15px;
+}
+
+/* WCIĘCIE POZIOMU 1: Kategorie główne nie mają wcięcia, ale ich dzieci (Kategorie) już tak */
+.frameParent {
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 40px;
+    font-size: 16px;
+    padding-left: 25px; /* Lekkie wcięcie dla Kategorii */
+    box-sizing: border-box;
+}
+
+.categoryLevelWrapper {
+    width: 100%; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 25px;
+}
+
+/* WCIĘCIE POZIOMU 2: Podkategorie wcięte względem swoich Kategorii nadrzędnych */
+.subcategoriesContainer {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    padding-left: 30px; /* Lekkie wcięcie dla Podkategorii */
+    box-sizing: border-box;
+}
+
+.frameGroup {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+}
+.wielkoRasyParent {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+/* WCIĘCIE POZIOMU 3: Bloki tagów przesunięte lekko w prawo względem tytułu podkategorii */
+.tagsContainer {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    font-size: 19px;
+    padding-left: 35px; /* Lekkie wcięcie dla zbioru TAGów */
+    box-sizing: border-box;
+}
+
+/* ========================================== */
+/* DYNAMICZNE, KLIKALNE TEKSTY (TRYB EDYCJI)  */
+/* ========================================== */
+
+.clickableMainTitle {
+    letter-spacing: -0.04em;
+    line-height: 120%;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 29px;
+}
+.clickableMainTitle:hover {
+    color: #366f15;
+    text-decoration: underline;
+}
+
+.clickableCategory {
+    letter-spacing: -0.02em;
+    line-height: 140%;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 22px;
+}
+.clickableCategory:hover {
+    color: #366f15;
+    text-decoration: underline;
+}
+
+.clickableSubcategory {
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    cursor: pointer;
+    font-size: 16px;
+}
+.clickableSubcategory:hover {
+    color: #366f15;
+    text-decoration: underline;
+}
+
+/* ========================================== */
+/* CZERWONE PRZYCISKI USUWANIA (✕)            */
+/* ========================================== */
+
+.globalDeleteX {
+    color: #ff4d4d;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 18px;
+    padding: 2px 6px;
+    transition: transform 0.1s;
+}
+.globalDeleteX:hover {
+    transform: scale(1.2);
+}
+
+/* Tagi i wewnętrzne przyciski usuwania */
+.tagWrapper {
+    height: 40px;
+    border-radius: 5px;
+    background-color: #d9d9d9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 15px;
+    box-sizing: border-box;
+    gap: 12px;
+}
+
+.tagText {
+    position: relative;
+    line-height: 150%;
+    white-space: nowrap;
+    color: #000;
+    cursor: pointer;
+}
+.tagText:hover {
+    text-decoration: underline;
+    color: #366f15;
+}
+
+.tagDeleteX {
+    color: #ff4d4d;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    transition: transform 0.1s;
+}
+.tagDeleteX:hover {
+    transform: scale(1.2);
+}
+
+/* ========================================== */
+/* NOWE STYLE DLA STRZAŁKI SVG (CHEVRON)      */
+/* ========================================== */
+
+.arrowIcon {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    user-select: none;
+}
+
+/* Kiedy element jest rozwinięty, obracamy strzałkę z pozycji "w prawo" do pozycji "w dół" */
+.arrowExpanded {
+    transform: rotate(90deg);
+}

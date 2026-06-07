@@ -3,7 +3,7 @@ import sucha from "@/app/Public/Images/piesSucha.png";
 import legowiska from "@/app/Public/Images/piesLegowiska.png";
 import przekaski from "@/app/Public/Images/piesPrzekaski.png";
 
-// Definiujemy poprawny interfejs danych strukturalnych dla kafelków
+
 export interface DogCategoryItem {
   id: number;
   name: string;
@@ -11,7 +11,7 @@ export interface DogCategoryItem {
   link: string;
 }
 
-// 🔥 Eksportujemy tablicę obiektów (To naprawia błąd o braku exported member 'items')
+
 export const items: DogCategoryItem[] = [
   {
     id: 1,

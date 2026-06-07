@@ -1,0 +1,273 @@
+.produktyWKoszyku {
+  	width: 100%;
+  	position: relative;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 0px 40px;
+  	box-sizing: border-box;
+  	text-align: center;
+  	font-size: 29px;
+  	color: #000;
+  	font-family: Poppins;
+}
+.frameParent {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: flex-start;
+  	justify-content: space-between;
+  	gap: 20px;
+}
+.frameWrapper {
+  	align-self: stretch;
+  	width: 300px;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 20px 0px;
+  	box-sizing: border-box;
+}
+.frameGroup {
+  	align-self: stretch;
+  	border-radius: 12px;
+  	background-color: #fff;
+  	border: 1px solid #565e64;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	justify-content: center;
+  	padding: 20px;
+  	gap: 10px;
+}
+.mojeKontoParent {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 12px;
+}
+.mojeKonto {
+  	position: relative;
+  	letter-spacing: -0.04em;
+  	line-height: 120%;
+  	font-weight: 600;
+}
+.frameChild {
+  	align-self: stretch;
+  	height: 1px;
+  	position: relative;
+  	border-top: 1px solid #000;
+  	box-sizing: border-box;
+}
+.frameContainer {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 12px;
+  	text-align: left;
+  	font-size: 16px;
+}
+.mojeDaneParent {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+  	color: #fc5773;
+}
+.mojeDane {
+  	position: relative;
+  	letter-spacing: 0.02em;
+  	line-height: 140%;
+}
+.tablerIconChevronCompactRi {
+  	height: 24px;
+  	width: 24px;
+  	position: relative;
+}
+.frameItem {
+  	align-self: stretch;
+  	height: 1px;
+  	position: relative;
+  	border-top: 1px solid #565e64;
+  	box-sizing: border-box;
+}
+.listaUlubionychParent {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	justify-content: space-between;
+  	gap: 20px;
+}
+.frameDiv {
+  	align-self: stretch;
+  	width: 100%;
+  	background-color: #fff;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 0px 0px 64px;
+  	box-sizing: border-box;
+  	font-size: 12px;
+	flex: 1;
+}
+.sortowanieParent {
+  	align-self: stretch;
+  	background-color: #fff;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 20px;
+  	gap: 10px;
+}
+.sortowanie {
+  	align-self: stretch;
+  	background-color: #fff;
+  	overflow: hidden;
+  	display: flex;
+  	align-items: flex-start;
+  	padding: 4px 0px;
+  	gap: 8px;
+  	text-align: left;
+  	color: #366f15;
+}
+.produktyWKoszyku2 {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 20px 0px;
+  	gap: 12px;
+  	font-size: 29px;
+}
+.produktyWKoszykuChild {
+  	align-self: stretch;
+  	height: 1px;
+  	position: relative;
+  	max-width: 100%;
+  	overflow: hidden;
+  	max-height: 100%;
+}
+.frameParent2 {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	gap: 16px;
+  	font-size: 19px;
+  	color: #565e64;
+}
+.frameParent3 {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	gap: 16px;
+}
+.imiWrapper {
+  	height: 58px;
+  	width: 300px;
+  	border-radius: 20px;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+  	display: flex;
+  	align-items: center;
+  	padding: 10px 20px;
+}
+.imi {
+  	position: relative;
+  	line-height: 150%;
+}
+.nazwiskoWrapper {
+  	height: 58px;
+  	flex: 1;
+  	border-radius: 20px;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+  	display: flex;
+  	align-items: center;
+  	padding: 10px 20px;
+}
+.polskaWrapper {
+  	align-self: stretch;
+  	height: 58px;
+  	border-radius: 20px;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+  	display: flex;
+  	align-items: center;
+  	padding: 10px 20px;
+}
+.frameParent4 {
+  	align-self: stretch;
+  	display: flex;
+  	align-items: center;
+  	gap: 16px;
+  	text-align: left;
+}
+.kodPocztowyWrapper {
+  	height: 58px;
+  	flex: 1;
+  	border-radius: 20px;
+  	border: 1px solid #000;
+  	box-sizing: border-box;
+  	display: flex;
+  	align-items: center;
+  	padding: 10px 20px;
+  	text-align: center;
+}
+.produktyWKoszyku3 {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-start;
+  	padding: 12px 0px;
+}
+.produktyWKoszykuItem {
+  	align-self: stretch;
+  	height: 1px;
+  	position: relative;
+  	max-width: 100%;
+  	overflow: hidden;
+  	max-height: 100%;
+  	width: 100%;
+}
+.produktyWKoszyku4 {
+  	align-self: stretch;
+  	display: flex;
+  	flex-direction: column;
+  	align-items: flex-end;
+  	justify-content: flex-end;
+  	font-size: 16px;
+}
+.doKasy {
+  	border-radius: 20px;
+  	background-color: #91be77;
+  	display: flex;
+  	align-items: center;
+  	justify-content: center;
+  	padding: 12px 44px;
+}
+.zapiszZmiany {
+  	position: relative;
+  	letter-spacing: -0.01em;
+  	font-weight: 500;
+}
+
+.input {
+  width: 100%;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 16px;
+  padding: 10px;
+}
+
+.activeTab {
+  color: #FF0000; /* Twój pożądany odcień czerwonego */
+}
+.fullWidthContainer {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 1 !important; /* Pozwala na elastyczne wypełnienie pozostałej przestrzeni obok menu */
+}
