@@ -18,13 +18,17 @@ async function getOrCreateCompany(companyName) {
 export async function PATCH(req, { params }) {
   try {
     await connectToDatabase();
-    const { id } = params;
-    const body = await req.json();
+    
+    // WAŻNE: await params dla kompatybilności z nowym Next.js
+    const { id } = await params; 
+    
+    console.log("👉 API PATCH - Odebrane ID produktu:", id);
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    if (!id || id === "undefined" || !mongoose.Types.ObjectId.isValid(id)) {
       return Response.json({ ok: false, error: "Niepoprawne ID produktu" }, { status: 400 });
     }
 
+    const body = await req.json();
     const updateData = {};
     if (body.name !== undefined) updateData.name = body.name;
     if (body.description !== undefined) updateData.description = body.description;
@@ -40,7 +44,6 @@ export async function PATCH(req, { params }) {
       updateData.category = new mongoose.Types.ObjectId(body.category);
     }
 
-    // Jeśli zmieniła się nazwa firmy w formularzu, aktualizujemy powiązanie
     if (body.brand || body.companyName) {
       updateData.company = await getOrCreateCompany(body.brand || body.companyName);
     }
@@ -52,20 +55,14 @@ export async function PATCH(req, { params }) {
     );
 
     if (!updatedProduct) {
-      return Response.json({ ok: false, error: "Nie znaleziono produktu" }, { status: 404 });
+      return Response.json({ ok: false, error: "Nie znaleziono produktu w bazie" }, { status: 404 });
     }
 
-    return Response.json({
-      ok: true,
-      data: updatedProduct,
-    });
+    return Response.json({ ok: true, data: updatedProduct });
   } catch (error) {
-    console.error(" Błąd PATCH /api/products/[id]:", error);
+    console.error("❌ Błąd PATCH /api/products/[id]:", error);
     return Response.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { ok: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
@@ -75,26 +72,27 @@ export async function PATCH(req, { params }) {
 export async function DELETE(req, { params }) {
   try {
     await connectToDatabase();
-    const { id } = params;
+    
+    // WAŻNE: await params dla kompatybilności z nowym Next.js
+    const { id } = await params; 
 
-    if (!mongoose.Types.ObjectId.isValid(id)) {
+    console.log("👉 API DELETE - Odebrane ID produktu:", id);
+
+    if (!id || id === "undefined" || !mongoose.Types.ObjectId.isValid(id)) {
       return Response.json({ ok: false, error: "Niepoprawne ID produktu" }, { status: 400 });
     }
 
     const deletedProduct = await Product.findByIdAndDelete(id);
 
     if (!deletedProduct) {
-      return Response.json({ ok: false, error: "Produkt nie istnieje" }, { status: 404 });
+      return Response.json({ ok: false, error: "Produkt nie istnieje lub został już usunięty" }, { status: 404 });
     }
 
     return Response.json({ ok: true, message: "Produkt pomyślnie usunięty" });
   } catch (error) {
-    console.error(" Błąd DELETE /api/products/[id]:", error);
+    console.error("❌ Błąd DELETE /api/products/[id]:", error);
     return Response.json(
-      {
-        ok: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
+      { ok: false, error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
     );
   }
