@@ -3,23 +3,19 @@
     position: relative;
     background-color: #ffffff;
     width: 40%;
-    
-    /* --- KLUCZOWE POPRAWKI DLA WYSOKOŚCI I SCROLLA --- */
-    max-height: 90vh;        /* Okno zajmie maksymalnie 90% wysokości ekranu */
-    overflow-y: auto;        /* Jeśli treść się nie mieści, pojawi się pionowy scroll */
+    max-height: 90vh;
+    overflow-y: auto;
     overflow-x: hidden;
     display: flex;
-    flex-direction: column;  /* Zmiana z row/center na column dla poprawnego przewijania */
-    align-items: stretch;    /* Rozciągaj elementy wewnętrzne do pełnej szerokości */
-    padding: 40px;          /* Zmniejszono z 64px, aby odzyskać przestrzeń na mniejszych ekranach */
-    /* ------------------------------------------------- */
-    
+    flex-direction: column;
+    align-items: stretch;
+    padding: 40px;
     box-sizing: border-box;
     text-align: center;
     font-size: 19px;
     color: #000;
     font-family: Poppins;
-    border-radius: 20px;     /* Opcjonalnie: zaokrąglenie rogów okna pasujące do reszty interfejsu */
+    border-radius: 20px;
 }
 
 .dodajProduktParent {
@@ -75,17 +71,20 @@
     gap: 24px;
 }
 
+/* GÓRNY WIERSZ (Marka i Kategoria) */
 .frameDiv {
     align-self: stretch;
     display: flex;
+    flex-direction: row;
     align-items: center;
     justify-content: space-between;
-    gap: 20px;
+    gap: 35px; /* Zrównano gap do 35px, aby idealnie pasował do siatek poniżej (gridów) */
 }
 
+/* POPRAWKA: Usunięto sztywne width: 230px, dodano flex: 1 dla równego podziału */
 .markaWrapper {
     height: 58px;
-    width: 230px;
+    flex: 1; 
     border-radius: 20px;
     border: 1px solid #000;
     box-sizing: border-box;
@@ -99,9 +98,10 @@
     line-height: 150%;
 }
 
+/* POPRAWKA: Usunięto sztywne width: 230px, dodano flex: 1 */
 .kategoriaParent {
     height: 58px;
-    width: 230px;
+    flex: 1; 
     border-radius: 20px;
     border: 1px solid #000;
     box-sizing: border-box;
@@ -109,7 +109,6 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px;
-    gap: 20px;
 }
 
 .vectorIcon {
@@ -119,7 +118,6 @@
     object-fit: contain;
 }
 
-/* Usunięto sztywne height: 150px, aby grid dopasowywał się elastycznie */
 .frameParent2 {
     align-self: stretch;
     min-height: 58px; 
@@ -127,7 +125,7 @@
     box-sizing: border-box;
     grid-template-columns: repeat(2, 1fr);
     column-gap: 35px;
-    row-gap: 24px;     /* Zmniejszono delikatnie z 34px dla lepszej zwartości */
+    row-gap: 24px;
 }
 
 .frameParent3 {
@@ -136,7 +134,7 @@
     box-sizing: border-box;
     grid-template-columns: repeat(2, 1fr);
     column-gap: 35px;
-    row-gap: 24px;     /* Zmniejszono delikatnie z 34px */
+    row-gap: 24px;
 }
 
 .tagParent {
@@ -172,7 +170,6 @@
     position: relative;
 }
 
-/* Usunięto sztywne height: 150px, zastąpiono min-height dla elastyczności pól tekstowych */
 .frameChild {
     min-height: 100px;
     border-radius: 20px;
@@ -266,7 +263,6 @@
     color: #565e64;
 }
 
-/* Zmieniono sztywne height na min-height, aby opis dłuższego produktu nie wypychał okna */
 .nazwaWrapper {
     align-self: stretch;
     min-height: 80px;
@@ -303,7 +299,6 @@
     gap: 13px;
 }
 
-/* Zmiejszono gap z ogromnych 300px na flex-współdzielony, aby przycisk zapisu nie uciekał za daleko na mniejszych ekranach */
 .vectorParent1 {
     width: 100%;
     display: flex;
