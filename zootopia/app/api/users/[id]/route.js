@@ -1,15 +1,15 @@
 import { NextResponse } from 'next/server';
-// Zaimportuj swoją konfigurację bazy danych oraz Model (zmień ścieżki na Twoje, jeśli są inne)
-import { connectToDatabase } from "@/lib/mongodb";
+import { connectDB } from '@/lib/mongodb'; 
 import User from '@/models/User'; 
 
 export async function DELETE(request, { params }) {
   try {
     // 1. Połączenie z bazą danych
-    await connectToDatabase();
+    await connectDB();
 
-    // 2. Wyciągnięcie ID ze ścieżki URL
-    const userId = params.id;
+    // 2. Rozpakowanie asynchronicznych parametrów (poprawka dla Next.js 15+)
+    const { id } = await params; 
+    const userId = id;
 
     if (!userId) {
       return NextResponse.json(
@@ -28,7 +28,6 @@ export async function DELETE(request, { params }) {
       );
     }
 
-    // 4. Zwrócenie odpowiedzi o sukcesie
     return NextResponse.json(
       { message: "Użytkownik został pomyślnie usunięty." },
       { status: 200 }
