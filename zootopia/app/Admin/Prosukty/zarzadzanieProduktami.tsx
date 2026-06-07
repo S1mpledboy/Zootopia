@@ -27,13 +27,10 @@ function Section({ id, title, children, openSections, toggleSection }: any) {
 
 interface ProductProps {
   _id: string;
-  id?: string;
   name: string;
-  productName?: string;
   price: number;
   promoPrice?: number | null;
-  images: string[];
-  image?: string;
+  image: string;
   companyName: string;
   company?: string; 
   petCategoryId: string | null; 
@@ -153,7 +150,7 @@ const AdminProductsTab = ({
         if (currentType === 'promocje') return childCategoryIdsForSelectedAnimal.includes(catId);
         return catId === activeCategoryId;
       })
-      .map(p => p.companyName || 'Nieznana marka');
+      .map(p => p.companyName || p.company || 'Nieznana marka');
     return Array.from(new Set(brands)).sort();
   }, [products, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
@@ -186,7 +183,7 @@ const AdminProductsTab = ({
         const catId = product.category || product.petCategoryId;
         if (!catId) return false;
         
-        const prBrand = product.companyName || 'Nieznana marka';
+        const prBrand = product.companyName || product.company || '';
 
         if (currentType === 'promocje') {
           if (groupType === 'category') {
@@ -250,7 +247,7 @@ const AdminProductsTab = ({
     }
 
     if (filters.marka && filters.marka.length > 0) {
-      result = result.filter(p => filters.marka.includes(p.companyName || ''));
+      result = result.filter(p => filters.marka.includes(p.companyName || p.company || ''));
     }
 
     const minPrice = priceFrom ? parseFloat(priceFrom) : 0;
@@ -270,11 +267,9 @@ const AdminProductsTab = ({
     }
 
     result.sort((a, b) => {
-      const nameA = a.productName || a.name || '';
-      const nameB = b.productName || b.name || '';
       switch (sort) {
-        case 'Nazwa rosnąco': return nameA.localeCompare(nameB);
-        case 'Nazwa malejąco': return nameB.localeCompare(nameA);
+        case 'Nazwa rosnąco': return a.name.localeCompare(b.name);
+        case 'Nazwa malejąco': return b.name.localeCompare(a.name);
         case 'Cena rosnąco': return a.price - b.price;
         case 'Cena malejąco': return b.price - a.price;
         default: return 0;
@@ -291,8 +286,7 @@ const AdminProductsTab = ({
   // ── INTEGRACJA Z ENDPOINTAMI API ──────────────────────────────────────────
 
   const handleCreateOrUpdateProduct = async (payload: any, isEdit: boolean) => {
-    const productId = selectedProduct?._id || selectedProduct?.id;
-    const url = isEdit ? `/api/products/${productId}` : '/api/products';
+    const url = isEdit ? `/api/products/${selectedProduct._id}` : '/api/products';
     const method = isEdit ? 'PATCH' : 'POST';
 
     const response = await fetch(url, {
@@ -303,49 +297,35 @@ const AdminProductsTab = ({
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.error || errorData.message || 'Wystąpił problem z operacją zapisu.');
+      throw new Error(errorData.message || 'Wystąpił problem z operacją zapisu.');
     }
 
     const updatedData = await response.json();
     
-    // Pełna normalizacja danych z API pod strukturę interfejsu tabeli
+    // Normalizacja obiektu pod interfejs widoku przed zapisem w state
     const normalizedProduct = {
       ...updatedData.data,
-      name: updatedData.data.productName || updatedData.data.name,
-      productName: updatedData.data.productName || updatedData.data.name,
-      companyName: updatedData.data.brandName || updatedData.data.companyName || payload.brand, 
-      petCategoryId: updatedData.data.category || payload.category,
-      image: updatedData.data.images?.[0] || updatedData.data.image || "/placeholder.png"
+      companyName: payload.brand, 
+      petCategoryId: payload.category
     };
 
     if (isEdit) {
-      setProducts(prev => prev.map(p => (p._id === productId || p.id === productId) ? normalizedProduct : p));
+      setProducts(prev => prev.map(p => p._id === selectedProduct._id ? normalizedProduct : p));
     } else {
       setProducts(prev => [normalizedProduct, ...prev]);
     }
   };
 
-  const handleDeleteProduct = async (product: ProductProps) => {
-    const id = product._id || product.id;
-    const name = product.productName || product.name;
-
-    if (!id || id === "undefined") {
-      alert("Błąd: Produkt nie posiada poprawnego identyfikatora ID.");
-      return;
-    }
-
+  const handleDeleteProduct = async (id: string, name: string) => {
     if (!window.confirm(`Czy na pewno chcesz bezpowrotnie usunąć produkt "${name}"?`)) {
       return;
     }
 
     try {
       const response = await fetch(`/api/products/${id}`, { method: 'DELETE' });
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || 'Błąd serwera podczas usuwania.');
-      }
+      if (!response.ok) throw new Error('Błąd serwera podczas usuwania.');
       
-      setProducts(prev => prev.filter(p => p._id !== id && p.id !== id));
+      setProducts(prev => prev.filter(p => p._id !== id));
     } catch (error: any) {
       alert(error.message || 'Nie udało się usunąć produktu.');
     }
@@ -458,95 +438,91 @@ const AdminProductsTab = ({
         {/* --- SIATKA KART PRODUKTOWYCH --- */}
         <div className={styles.produktPromocjaPiesParent} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
           {filteredAndSortedProducts.length > 0 ? (
-            filteredAndSortedProducts.map((product) => {
-              const productId = product._id || product.id;
-              const mainImage = product.images?.[0] || product.image || "/placeholder.png";
-              return (
+            filteredAndSortedProducts.map((product) => (
+              <div 
+                key={product._id} 
+                style={{ 
+                  border: '1px solid #e5e7eb', 
+                  borderRadius: '12px', 
+                  padding: '16px', 
+                  background: '#fff', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  //justify: 'space-between',
+                  position: 'relative' // Potrzebne do pozycjonowania X
+                }}
+              >
+                {/* PRZYCISK USUNIĘCIA (X) */}
                 <div 
-                  key={productId} 
-                  style={{ 
-                    border: '1px solid #e5e7eb', 
-                    borderRadius: '12px', 
-                    padding: '16px', 
-                    background: '#fff', 
-                    display: 'flex', 
-                    flexDirection: 'column', 
-                    position: 'relative'
+                  onClick={() => handleDeleteProduct(product._id, product.name)}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    cursor: 'pointer',
+                    zIndex: 10,
+                    padding: '4px',
+                    borderRadius: '50%',
+                    backgroundColor: '#f3f4f6',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
-                  {/* PRZYCISK USUNIĘCIA (X) */}
-                  <div 
-                    onClick={() => handleDeleteProduct(product)}
-                    style={{
-                      position: 'absolute',
-                      top: '12px',
-                      right: '12px',
-                      cursor: 'pointer',
-                      zIndex: 10,
-                      padding: '4px',
-                      borderRadius: '50%',
-                      backgroundColor: '#f3f4f6',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
-                    <Image src={closeIcon} width={10} height={10} alt="Usuń" />
-                  </div>
-
-                  <div>
-                    <div style={{ width: '100%', height: '160px', position: 'relative', marginBottom: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                      <img 
-                        src={mainImage} 
-                        alt={product.productName || product.name} 
-                        style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} 
-                      />
-                    </div>
-
-                    <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontWeight: 600, marginBottom: '4px' }}>
-                      {product.companyName || "Nieznana marka"}
-                    </div>
-
-                    <div style={{ fontSize: '14px', fontWeight: 500, color: '#1f2937', marginBottom: '8px', minHeight: '40px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                      {product.productName || product.name}
-                    </div>
-
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
-                      {product.promoPrice ? (
-                        <>
-                          <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#ef4444' }}>{product.promoPrice.toFixed(2)} zł</span>
-                          <span style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'line-through' }}>{product.price.toFixed(2)} zł</span>
-                        </>
-                      ) : (
-                        <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>{product.price.toFixed(2)} zł</span>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <button 
-                    onClick={() => openEditModal(product)}
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#1f2937',
-                      color: '#fff',
-                      border: 'none',
-                      padding: '10px',
-                      borderRadius: '8px',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      fontSize: '13px',
-                      textAlign: 'center',
-                      transition: 'background-color 0.2s',
-                      marginTop: 'auto'
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#4b5563')}
-                    onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1f2937')}
-                  >
-                    Edytuj produkt
-                  </button>
+                  <Image src={closeIcon} width={10} height={10} alt="Usuń" />
                 </div>
-              );
-            })
+
+                <div>
+                  <div style={{ width: '100%', height: '160px', position: 'relative', marginBottom: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} 
+                    />
+                  </div>
+
+                  <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontWeight: 600, marginBottom: '4px' }}>
+                    {product.companyName || product.company}
+                  </div>
+
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: '#1f2937', marginBottom: '8px', minHeight: '40px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {product.name}
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
+                    {product.promoPrice ? (
+                      <>
+                        <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#ef4444' }}>{product.promoPrice.toFixed(2)} zł</span>
+                        <span style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'line-through' }}>{product.price.toFixed(2)} zł</span>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>{product.price.toFixed(2)} zł</span>
+                    )}
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => openEditModal(product)}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#1f2937',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    textAlign: 'center',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#4b5563')}
+                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1f2937')}
+                >
+                  Edytuj produkt
+                </button>
+              </div>
+            ))
           ) : (
             <div style={{ padding: '20px', fontSize: '16px', gridColumn: '1/-1' }}>Brak produktów spełniających kryteria.</div>
           )}
