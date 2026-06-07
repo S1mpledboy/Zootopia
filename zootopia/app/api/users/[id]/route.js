@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongodb'; 
+import { connectToDatabase } from "@/lib/mongodb";
 import User from '@/models/User'; 
 
 export async function DELETE(request, { params }) {
   try {
     // 1. Połączenie z bazą danych
-    await connectDB();
+    await connectToDatabase();
 
     // 2. Rozpakowanie asynchronicznych parametrów (poprawka dla Next.js 15+)
     const { id } = await params; 
