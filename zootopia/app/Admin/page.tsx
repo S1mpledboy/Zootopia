@@ -36,22 +36,9 @@ const getCachedStructures = unstable_cache(
     ]);
 
     return {
-      serializedCategories: categories.map((cat: any) => ({
-        _id: cat._id.toString(),
-        name: cat.name,
-        slug: cat.slug,
-        parent: cat.parent ? cat.parent.toString() : null
-      })),
-      serializedTagGroups: tagGroups.map((group: any) => ({
-        _id: group._id.toString(),
-        name: group.name,
-        category: group.category.toString()
-      })),
-      serializedTags: tags.map((tag: any) => ({
-        _id: tag._id.toString(),
-        name: tag.name,
-        group: tag.group.toString()
-      }))
+      serializedCategories: categories,
+      serializedTagGroups: tagGroups,
+      serializedTags: tags
     };
   },
   ["admin-structures-cache"],
@@ -59,30 +46,17 @@ const getCachedStructures = unstable_cache(
 );
 
 export default async function AdminPage() {
-  // 1. Pobieramy struktury z cache
+  // 1. Pobieramy drzewo kategorii i tagów
   const { serializedCategories, serializedTagGroups, serializedTags } = await getCachedStructures();
 
   await getDatabaseConnection();
 
-  // 2. Pobieramy dane z bazy. Używamy .lean(), aby uzyskać czyste obiekty JS,
-  // ale NIE zmieniamy formatu dat ani statusów, aby zachować kompatybilność z Twoimi komponentami.
+  // 2. Pobieramy równolegle komplety danych z bazy (.lean() zwraca czyste obiekty)
   const [rawProducts, rawOrders, rawUsers] = await Promise.all([
     ProductModel.find({}).populate("company").sort({ updatedAt: -1 }).lean(),
     OrderModel.find({}).sort({ createdAt: -1 }).lean(),
     UserModel.find({}).sort({ createdAt: -1 }).lean()
   ]);
-
-  // Mapujemy TYLKO _id na string (wymóg Next.js dla komponentów klienckich),
-  // pozostawiając daty jako obiekty Date i nienaruszone statusy zamówień.
-  const ordersData = rawOrders.map((order: any) => ({
-    ...order,
-    _id: order._id.toString()
-  }));
-
-  const usersData = rawUsers.map((user: any) => ({
-    ...user,
-    _id: user._id.toString()
-  }));
 
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
@@ -92,35 +66,65 @@ export default async function AdminPage() {
     return "/fallback-image.png";
   };
 
-  // Formatowanie dedykowane dla nowej zakładki produktów
-  const productsData = rawProducts.map((product: any) => {
+  // 3. Mapujemy produkty zachowując absolutnie WSZYSTKIE oryginalne pola poprzez `...product`
+  // (dzięki temu stara zakładka produktów oraz inne podsystemy nie stracą dodatkowych właściwości),
+  // a jednocześnie wstrzykujemy formatowanie dla nowej karty admina.
+  const mappedProducts = rawProducts.map((product: any) => {
     let catId = null;
     if (product.category) {
       catId = product.category._id ? product.category._id.toString() : product.category.toString();
     }
     return {
+      ...product, // Zachowanie oryginalnych pól bazy (np. quantity, isActive itp.)
       _id: product._id.toString(),
-      name: product.name,
-      price: product.price,
-      promoPrice: product.promoPrice ?? null,
       image: extractImage(product.images), 
       companyName: product.company?.name || "Inna marka",
       petCategoryId: catId,
-      tags: product.tags || [],
       description: product.description || "",
       ingredients: product.ingredients || "",
       additionalInfo: product.additionalInfo || ""
     };
   });
 
+  // 4. DEEP-SERIALIZACJA (Rozwiązanie błędu Error #31)
+  // Przejście przez JSON czyści obiekty Date/ObjectId do bezpiecznych stringów,
+  // pozostawiając statusy zamówień i nienaruszoną głęboką strukturę dokumentów.
+  const sanitizedProducts = JSON.parse(JSON.stringify(mappedProducts));
+  const sanitizedOrders = JSON.parse(JSON.stringify(rawOrders));
+  const sanitizedUsers = JSON.parse(JSON.stringify(rawUsers));
+
+  const finalCategories = JSON.parse(JSON.stringify(
+    serializedCategories.map((cat: any) => ({
+      ...cat,
+      _id: cat._id.toString(),
+      parent: cat.parent ? cat.parent.toString() : null
+    }))
+  ));
+
+  const finalTagGroups = JSON.parse(JSON.stringify(
+    serializedTagGroups.map((g: any) => ({
+      ...g,
+      _id: g._id.toString(),
+      category: g.category ? g.category.toString() : null
+    }))
+  ));
+
+  const finalTags = JSON.parse(JSON.stringify(
+    serializedTags.map((t: any) => ({
+      ...t,
+      _id: t._id.toString(),
+      group: t.group ? t.group.toString() : null
+    }))
+  ));
+
   return (
     <AdminClient
-      productsData={productsData}
-      categoriesData={serializedCategories}
-      tagGroupsData={serializedTagGroups}
-      tagsData={serializedTags}
-      ordersData={ordersData} // Przekazane w nienaruszonym formacie
-      usersData={usersData}   // Przekazane w nienaruszonym formacie
+      productsData={sanitizedProducts}
+      categoriesData={finalCategories}
+      tagGroupsData={finalTagGroups}
+      tagsData={finalTags}
+      ordersData={sanitizedOrders} // Przekazane w 100% oryginalnej formie (bezpieczne dla komponentu Zamówienia)
+      usersData={sanitizedUsers}   // Przekazane w 100% oryginalnej formie (bezpieczne dla komponentu Konta)
     />
   );
 }
