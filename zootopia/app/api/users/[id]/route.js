@@ -1,12 +1,12 @@
 import { NextResponse } from 'next/server';
 // Zaimportuj swoją konfigurację bazy danych oraz Model (zmień ścieżki na Twoje, jeśli są inne)
-import { connectDB } from '@/lib/mongodb'; 
+import { connectToDatabase } from "@/lib/mongodb";
 import User from '@/models/User'; 
 
 export async function DELETE(request, { params }) {
   try {
     // 1. Połączenie z bazą danych
-    await connectDB();
+    await connectToDatabase();
 
     // 2. Wyciągnięcie ID ze ścieżki URL
     const userId = params.id;
