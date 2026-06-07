@@ -1,6 +1,5 @@
 "use client";
 
-import type { NextPage } from "next";
 import Image from "next/image";
 import { useState } from "react";
 
@@ -11,28 +10,27 @@ import DaneIBezpieczenstwo from "./daneIBezpieczenstwo";
 import ZarzadzanieZamowieniami from "./Zamowienia/zarzadzanieZamowieniami";
 import Konta from "./Konta/konta";
 import Tags from "./Tags/tags";
-
-// IMPORT NOWEGO KOMPONENTU ZAKŁADKI PRODUKTÓW
 import AdminProductsTab from "./Prosukty/zarzadzanieProduktami";
+import ZarzadzanieAdopcjami from "./Adopcje/zarzadzanieAdopcjami";
 
-type TabType = "dane" | "zamowienia" | "produkty" | "uzytkownicy" | "tags";
+type TabType = "dane" | "zamowienia" | "produkty" | "uzytkownicy" | "tags" | "adopcje";
 
 interface AdminClientProps {
   ordersData: any[];
   productsData: any[];
-  usersData: any[]; 
-  categoriesData: any[]; 
-  tagGroupsData: any[];  
-  tagsData: any[];       
+  usersData: any[];
+  categoriesData: any[];
+  tagGroupsData: any[];
+  tagsData: any[];
 }
 
-const AdminClient: React.FC<AdminClientProps> = ({ 
-  ordersData, 
-  productsData, 
-  usersData, 
-  categoriesData, 
-  tagGroupsData, 
-  tagsData 
+const AdminClient: React.FC<AdminClientProps> = ({
+  ordersData,
+  productsData,
+  usersData,
+  categoriesData,
+  tagGroupsData,
+  tagsData,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("dane");
 
@@ -48,10 +46,9 @@ const AdminClient: React.FC<AdminClientProps> = ({
       case "zamowienia":
         return <ZarzadzanieZamowieniami initialOrders={ordersData} />;
       case "produkty":
-        // PODMIANA: Zamiast starego komponentu renderujemy pełny panel zarządzania z filtrami i modalem
         return (
-          <AdminProductsTab 
-            initialProducts={productsData} 
+          <AdminProductsTab
+            initialProducts={productsData}
             allCategories={categoriesData}
             allTagGroups={tagGroupsData}
             allTags={tagsData}
@@ -60,11 +57,15 @@ const AdminClient: React.FC<AdminClientProps> = ({
       case "uzytkownicy":
         return <Konta initialUsers={usersData} />;
       case "tags":
-        return <Tags 
-          initialCategories={categoriesData} 
-          initialTagGroups={tagGroupsData} 
-          initialTags={tagsData} 
-        />;
+        return (
+          <Tags
+            initialCategories={categoriesData}
+            initialTagGroups={tagGroupsData}
+            initialTags={tagsData}
+          />
+        );
+      case "adopcje":
+        return <ZarzadzanieAdopcjami />;
       default:
         return <DaneIBezpieczenstwo />;
     }
@@ -73,7 +74,7 @@ const AdminClient: React.FC<AdminClientProps> = ({
   return (
     <div className={styles.produktyWKoszyku}>
       <div className={styles.frameParent}>
-        
+
         {/* LEWE MENU */}
         <div className={styles.frameWrapper}>
           <div className={styles.frameGroup}>
@@ -83,6 +84,7 @@ const AdminClient: React.FC<AdminClientProps> = ({
             </div>
 
             <div className={styles.frameContainer}>
+
               <div className={getMenuClass("dane")} onClick={() => setActiveTab("dane")} style={{ cursor: "pointer" }}>
                 <div className={styles.mojeDane}>Dane i bezpieczeństwo</div>
                 <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
@@ -118,10 +120,18 @@ const AdminClient: React.FC<AdminClientProps> = ({
 
               <div className={styles.frameItem} />
 
+              <div className={getMenuClass("adopcje")} onClick={() => setActiveTab("adopcje")} style={{ cursor: "pointer" }}>
+                <div className={styles.mojeDane}>Zarządzanie adopcjami</div>
+                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
+              </div>
+
+              <div className={styles.frameItem} />
+
               <div className={styles.listaUlubionychParent} onClick={() => alert("Wylogowywanie...")} style={{ cursor: "pointer" }}>
                 <div className={styles.mojeDane}>Wyloguj się</div>
                 <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
               </div>
+
             </div>
           </div>
         </div>

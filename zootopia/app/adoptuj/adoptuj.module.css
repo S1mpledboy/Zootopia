@@ -1,0 +1,232 @@
+.page {
+  min-height: 100vh;
+  background: #fafffe;
+}
+
+/* ── Hero ── */
+.hero {
+  background: #edf7ed;
+  padding: 56px 24px;
+}
+
+.heroInner {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.heroPill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.heroPillText {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #3d8b3d;
+}
+
+.heroTitle {
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 900;
+  color: #111827;
+  line-height: 1.15;
+  margin-bottom: 16px;
+}
+
+.heroTitleGreen {
+  color: #3d8b3d;
+}
+
+.heroDesc {
+  color: #4b5563;
+  max-width: 560px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 32px;
+}
+
+.infoBar {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  background: white;
+  border-radius: 16px;
+  padding: 16px 24px;
+  border: 1px solid #d4edd4;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.infoBarLabel {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+
+.infoBarValue {
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 14px;
+}
+
+.infoBarValueGreen {
+  font-weight: 700;
+  font-size: 14px;
+  color: #3d8b3d;
+  text-decoration: none;
+}
+
+.infoBarValueGreen:hover {
+  text-decoration: underline;
+}
+
+.infoBarDivider {
+  width: 1px;
+  height: 32px;
+  background: #e5e7eb;
+  flex-shrink: 0;
+}
+
+/* ── Grid section ── */
+.gridSection {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 580px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.empty {
+  text-align: center;
+  padding: 80px 0;
+  color: #9ca3af;
+}
+
+.emptyIcon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+}
+
+.emptyTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.emptyText {
+  font-size: 0.875rem;
+}
+
+/* ── Shelter block ── */
+.shelterBlock {
+  margin-top: 64px;
+  background: #2d6a2d;
+  color: white;
+  border-radius: 24px;
+  padding: 40px;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .shelterBlock {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 28px;
+  }
+}
+
+.shelterInfo {
+  flex: 1;
+}
+
+.shelterName {
+  font-size: 1.5rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.shelterDesc {
+  color: #a7d9a7;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+
+.shelterDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 480px) {
+  .shelterDetails {
+    grid-template-columns: 1fr;
+  }
+}
+
+.shelterRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #d1f0d1;
+}
+
+.shelterLink {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.shelterLink:hover {
+  text-decoration: underline;
+}
+
+.shelterLinkMuted {
+  color: #d1f0d1;
+  text-decoration: none;
+}
+
+.shelterLinkMuted:hover {
+  color: white;
+  text-decoration: underline;
+}
+
+.shelterBtn {
+  flex-shrink: 0;
+  background: white;
+  color: #2d6a2d;
+  font-weight: 700;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+
+.shelterBtn:hover {
+  background: #f0fdf0;
+}

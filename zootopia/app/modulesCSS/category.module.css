@@ -1,45 +1,74 @@
 .kategorie {
-  	width: 100%;
-  	position: relative;
-  	background-color: #fff;
-  	overflow: hidden;
-  	display: flex;
-  	align-items: center;
-  	justify-content: space-between;
-  	padding: 16px 40px;
-  	box-sizing: border-box;
-  	gap: 20px;
-  	text-align: left;
-  	font-size: 19px;
-  	color: #366f15;
-  	font-family: Poppins;
-}
-.frameParent {
-  	border-radius: 50px;
-  	display: flex;
-  	align-items: center;
-  	gap: 12px;
-}
-.piesWrapper {
-  	display: flex;
-  	align-items: center;
-  	justify-content: center;
-  	padding: 10px;
-}
-.pies {
-  	position: relative;
-  	line-height: 150%;
-}
-.promocjeWrapper {
-  	display: flex;
-  	align-items: center;
-  	justify-content: center;
-  	padding: 10px;
-  	color: #fc5773;
-}
-.kategorieInner {
-  	border-radius: 50px;
-  	display: flex;
-  	align-items: center;
+    width: 100%;
+    position: relative;
+    background-color: #fff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between; 
+    padding: 16px 40px;
+    box-sizing: border-box;
+    gap: 20px;
+    text-align: left;
+    font-size: 19px;
+    color: #366f15;
+    font-family: Poppins;
+    border-bottom: 1px solid #f3f4f6; 
 }
 
+.frameParent {
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.piesWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+}
+
+.pies {
+    position: relative;
+    line-height: 150%;
+}
+
+.promocjeWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    color: #fc5773;
+}
+
+.kategorieInner {
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+}
+
+
+.adoptBtn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #3d8b3d;
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px; 
+    padding: 10px 20px;
+    border-radius: 999px; 
+    transition: background-color 0.2s ease, transform 0.1s ease;
+    white-space: nowrap; 
+}
+
+.adoptBtn:hover {
+    background-color: #2d6a2d;
+}
+
+.adoptBtn:active {
+    transform: scale(0.98);
+}

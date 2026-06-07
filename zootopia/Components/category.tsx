@@ -7,6 +7,7 @@ import Link from 'next/link';
 const Kategorie: NextPage = () => {
     return (
         <div className={styles.kategorie}>
+            {/* Lewa strona: Kategorie sklepowe */}
             <div className={styles.frameParent}>
                 <Link href={{ pathname: '/ShopPage', query: { type: 'pies' } }}>
                     <div className={styles.piesWrapper}>
@@ -29,6 +30,11 @@ const Kategorie: NextPage = () => {
                     </div>
                 </Link>
             </div>
+
+            {/* Prawa strona: Nowy przycisk Adopcji */}
+            <Link href="/adoptuj" className={styles.piesWrapper}>
+                Adoptuj Przyjaciela
+            </Link>
         </div>
     );
 };
