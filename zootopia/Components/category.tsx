@@ -32,8 +32,8 @@ const Kategorie: NextPage = () => {
             </div>
 
             {/* Prawa strona: Nowy przycisk Adopcji */}
-            <Link href="/adoptuj" className={styles.adoptBtn}>
-                <span>🐾</span> Adoptuj Przyjaciela
+            <Link href="/adoptuj" className={styles.promocjeWrapper}>
+                Adoptuj Przyjaciela
             </Link>
         </div>
     );
