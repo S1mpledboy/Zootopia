@@ -1,19 +1,16 @@
 'use client';
 
 import Image from 'next/image';
-import Link from 'next/link';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useState, useMemo, useEffect } from 'react';
-import styles from './zarzadzanieProduktami.module.css';
+import styles from './shopPage.module.css';
 
 import arrowDown from '@/app/Public/Images/arrowDown.svg';
 import arrowRight from '@/app/Public/Images/arrowRight.svg';
 import line from '@/app/Public/Images/line.svg';
 
-import PromotionItem from '@/app/ItemBlocks/promotionItem';
 import ProductModal from './dodaj';
 
-// --- Komponent Pomocniczy: Sekcja Filtra ---
 function Section({ id, title, children, openSections, toggleSection }: any) {
   const open = openSections[id];
   return (
@@ -36,6 +33,9 @@ interface ProductProps {
   companyName: string;
   petCategoryId: string | null; 
   tags: string[];
+  description?: string;
+  ingredients?: string;
+  additionalInfo?: string;
 }
 
 interface CategoryProps { _id: string; name: string; slug: string; parent: string | null; }
@@ -54,11 +54,8 @@ const AdminProductsTab = ({
   allTags?: TagProps[];
 }) => {
   const searchParams = useSearchParams();
-  const router = useRouter();
-
   const currentType = searchParams.get('type') || 'pies';
 
-  // --- STANY FILTROWANIA ---
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ cena: true, marka: true });
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sort, setSort] = useState<string>('popularność');
@@ -66,11 +63,9 @@ const AdminProductsTab = ({
   const [priceTo, setPriceTo] = useState<string>('');
   const [activeCategoryId, setActiveCategoryId] = useState<string | null>(null);
 
-  // --- STANY MODALA ---
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
-  // --- LOGIKA URLa ---
   useEffect(() => {
     const urlCategorySlug = searchParams.get('category');
     const urlTagName = searchParams.get('tag');
@@ -150,7 +145,6 @@ const AdminProductsTab = ({
     return Array.from(new Set(brands)).sort();
   }, [initialProducts, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
-  // --- AKCJE ---
   const toggleSection = (key: string) => setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
   
   const toggleFilter = (groupKey: string, tagName: string) => {
@@ -162,21 +156,18 @@ const AdminProductsTab = ({
   };
 
   const selectSort = (value: string) => setSort(value);
-  
   const selectCategory = (id: string) => {
     setActiveCategoryId(prev => (prev === id ? null : id));
     setFilters({});
   };
 
   const handleResetToMainType = () => {
-    // router.push(`/AdminPage?type=${currentType}`); // Opcjonalnie do odblokowania
     setActiveCategoryId(null);
     setFilters({});
     setPriceFrom('');
     setPriceTo('');
   };
 
-  // --- ZLICZANIE (FACETY) ---
   const facetCounts = useMemo(() => {
     const getCountForOption = (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => {
       return initialProducts.filter(product => {
@@ -231,7 +222,6 @@ const AdminProductsTab = ({
     return { get: (groupType: 'category' | 'marka' | 'tag', value: string, groupKey?: string) => getCountForOption(groupType, value, groupKey) };
   }, [initialProducts, filters, activeCategoryId, priceFrom, priceTo, currentType, allCategories, childCategoryIdsForSelectedAnimal]);
 
-  // --- FILTROWANIE GŁÓWNE ---
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...initialProducts];
 
@@ -274,7 +264,6 @@ const AdminProductsTab = ({
     return result;
   }, [initialProducts, filters, priceFrom, priceTo, sort, activeCategoryId, currentType, childCategoryIdsForSelectedAnimal]);
 
-  // --- FUNKCJE MODALA ---
   const openAddModal = () => { setSelectedProduct(null); setIsModalOpen(true); };
   const openEditModal = (product: any) => { setSelectedProduct(product); setIsModalOpen(true); };
   const closeModal = () => { setIsModalOpen(false); setSelectedProduct(null); };
@@ -297,7 +286,7 @@ const AdminProductsTab = ({
   return (
     <div className={styles.kategorie}>
       
-      {/* --- LEWA KOLUMNA (FILTRY) --- */}
+      {/* --- FILTRY (LEWA FLANKA) --- */}
       <div className={styles.frameParent}>
         <div className={styles.frameWrapper}><div className={styles.filtrujWrapper}><div className={styles.filtruj}>Filtruj (Admin)</div></div></div>
         <Image src={line} width={216} height={1} alt="" />
@@ -351,7 +340,7 @@ const AdminProductsTab = ({
         </div>
       </div>
 
-      {/* --- PRAWA KOLUMNA (PRODUKTY I AKCJE) --- */}
+      {/* --- PRODUKTY (PRAWA STRONA) --- */}
       <div className={styles.frameParent25}>
         <div className={styles.sortowanieParent}>
           <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', alignItems: 'center' }}>
@@ -362,7 +351,6 @@ const AdminProductsTab = ({
               )}
             </div>
             
-            {/* --- PRZYCISK NOWEGO PRODUKTU --- */}
             <button 
               onClick={openAddModal}
               style={{ backgroundColor: '#000', color: '#fff', border: 'none', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
@@ -384,36 +372,84 @@ const AdminProductsTab = ({
           <div className={styles.sortowanie3}><div className={styles.stronaGwna}>{filteredAndSortedProducts.length} produktów</div></div>
         </div>
 
-        <div className={styles.produktPromocjaPiesParent}>
+        {/* --- SIATKA KART PRODUKTOWYCH DLA ADMINA --- */}
+        <div className={styles.produktPromocjaPiesParent} style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' }}>
           {filteredAndSortedProducts.length > 0 ? (
             filteredAndSortedProducts.map((product) => (
-              <div key={product._id} style={{ display: 'flex', flexDirection: 'column', gap: '8px', position: 'relative' }}>
+              <div 
+                key={product._id} 
+                style={{ 
+                  border: '1px solid #e5e7eb', 
+                  borderRadius: '12px', 
+                  padding: '16px', 
+                  background: '#fff', 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  justifyContent: 'space-between' 
+                }}
+              >
+                <div>
+                  {/* Grafika produktu */}
+                  <div style={{ width: '100%', height: '160px', position: 'relative', marginBottom: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                    <img 
+                      src={product.image} 
+                      alt={product.name} 
+                      style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }} 
+                    />
+                  </div>
+
+                  {/* Nazwa firmy/marki */}
+                  <div style={{ fontSize: '11px', color: '#9ca3af', textTransform: 'uppercase', fontWeight: 600, marginBottom: '4px' }}>
+                    {product.companyName}
+                  </div>
+
+                  {/* Nazwa przedmiotu */}
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: '#1f2937', marginBottom: '8px', minHeight: '40px', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                    {product.name}
+                  </div>
+
+                  {/* Ceny (Promocyjna vs Standardowa) */}
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', marginBottom: '16px' }}>
+                    {product.promoPrice ? (
+                      <>
+                        <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#ef4444' }}>{product.promoPrice.toFixed(2)} zł</span>
+                        <span style={{ fontSize: '13px', color: '#9ca3af', textDecoration: 'line-through' }}>{product.price.toFixed(2)} zł</span>
+                      </>
+                    ) : (
+                      <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#1f2937' }}>{product.price.toFixed(2)} zł</span>
+                    )}
+                  </div>
+                </div>
                 
-                {/* --- PRZYCISK EDYCJI NADAJĄCY SIĘ NAD KARTĄ --- */}
+                {/* PRZYCISK EDYCJI ZAMIAST "DO KOSZYKA" */}
                 <button 
                   onClick={() => openEditModal(product)}
-                  style={{ backgroundColor: '#f0f0f0', border: '1px solid #ccc', padding: '6px', borderRadius: '4px', cursor: 'pointer', alignSelf: 'flex-start', fontSize: '12px', fontWeight: 'bold' }}
+                  style={{
+                    width: '100%',
+                    backgroundColor: '#1f2937',
+                    color: '#fff',
+                    border: 'none',
+                    padding: '10px',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    fontWeight: '600',
+                    fontSize: '13px',
+                    textAlign: 'center',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#4b5563')}
+                  onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1f2937')}
                 >
-                  ✎ EDYTUJ PRODUKT
+                  Edytuj produkt
                 </button>
-
-                <PromotionItem
-                  id={product._id}
-                  brandName={product.companyName}
-                  productName={product.name}
-                  price={product.price}
-                  promoPrice={product.promoPrice || undefined}
-                  image={product.image}
-                />
               </div>
             ))
           ) : (
-            <div style={{ padding: '20px', fontSize: '18px' }}>Brak produktów spełniających kryteria.</div>
+            <div style={{ padding: '20px', fontSize: '16px', gridColumn: '1/-1' }}>Brak produktów spełniających kryteria.</div>
           )}
         </div>
       </div>
 
-      {/* --- RENDEROWANIE MODALA --- */}
       <ProductModal isOpen={isModalOpen} onClose={closeModal} productData={selectedProduct} allCategories={allCategories} />
     </div>
   );

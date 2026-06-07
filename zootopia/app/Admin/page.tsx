@@ -4,6 +4,8 @@ import ProductModel from "@/models/Product";
 import CategoryModel from "@/models/Category";
 import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
+import OrderModel from "@/models/Order"; // Upewnij się, że ścieżka do modelu zamówień jest poprawna
+import UserModel from "@/models/User";   // Upewnij się, że ścieżka do modelu użytkowników jest poprawna
 import AdminClient from "./adminClient";
 import { unstable_cache } from "next/cache";
 
@@ -57,16 +59,17 @@ const getCachedStructures = unstable_cache(
 );
 
 export default async function AdminPage() {
-  // Pobieramy drzewo kategorii i tagów
+  // 1. Pobieramy drzewo kategorii i tagów z cache
   const { serializedCategories, serializedTagGroups, serializedTags } = await getCachedStructures();
 
   await getDatabaseConnection();
 
-  // Admin musi widzieć WSZYSTKIE produkty
-  const rawProducts = await ProductModel.find({})
-    .populate("company")
-    .sort({ updatedAt: -1 })
-    .lean();
+  // 2. Pobieramy równolegle produkty, zamówienia i użytkowników z bazy danych
+  const [rawProducts, rawOrders, rawUsers] = await Promise.all([
+    ProductModel.find({}).populate("company").sort({ updatedAt: -1 }).lean(),
+    OrderModel.find({}).sort({ createdAt: -1 }).lean(),
+    UserModel.find({}).sort({ createdAt: -1 }).lean()
+  ]);
 
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
@@ -76,7 +79,8 @@ export default async function AdminPage() {
     return "/fallback-image.png";
   };
 
-  const initialProducts = rawProducts.map((product: any) => {
+  // 3. Serializacja danych dla bezpiecznego przekazania Client Component (Next.js)
+  const productsData = rawProducts.map((product: any) => {
     let catId = null;
     if (product.category) {
       catId = product.category._id ? product.category._id.toString() : product.category.toString();
@@ -96,14 +100,27 @@ export default async function AdminPage() {
     };
   });
 
+  const ordersData = rawOrders.map((order: any) => ({
+    ...order,
+    _id: order._id.toString(),
+    createdAt: order.createdAt ? order.createdAt.toISOString() : null,
+    updatedAt: order.updatedAt ? order.updatedAt.toISOString() : null
+  }));
+
+  const usersData = rawUsers.map((user: any) => ({
+    ...user,
+    _id: user._id.toString(),
+    createdAt: user.createdAt ? user.createdAt.toISOString() : null
+  }));
+
   return (
     <AdminClient
-      productsData={initialProducts}
+      productsData={productsData}
       categoriesData={serializedCategories}
       tagGroupsData={serializedTagGroups}
       tagsData={serializedTags}
-      ordersData={[]} // Jeśli masz pobieranie zamówień na serwerze, wklej je tutaj
-      usersData={[]}  // Jeśli masz pobieranie użytkowników na serwerze, wklej je tutaj
+      ordersData={ordersData}
+      usersData={usersData}
     />
   );
 }
