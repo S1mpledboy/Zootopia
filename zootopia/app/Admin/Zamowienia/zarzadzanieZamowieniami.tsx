@@ -22,24 +22,37 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
 
-  // KROK 1: Najpierw filtrujemy całą bazę TYLKO po wpisanym numerze zamówienia
+  // Funkcja pomocnicza: normalizuje status z bazy danych do formatu filtrów
+  const normalizeStatus = (status: string): string => {
+    if (!status) return 'w trakcie';
+    const s = status.toLowerCase().trim();
+    
+    if (s === 'completed' || s === 'finished' || s === 'ukończone') return 'ukończone';
+    if (s === 'in_progress' || s === 'in progress' || s === 'w trakcie') return 'w trakcie';
+    if (s === 'shipped' || s === 'wysłane') return 'wysłane';
+    if (s === 'cancelled' || s === 'anulowane') return 'anulowane';
+    
+    return s;
+  };
+
+  // KROK 1: Filtrowanie po wyszukiwarce
   const searchedOrders = orders.filter(order =>
     order.orderNumber
-      .toLowerCase()
-      .includes(searchQuery.trim().toLowerCase())
+      ? order.orderNumber.toLowerCase().includes(searchQuery.trim().toLowerCase())
+      : false
   );
 
-  // KROK 2: Statystyki obliczamy z przefiltrowanych przez wyszukiwarkę zamówień (teraz liczby będą się zmieniać!)
+  // KROK 2: Statystyki liczbowe korzystające z normalizacji
   const countAll = searchedOrders.length;
-  const countCompleted = searchedOrders.filter(o => o.status === 'ukończone').length;
-  const countInProgress = searchedOrders.filter(o => o.status === 'w trakcie').length;
-  const countShipped = searchedOrders.filter(o => o.status === 'wysłane').length;
-  const countCancelled = searchedOrders.filter(o => o.status === 'anulowane').length;
+  const countCompleted = searchedOrders.filter(o => normalizeStatus(o.status) === 'ukończone').length;
+  const countInProgress = searchedOrders.filter(o => normalizeStatus(o.status) === 'w trakcie').length;
+  const countShipped = searchedOrders.filter(o => normalizeStatus(o.status) === 'wysłane').length;
+  const countCancelled = searchedOrders.filter(o => normalizeStatus(o.status) === 'anulowane').length;
 
-  // KROK 3: Do końcowego wyrenderowania na liście bierzemy zamówienia spełniające też kryterium zakładki statusu
+  // KROK 3: Główny filtr listy (Naprawiony błąd pustej listy)
   const filteredOrders = activeFilter === 'wszystkie'
     ? searchedOrders
-    : searchedOrders.filter(order => order.status === activeFilter);
+    : searchedOrders.filter(order => normalizeStatus(order.status) === activeFilter);
 
   const getFilterStyle = (filterName: FilterType) => {
     return {
@@ -99,7 +112,7 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
           <Image src={line} className={styles.dividerChild} width={760} height={1} sizes="100vw" alt="" />
         </div>
 
-        {/* STATYSTYKI (Teraz z dynamicznymi wartościami) */}
+        {/* ZAKŁADKI FILTRÓW */}
         <div className={styles.sortowanieZamwie}>
           <div className={styles.zarzdzanieZamwieniamiParent}>
             <div className={styles.wszystkieParent} onClick={() => setActiveFilter('wszystkie')} style={getFilterStyle('wszystkie')}>
@@ -132,7 +145,7 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
         {/* LISTA ZAMÓWIEŃ */}
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order, index) => (
-            <div key={order.id} style={{ width: '100%' }}>
+            <div key={order.id || order._id} style={{ width: '100%' }}>
               <OrderCard order={order} onOpenDetails={() => setActiveOrder(order)} />
               
               {index < filteredOrders.length - 1 && (

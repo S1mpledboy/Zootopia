@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import Image from "next/image";
 import styles from './zamowienie.module.css';
@@ -45,13 +47,29 @@ interface ZamowienieModalProps {
 }
 
 const ZamowienieModal: React.FC<ZamowienieModalProps> = ({ order, onClose }) => {
+  
+  // 1. Uniwersalna normalizacja statusu (zbieżna z filtrami i kartami zamówień)
+  const getNormalizedStatus = (status: string): string => {
+    if (!status) return 'w trakcie';
+    const s = status.toLowerCase().trim();
+    
+    if (s === 'completed' || s === 'finished' || s === 'ukończone') return 'ukończone';
+    if (s === 'in_progress' || s === 'in progress' || s === 'w trakcie') return 'w trakcie';
+    if (s === 'shipped' || s === 'wysłane') return 'wysłane';
+    if (s === 'cancelled' || s === 'anulowane') return 'anulowane';
+    
+    return s;
+  };
+
+  // 2. Dynamiczny wybór klasy CSS z pliku zamowienia.module.css
   const getStatusWrapperClass = (status: string) => {
-    switch (status) {
+    const normalized = getNormalizedStatus(status);
+    switch (normalized) {
       case 'ukończone': return listStyles.ukoczoneWrapper;
       case 'w trakcie': return listStyles.wTrakcieWrapper;
       case 'anulowane': return listStyles.anulowaneWrapper;
       case 'wysłane': return listStyles.wysaneWrapper;
-      default: return listStyles.ukoczoneWrapper;
+      default: return listStyles.wTrakcieWrapper;
     }
   };
 
@@ -66,6 +84,8 @@ const ZamowienieModal: React.FC<ZamowienieModalProps> = ({ order, onClose }) => 
     ? `FV/${order.orderNumber.replace("ZOOTOPIA-", "")}` 
     : "Brak (Paragon)";
 
+  const displayStatus = getNormalizedStatus(order.status);
+
   return (
     <div className={styles.modalBackdrop} onClick={onClose}>
       <div className={styles.szczegyZamowienia1} onClick={(e) => e.stopPropagation()}>
@@ -73,8 +93,10 @@ const ZamowienieModal: React.FC<ZamowienieModalProps> = ({ order, onClose }) => 
         <div className={styles.frameParent}>
           <div className={styles.zamwienieNr1111Parent}>
             <b className={styles.zamwienieNr1111}>zamówienie nr {order.orderNumber}</b>
+            {/* Przypisanie poprawnej klasy wrapującej */}
             <div className={getStatusWrapperClass(order.status)}>
-              <b className={listStyles.wszystkie}>{order.status}</b>
+              {/* Wyświetlenie jednolitego tekstu statusu */}
+              <b className={listStyles.wszystkie}>{displayStatus}</b>
             </div>
           </div>
           <div className={styles.vectorParent}>
@@ -99,7 +121,8 @@ const ZamowienieModal: React.FC<ZamowienieModalProps> = ({ order, onClose }) => 
           </div>
           <div className={styles.dataZakoczeniaParent}>
             <b className={styles.dataZamwienia}>data zakończenia</b>
-            <b className={styles.z}>{order.status === 'ukończone' ? order.updatedAt : '—'}</b>
+            {/* Wyświetlanie daty modyfikacji tylko dla zamówień sfinalizowanych */}
+            <b className={styles.z}>{displayStatus === 'ukończone' ? order.updatedAt : '—'}</b>
           </div>
           <div className={styles.numerFakturyParent}>
             <b className={styles.numerFaktury}>numer faktury</b>
@@ -158,7 +181,7 @@ const ZamowienieModal: React.FC<ZamowienieModalProps> = ({ order, onClose }) => 
                   <div className={styles.z2}>{item.price.toFixed(2)} ZŁ</div>
                 </div>
               </div>
-                <Image src={line} className={styles.frameChild}alt="" />
+              <Image src={line} className={styles.frameChild} alt="" />
             </div>
           ))}
         </div>

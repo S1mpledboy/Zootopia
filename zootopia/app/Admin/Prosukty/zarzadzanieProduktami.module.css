@@ -14,7 +14,6 @@
   	font-family: Poppins;
 }
 
-/* LEWY PANEL */
 
 .frameParent {
   	width: 240px;
@@ -69,7 +68,7 @@
   	gap: 8px;
 }
 
-/* GŁÓWNA KATEGORIA */
+
 
 .tablerIconChevronCompactRiParent {
   	align-self: stretch;
@@ -118,7 +117,7 @@
   	flex-shrink: 0;
 }
 
-/* LISTA OPCJI */
+
 
 .frameDiv {
   	align-self: stretch;
@@ -130,7 +129,7 @@
   	padding-left: 12px;
 }
 
-/* OPCJA FILTRA */
+
 
 .frameParent2 {
   	align-self: stretch;
@@ -149,8 +148,6 @@
   	gap: 8px;
   	cursor: pointer;
 }
-
-/* CHECKBOXY */
 
 .tablerIconSquareWrapper {
   	width: 24px;
@@ -173,7 +170,6 @@
   	position: relative;
 }
 
-/* BUTTON */
 
 .zastosujFiltryWrapper {
   	align-self: stretch;
@@ -202,7 +198,7 @@
   	text-align: center;
 }
 
-/* KATEGORIE */
+
 
 .karmaMokraWrapper {
   	align-self: stretch;
@@ -220,7 +216,7 @@
   	cursor: pointer;
 }
 
-/* PRAWY PANEL */
+
 
 .frameParent25 {
   	flex: 1;
@@ -233,7 +229,7 @@
   	color: #366f15;
 }
 
-/* GÓRA PANELU */
+
 
 .sortowanieParent {
   	align-self: stretch;
@@ -261,7 +257,7 @@
   	line-height: 140%;
 }
 
-/* SORTOWANIE */
+
 
 .sortujPoParent {
   	align-self: stretch;
@@ -315,7 +311,7 @@
   	text-transform: uppercase;
 }
 
-/* LICZBA PRODUKTÓW */
+
 
 .sortowanie3 {
   	align-self: stretch;
@@ -347,7 +343,7 @@
   	max-height: 100%;
 }
 
-/* PRODUKTY */
+
 
 .produktPromocjaPiesParent {
   	width: 100%;
@@ -489,7 +485,6 @@
   	font-size: 19px;
 }
 
-/* RESPONSIVE */
 
 @media (max-width: 1100px) {
   	.kategorie {
