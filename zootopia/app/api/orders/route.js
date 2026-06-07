@@ -5,6 +5,7 @@ import Cart from "@/models/Cart";
 import Product from "@/models/Product";
 import { getAuthUser } from "@/middleware/auth";
 import mongoose from "mongoose";
+import { sendOrderConfirmationEmail } from "@/lib/mail";
 
 export async function GET(req) {
   try {
@@ -24,6 +25,7 @@ export async function GET(req) {
 }
 
 export async function POST(req) {
+
   try {
     await connectToDatabase();
 
@@ -101,16 +103,23 @@ export async function POST(req) {
       discountValue: discountValue || 0
     });
 
-    await newOrder.save();
+   await newOrder.save();
 
-    try {
-      const stockUpdates = mappedItems.map((item) =>
-        Product.findByIdAndUpdate(
-          item.productId,
-          { $inc: { stock: -item.quantity } },
-          { new: true }
-        )
-      );
+try {
+  await sendOrderConfirmationEmail(newOrder);
+  console.log(`[Mail] Wysłano potwierdzenie zamówienia ${orderNumber} na adres ${newOrder.deliveryAddress.email}.`);
+} catch (mailError) {
+  console.error("[Mail Error] Błąd podczas wysyłania potwierdzenia zamówienia:", mailError);
+}
+
+try {
+  const stockUpdates = mappedItems.map((item) =>
+    Product.findByIdAndUpdate(
+      item.productId,
+      { $inc: { stock: -item.quantity } },
+      { new: true }
+    )
+  );
       await Promise.all(stockUpdates);
       console.log(`[MongoDB] Pomyślnie zaktualizowano stock dla ${mappedItems.length} produktów.`);
     } catch (stockError) {
