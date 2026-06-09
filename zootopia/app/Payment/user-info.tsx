@@ -84,7 +84,7 @@ const FormularzPlatnosci: NextPage = () => {
     fetchUserData();
   }, []);
 
-  // 🔥 NOWOŚĆ: Udostępniamy aktualne dane z formularza do pliku podsumowania zamówień
+  //Udostępniamy aktualne dane z formularza do pliku podsumowania zamówień
   useEffect(() => {
     const handleRequestFormData = () => {
       const event = new CustomEvent("responsePaymentFormData", {
