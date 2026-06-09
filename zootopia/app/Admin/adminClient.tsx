@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 
 import styles from "./admin.module.css";
 import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
@@ -12,7 +13,7 @@ import Tags from "./Tags/tags";
 import AdminProductsTab from "./Prosukty/zarzadzanieProduktami";
 import ZarzadzanieAdopcjami from "./Adopcje/zarzadzanieAdopcjami";
 
-type TabType = "dane" | "zamowienia" | "produkty" | "uzytkownicy" | "tags" | "adopcje";
+type TabType = "zamowienia" | "produkty" | "uzytkownicy" | "tags" | "adopcje";
 
 interface AdminClientProps {
   ordersData: any[];
@@ -31,18 +32,42 @@ const AdminClient: React.FC<AdminClientProps> = ({
   tagGroupsData,
   tagsData,
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>("dane");
-  const [isClientReady, setIsClientReady] = useState(false); // Stan ładowania
+  const [activeTab, setActiveTab] = useState<TabType>("zamowienia");
+  const [isClientReady, setIsClientReady] = useState(false);
+  const router = useRouter();
 
-  // Czekamy na pełne zamontowanie komponentu z danymi
+  // Weryfikacja autoryzacji na poziomie klienta
   useEffect(() => {
-    setIsClientReady(true);
-  }, []);
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      // Jeśli brak tokenu, natychmiast przenosimy intruza na stronę główną
+      router.replace("/");
+    } else {
+      // Jeśli token istnieje, pozwalamy wyświetlić interfejs panelu
+      setIsClientReady(true);
+    }
+  }, [router]);
 
   const getMenuClass = (tabName: TabType) => {
     const baseClass = styles.listaUlubionychParent;
     return activeTab === tabName ? `${baseClass} ${styles.activeTab}` : baseClass;
   };
+
+  // Kompleksowe czyszczenie sesji i przekierowanie
+  const handleLogout = useCallback(() => {
+    // 1. Czyszczenie pamięci klienta
+    localStorage.clear();
+    sessionStorage.clear();
+    
+    // 2. Usunięcie ciasteczek (jeśli backend nadpisał sesję w cookies)
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+
+    alert("Wylogowano pomyślnie");
+
+    // 3. Twarde przekierowanie na stronę główną w celu zresetowania stanów React
+    window.location.href = "/";
+  }, []);
 
   const renderRightSection = () => {
     switch (activeTab) {
@@ -74,12 +99,12 @@ const AdminClient: React.FC<AdminClientProps> = ({
     }
   };
 
-  // EKRAN ŁADOWANIA - Wyświetlany dopóki dane i klient nie są w pełni gotowe
+  // Stan wczytywania oraz tarcza ochronna blokująca renderowanie przed sprawdzeniem tokenu
   if (!isClientReady) {
     return (
       <div className={styles.produktyWKoszyku} style={{ justifyContent: 'center', padding: '100px 0' }}>
         <div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold', opacity: 0.7 }}>
-          Wczytywanie panelu i danych z bazy...
+          Weryfikacja uprawnień administratora...
         </div>
       </div>
     );
@@ -134,7 +159,7 @@ const AdminClient: React.FC<AdminClientProps> = ({
 
               <div className={styles.frameItem} />
 
-              <div className={styles.listaUlubionychParent} onClick={() => alert("Wylogowywanie...")} style={{ cursor: "pointer" }}>
+              <div className={styles.listaUlubionychParent} onClick={handleLogout} style={{ cursor: "pointer" }}>
                 <div className={styles.mojeDane}>Wyloguj się</div>
                 <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
               </div>
