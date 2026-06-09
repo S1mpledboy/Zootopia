@@ -16,6 +16,12 @@ interface ISubcategory { _id: string; name: string; tags: ITag[]; }
 interface ICategory { _id: string; name: string; subcategories: ISubcategory[]; }
 interface IMainCategory { _id: string; mainCategory: string; categories: ICategory[]; }
 
+interface TagsProps {
+  initialCategories: any[];
+  initialTagGroups: any[];
+  initialTags: any[];
+}
+
 interface DeleteTarget {
   id: string;
   name: string;
@@ -23,10 +29,8 @@ interface DeleteTarget {
   label: string;
 }
 
-// Usunięto interface z initialProps - dane pobierają się przy montowaniu komponentu
-const Tags: React.FC = () => {
+const Tags: React.FC<TagsProps> = ({ initialCategories, initialTagGroups, initialTags }) => {
   const [data, setData] = useState<IMainCategory[]>([]);
-  const [loading, setLoading] = useState<boolean>(true); // Stan ładowania danych
   const [collapsedState, setCollapsedState] = useState<Record<string, boolean>>({});
 
   // Stan Modalu Dodawania/Edycji
@@ -38,73 +42,41 @@ const Tags: React.FC = () => {
     onConfirm: (val: string) => {},
   });
 
-  // Stan Modalu Potwierdzenia Usunięcia
+  // Stan Modalu Potwierdzenia Usunięcia (wzorowany na kontach użytkowników)
   const [itemToDelete, setItemToDelete] = useState<DeleteTarget | null>(null);
 
-  // Pobieranie płaskich danych i budowanie struktury drzewiastej przy wejściu w zakładkę
+  // Budowanie drzewa z danych wejściowych
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        // Równoległe pobieranie danych ze wszystkich trzech API
-        const [resCats, resGroups, resTags] = await Promise.all([
-          fetch('/api/categories'),
-          fetch('/api/tag-groups'),
-          fetch('/api/tags')
-        ]);
-
-        if (!resCats.ok || !resGroups.ok || !resTags.ok) {
-          throw new Error('Błąd podczas pobierania komponentów struktury TAGów');
-        }
-
-        const jsonCats = await resCats.json();
-        const jsonGroups = await resGroups.json();
-        const jsonTags = await resTags.json();
-
-        // Obsługa formatu danych (wyciąganie z .data, jeśli API tak wrapuje obiekty)
-        const categoriesList = jsonCats.data || jsonCats || [];
-        const tagGroupsList = jsonGroups.data || jsonGroups || [];
-        const tagsList = jsonTags.data || jsonTags || [];
-
-        // Budowanie drzewa z pobranych danych
-        const mainCategories = categoriesList.filter((c: any) => !c.parent);
-        
-        const tree = mainCategories.map((main: any) => {
-          const level1Cats = categoriesList.filter((c: any) => c.parent === main._id);
+    const mainCategories = initialCategories.filter(c => !c.parent);
+    
+    const tree = mainCategories.map(main => {
+      const level1Cats = initialCategories.filter(c => c.parent === main._id);
+      
+      return {
+        _id: main._id,
+        mainCategory: main.name,
+        categories: level1Cats.map(cat => {
+          const subGroups = initialTagGroups.filter(g => g.category === cat._id);
           
           return {
-            _id: main._id,
-            mainCategory: main.name,
-            categories: level1Cats.map((cat: any) => {
-              const subGroups = tagGroupsList.filter((g: any) => g.category === cat._id);
+            _id: cat._id,
+            name: cat.name,
+            subcategories: subGroups.map(group => {
+              const groupTags = initialTags.filter(t => t.group === group._id);
               
               return {
-                _id: cat._id,
-                name: cat.name,
-                subcategories: subGroups.map((group: any) => {
-                  const groupTags = tagsList.filter((t: any) => t.group === group._id);
-                  
-                  return {
-                    _id: group._id,
-                    name: group.name,
-                    tags: groupTags.map((t: any) => ({ _id: t._id, name: t.name }))
-                  };
-                })
+                _id: group._id,
+                name: group.name,
+                tags: groupTags.map(t => ({ _id: t._id, name: t.name }))
               };
             })
           };
-        });
+        })
+      };
+    });
 
-        setData(tree);
-      } catch (error) {
-        console.error("Błąd pobierania danych tagów:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
+    setData(tree);
+  }, [initialCategories, initialTagGroups, initialTags]);
 
   const closeModal = () => {
     setModalConfig(prev => ({ ...prev, isOpen: false }));
@@ -247,7 +219,7 @@ const Tags: React.FC = () => {
     }
   };
 
-  // --- USUNIĘCIE ---
+  // --- USUNIĘCIE (POTWIERDZENIE Z MODALA) ---
   const confirmDelete = async () => {
     if (!itemToDelete) return;
     const { id, type } = itemToDelete;
@@ -261,6 +233,7 @@ const Tags: React.FC = () => {
       const res = await fetch(endpoint, { method: 'DELETE' });
       if (!res.ok) throw new Error();
 
+      // Czyszczenie lokalnego drzewa stanu na podstawie usuniętego typu
       setData(prev => prev.filter(m => m._id !== id).map(main => ({
         ...main,
         categories: main.categories.filter(c => c._id !== id).map(cat => ({
@@ -305,155 +278,145 @@ const Tags: React.FC = () => {
           </div>
         </div>
 
-        {/* DRZEWO KATEGORII LUB ŁADOWANIE */}
-        {loading ? (
-          <div style={{ padding: '40px 0', textAlign: 'center', opacity: 0.8, fontWeight: 'bold' }}>
-            Ładowanie struktury kategorii i TAGów...
-          </div>
-        ) : data.length > 0 ? (
-          data.map((mainItem, mainIndex) => {
-            const mainKey = `${mainIndex}`;
-            const isMainCollapsed = collapsedState[mainKey];
+        {/* DRZEWO KATEGORII */}
+        {data.map((mainItem, mainIndex) => {
+          const mainKey = `${mainIndex}`;
+          const isMainCollapsed = collapsedState[mainKey];
 
-            return (
-              <div key={mainItem._id} className={styles.pies}>
-                
-                {/* 1. GŁÓWNA KATEGORIA */}
-                <div className={styles.piesParent}>
-                  <div className={styles.mainCategoryFlex}>
-                    <Image 
-                      src={arrow} 
-                      className={`${styles.arrowIcon} ${isMainCollapsed ? '' : styles.arrowExpanded}`}
-                      width={18} height={18} alt="Rozwiń/Zwiń"
-                      onClick={() => toggleCollapse(mainKey)}
-                    />
-                    
-                    <div 
-                      className={styles.clickableMainTitle}
-                      onClick={() => openModal(`Edytuj główną kategorię`, mainItem.mainCategory, "ZAPISZ", (val) => handleEditField(mainItem._id, val, 'categories', 'main'))}
-                    >
-                      {mainItem.mainCategory}
-                    </div>
-                    <span className={styles.globalDeleteX} onClick={() => setItemToDelete({ id: mainItem._id, name: mainItem.mainCategory, type: 'main', label: 'główną kategorię wraz z zawartością' })}>✕</span>
-                  </div>
+          return (
+            <div key={mainItem._id} className={styles.pies}>
+              
+              {/* 1. GŁÓWNA KATEGORIA */}
+              <div className={styles.piesParent}>
+                <div className={styles.mainCategoryFlex}>
+                  <Image 
+                    src={arrow} 
+                    className={`${styles.arrowIcon} ${isMainCollapsed ? '' : styles.arrowExpanded}`}
+                    width={18} height={18} alt="Rozwiń/Zwiń"
+                    onClick={() => toggleCollapse(mainKey)}
+                  />
                   
                   <div 
-                    className={styles.doKasy} 
-                    onClick={() => openModal(`Dodaj kategorię do: ${mainItem.mainCategory}`, "", "DODAJ", (val) => handleAddCategory(val, mainItem._id))}
+                    className={styles.clickableMainTitle}
+                    onClick={() => openModal(`Edytuj główną kategorię`, mainItem.mainCategory, "ZAPISZ", (val) => handleEditField(mainItem._id, val, 'categories', 'main'))}
                   >
-                    <div className={styles.vectorParent}>
-                      <Image src={add} className={styles.vectorIcon} width={14} height={14} alt="" />
-                      <div className={styles.dodajKategori}>DODAJ KATEGORIĘ</div>
-                    </div>
+                    {mainItem.mainCategory}
+                  </div>
+                  <span className={styles.globalDeleteX} onClick={() => setItemToDelete({ id: mainItem._id, name: mainItem.mainCategory, type: 'main', label: 'główną kategorię wraz z zawartością' })}>✕</span>
+                </div>
+                
+                <div 
+                  className={styles.doKasy} 
+                  onClick={() => openModal(`Dodaj kategorię do: ${mainItem.mainCategory}`, "", "DODAJ", (val) => handleAddCategory(val, mainItem._id))}
+                >
+                  <div className={styles.vectorParent}>
+                    <Image src={add} className={styles.vectorIcon} width={14} height={14} alt="" />
+                    <div className={styles.dodajKategori}>DODAJ KATEGORIĘ</div>
                   </div>
                 </div>
+              </div>
 
-                {/* LISTA KATEGORII */}
-                {!isMainCollapsed && (
-                  <div className={styles.frameParent}>
-                    {mainItem.categories.map((category, catIndex) => {
-                      const catKey = `${mainIndex}-${catIndex}`;
-                      const isCatCollapsed = collapsedState[catKey];
+              {/* LISTA KATEGORII */}
+              {!isMainCollapsed && (
+                <div className={styles.frameParent}>
+                  {mainItem.categories.map((category, catIndex) => {
+                    const catKey = `${mainIndex}-${catIndex}`;
+                    const isCatCollapsed = collapsedState[catKey];
 
-                      return (
-                        <div key={category._id} className={styles.categoryLevelWrapper}>
-                          
-                          {/* 2. KATEGORIA */}
-                          <div className={styles.karmyParent}>
-                            <Image 
-                              src={arrow} 
-                              className={`${styles.arrowIcon} ${isCatCollapsed ? '' : styles.arrowExpanded}`}
-                              width={16} height={16} alt="Rozwiń/Zwiń"
-                              onClick={() => toggleCollapse(catKey)}
-                            />
+                    return (
+                      <div key={category._id} className={styles.categoryLevelWrapper}>
+                        
+                        {/* 2. KATEGORIA */}
+                        <div className={styles.karmyParent}>
+                          <Image 
+                            src={arrow} 
+                            className={`${styles.arrowIcon} ${isCatCollapsed ? '' : styles.arrowExpanded}`}
+                            width={16} height={16} alt="Rozwiń/Zwiń"
+                            onClick={() => toggleCollapse(catKey)}
+                          />
 
-                            <div 
-                              className={styles.clickableCategory}
-                              onClick={() => openModal(`Edytuj kategorię`, category.name, "ZAPISZ", (val) => handleEditField(category._id, val, 'categories', 'cat'))}
-                            >
-                              {category.name}
-                            </div>
-
-                            <Image 
-                              src={add} 
-                              className={styles.vectorIcon2} 
-                              width={14} height={14} alt="" 
-                              onClick={() => openModal(`Dodaj podkategorię do: ${category.name}`, "", "DODAJ", (val) => handleAddSubcategory(val, category._id))}
-                            />
-                            <span className={styles.globalDeleteX} onClick={() => setItemToDelete({ id: category._id, name: category.name, type: 'category', label: 'kategorię wraz z zawartością' })}>✕</span>
+                          <div 
+                            className={styles.clickableCategory}
+                            onClick={() => openModal(`Edytuj kategorię`, category.name, "ZAPISZ", (val) => handleEditField(category._id, val, 'categories', 'cat'))}
+                          >
+                            {category.name}
                           </div>
 
-                          {/* LISTA PODKATEGORII */}
-                          {!isCatCollapsed && (
-                            <div className={styles.subcategoriesContainer}>
-                              {category.subcategories.map((subcat, subIndex) => {
-                                const subKey = `${mainIndex}-${catIndex}-${subIndex}`;
-                                const isSubCollapsed = collapsedState[subKey];
-
-                                return (
-                                  <div key={subcat._id} className={styles.frameGroup}>
-                                    
-                                    {/* 3. PODKATEGORIA (GRUPA TAGÓW) */}
-                                    <div className={styles.wielkoRasyParent}>
-                                      <Image 
-                                        src={arrow} 
-                                        className={`${styles.arrowIcon} ${isSubCollapsed ? '' : styles.arrowExpanded}`}
-                                        width={14} height={14} alt="Rozwiń/Zwiń"
-                                        onClick={() => toggleCollapse(subKey)}
-                                      />
-
-                                      <b 
-                                        className={styles.clickableSubcategory}
-                                        onClick={() => openModal(`Edytuj podkategorię`, subcat.name, "ZAPISZ", (val) => handleEditField(subcat._id, val, 'tag-groups', 'sub'))}
-                                      >
-                                        {subcat.name}
-                                      </b>
-
-                                      <Image 
-                                        src={add} 
-                                        className={styles.vectorIcon2} 
-                                        width={14} height={14} alt="" 
-                                        onClick={() => openModal(`Dodaj TAG do: ${subcat.name}`, "", "DODAJ", (val) => handleAddTag(val, subcat._id))}
-                                      />
-                                      <span className={styles.globalDeleteX} onClick={() => setItemToDelete({ id: subcat._id, name: subcat.name, type: 'subcategory', label: 'podkategorię wraz z TAGami' })}>✕</span>
-                                    </div>
-                                    
-                                    {/* 4. TAGI */}
-                                    {!isSubCollapsed && (
-                                      <div className={styles.tagsContainer}>
-                                        {subcat.tags.map((tagObj) => (
-                                          <div key={tagObj._id} className={styles.tagWrapper}>
-                                            <span 
-                                              className={styles.tagText}
-                                              onClick={() => openModal(`Edytuj TAG`, tagObj.name, "ZAPISZ", (val) => handleEditField(tagObj._id, val, 'tags', 'tag'))}
-                                            >
-                                              {tagObj.name}
-                                            </span>
-                                            <span className={styles.tagDeleteX} onClick={() => setItemToDelete({ id: tagObj._id, name: tagObj.name, type: 'tag', label: 'TAG' })}>✕</span>
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          )}
-
+                          <Image 
+                            src={add} 
+                            className={styles.vectorIcon2} 
+                            width={14} height={14} alt="" 
+                            onClick={() => openModal(`Dodaj podkategorię do: ${category.name}`, "", "DODAJ", (val) => handleAddSubcategory(val, category._id))}
+                          />
+                          <span className={styles.globalDeleteX} onClick={() => setItemToDelete({ id: category._id, name: category.name, type: 'category', label: 'kategorię wraz z zawartością' })}>✕</span>
                         </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <div style={{ padding: '40px 0', textAlign: 'center', opacity: 0.6 }}>
-            Nie znaleziono żadnych kategorii. Dodaj pierwszą główną kategorię powyżej.
-          </div>
-        )}
+
+                        {/* LISTA PODKATEGORII */}
+                        {!isCatCollapsed && (
+                          <div className={styles.subcategoriesContainer}>
+                            {category.subcategories.map((subcat, subIndex) => {
+                              const subKey = `${mainIndex}-${catIndex}-${subIndex}`;
+                              const isSubCollapsed = collapsedState[subKey];
+
+                              return (
+                                <div key={subcat._id} className={styles.frameGroup}>
+                                  
+                                  {/* 3. PODKATEGORIA (GRUPA TAGÓW) */}
+                                  <div className={styles.wielkoRasyParent}>
+                                    <Image 
+                                      src={arrow} 
+                                      className={`${styles.arrowIcon} ${isSubCollapsed ? '' : styles.arrowExpanded}`}
+                                      width={14} height={14} alt="Rozwiń/Zwiń"
+                                      onClick={() => toggleCollapse(subKey)}
+                                    />
+
+                                    <b 
+                                      className={styles.clickableSubcategory}
+                                      onClick={() => openModal(`Edytuj podkategorię`, subcat.name, "ZAPISZ", (val) => handleEditField(subcat._id, val, 'tag-groups', 'sub'))}
+                                    >
+                                      {subcat.name}
+                                    </b>
+
+                                    <Image 
+                                      src={add} 
+                                      className={styles.vectorIcon2} 
+                                      width={14} height={14} alt="" 
+                                      onClick={() => openModal(`Dodaj TAG do: ${subcat.name}`, "", "DODAJ", (val) => handleAddTag(val, subcat._id))}
+                                    />
+                                    <span className={styles.globalDeleteX} onClick={() => setItemToDelete({ id: subcat._id, name: subcat.name, type: 'subcategory', label: 'podkategorię wraz z TAGami' })}>✕</span>
+                                  </div>
+                                  
+                                  {/* 4. TAGI */}
+                                  {!isSubCollapsed && (
+                                    <div className={styles.tagsContainer}>
+                                      {subcat.tags.map((tagObj) => (
+                                        <div key={tagObj._id} className={styles.tagWrapper}>
+                                          <span 
+                                            className={styles.tagText}
+                                            onClick={() => openModal(`Edytuj TAG`, tagObj.name, "ZAPISZ", (val) => handleEditField(tagObj._id, val, 'tags', 'tag'))}
+                                          >
+                                            {tagObj.name}
+                                          </span>
+                                          <span className={styles.tagDeleteX} onClick={() => setItemToDelete({ id: tagObj._id, name: tagObj.name, type: 'tag', label: 'TAG' })}>✕</span>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
 
       </div>
 
@@ -466,7 +429,7 @@ const Tags: React.FC = () => {
         onConfirm={modalConfig.onConfirm} 
       />
 
-      {/* BEZPIECZNY MODAL POTWIERDZENIA USUNIĘCIA */}
+      {/* BEZPIECZNY MODAL POTWIERDZENIA USUNIĘCIA (ZGODNY Z KODEM KONTA.TSX) */}
       {itemToDelete && (
         <div className={styles.overlay} onClick={() => setItemToDelete(null)}>
           <div className={styles.modalUsun} onClick={(e) => e.stopPropagation()}>
