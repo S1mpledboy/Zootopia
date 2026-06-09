@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from "next/image";
 import styles from './zamowienia.module.css';
 
@@ -12,15 +12,34 @@ import ZamowienieModal from './zamowienie';
 
 type FilterType = 'wszystkie' | 'ukończone' | 'w trakcie' | 'wysłane' | 'anulowane';
 
-interface ZarzadzanieZamowieniamiProps {
-  initialOrders: any[];
-}
-
-const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initialOrders }) => {
-  const [orders] = useState(initialOrders);
+// Usunięto interface z initialOrders, komponent pobiera dane samodzielnie
+const ZarzadzanieZamowieniami: React.FC = () => {
+  const [orders, setOrders] = useState<any[]>([]);
+  const [loading, setLoading] = useState<boolean>(true); // Stan ładowania
   const [activeFilter, setActiveFilter] = useState<FilterType>('wszystkie');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
+
+  // Pobieranie danych po wejściu w zakładkę
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch('/api/admin/orders');
+        if (!res.ok) throw new Error('Błąd podczas pobierania zamówień');
+        const data = await res.json();
+        
+        // Zakładam, że API zwraca obiekt { orders: [...] } lub po prostu tablicę [...]
+        setOrders(data.orders || data || []);
+      } catch (error) {
+        console.error("Błąd pobierania zamówień:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchOrders();
+  }, []);
 
   // Funkcja pomocnicza: normalizuje status z bazy danych do formatu filtrów
   const normalizeStatus = (status: string): string => {
@@ -49,7 +68,7 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
   const countShipped = searchedOrders.filter(o => normalizeStatus(o.status) === 'wysłane').length;
   const countCancelled = searchedOrders.filter(o => normalizeStatus(o.status) === 'anulowane').length;
 
-  // KROK 3: Główny filtr listy (Naprawiony błąd pustej listy)
+  // KROK 3: Główny filtr listy
   const filteredOrders = activeFilter === 'wszystkie'
     ? searchedOrders
     : searchedOrders.filter(order => normalizeStatus(order.status) === activeFilter);
@@ -142,8 +161,12 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
           <Image src={line} className={styles.dividerChild} width={760} height={1} sizes="100vw" alt="" />
         </div>
 
-        {/* LISTA ZAMÓWIEŃ */}
-        {filteredOrders.length > 0 ? (
+        {/* LISTA ZAMÓWIEŃ LUB INFORMACJA O ŁADOWANIU */}
+        {loading ? (
+          <div style={{ padding: '40px 0', textAlign: 'center', opacity: 0.8, fontWeight: 'bold' }}>
+            Ładowanie zamówień...
+          </div>
+        ) : filteredOrders.length > 0 ? (
           filteredOrders.map((order, index) => (
             <div key={order.id || order._id} style={{ width: '100%' }}>
               <OrderCard order={order} onOpenDetails={() => setActiveOrder(order)} />

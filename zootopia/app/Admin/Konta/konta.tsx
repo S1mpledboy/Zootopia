@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from "next/image";
 import styles from './konta.module.css';
 
@@ -11,17 +11,38 @@ import UserKarta, { DbUser } from './kontoCard';
 
 type FilterType = 'wszystkie' | 'aktywne' | 'nieaktywne';
 
-interface KontaProps {
-  initialUsers: DbUser[];
-}
-
-const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
-  const [users, setUsers] = useState<DbUser[]>(initialUsers);
+// Komponent nie potrzebuje już interface'u KontaProps ani danych wejściowych z zewnątrz
+const Konta: React.FC = () => {
+  const [users, setUsers] = useState<DbUser[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>('wszystkie');
   const [searchQuery, setSearchQuery] = useState<string>('');
   
   // Stan przechowujący użytkownika, którego admin chce usunąć
   const [userToDelete, setUserToDelete] = useState<DbUser | null>(null);
+
+  // Pobieranie użytkowników z API przy montowaniu komponentu
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch('/api/users');
+        if (!response.ok) {
+          throw new Error('Nie udało się pobrać kont użytkowników.');
+        }
+        const jsonData = await response.json();
+        
+        // Elastyczne przypisanie na wypadek, gdyby API owijało dane w obiekt "data"
+        setUsers(jsonData.data || jsonData || []);
+      } catch (error) {
+        console.error("Błąd podczas ładowania kont użytkowników:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Funkcja wywoływana po kliknięciu kosza (otwiera modal)
   const handleDeleteClick = (user: DbUser) => {
@@ -29,12 +50,11 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
   };
 
   // Funkcja ostatecznie usuwająca użytkownika po kliknięciu "TAK"
-  // Funkcja ostatecznie usuwająca użytkownika po kliknięciu "TAK"
   const confirmDelete = async () => {
     if (!userToDelete) return;
 
     try {
-      // Strzał do nowo utworzonego endpointu JS
+      // Strzał do endpointu usuwającego użytkownika
       const response = await fetch(`/api/users/${userToDelete._id}`, { 
         method: 'DELETE' 
       });
@@ -51,7 +71,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
       setUserToDelete(null);
     } catch (error) {
       console.error("Wystąpił błąd podczas usuwania użytkownika", error);
-      alert("Błąd podczas usuwania."); // Komunikat identyczny jak w handleDeletePet
+      alert("Błąd podczas usuwania."); 
     }
   };
 
@@ -79,6 +99,15 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
       transition: 'opacity 0.2s ease',
     };
   };
+
+  // Stan ładowania danych z API
+  if (loading) {
+    return (
+      <div style={{ width: '100%', padding: '100px 0', textAlign: 'center', fontWeight: 'bold', fontSize: '16px', opacity: 0.7 }}>
+        Ładowanie kont użytkowników...
+      </div>
+    );
+  }
 
   return (
     <div className={styles.prawa}>
@@ -164,7 +193,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
         )}
       </div>
 
-      {/* ZAKTUALIZOWANY MODAL POTWIERDZENIA USUNIĘCIA */}
+      {/* MODAL POTWIERDZENIA USUNIĘCIA */}
       {userToDelete && (
         <div className={styles.overlay} onClick={() => setUserToDelete(null)}>
           <div className={styles.modalUsun} onClick={(e) => e.stopPropagation()}>

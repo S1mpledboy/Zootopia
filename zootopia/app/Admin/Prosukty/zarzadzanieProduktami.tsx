@@ -45,21 +45,18 @@ interface CategoryProps { _id: string; name: string; slug: string; parent: strin
 interface TagGroupProps { _id: string; name: string; category: string; }
 interface TagProps { _id: string; name: string; group: string; }
 
-const AdminProductsTab = ({ 
-  initialProducts, 
-  allCategories,
-  allTagGroups = [],
-  allTags = []
-}: { 
-  initialProducts: ProductProps[]; 
-  allCategories: CategoryProps[];
-  allTagGroups?: TagGroupProps[];
-  allTags?: TagProps[];
-}) => {
+// Komponent nie przyjmuje już danych wejściowych przez props
+const AdminProductsTab: React.FC = () => {
   const searchParams = useSearchParams();
   const currentType = searchParams.get('type') || 'pies';
 
-  const [products, setProducts] = useState<ProductProps[]>(initialProducts);
+  // Przeniesienie struktur do wewnętrznych stanów
+  const [products, setProducts] = useState<ProductProps[]>([]);
+  const [allCategories, setAllCategories] = useState<CategoryProps[]>([]);
+  const [allTagGroups, setAllTagGroups] = useState<TagGroupProps[]>([]);
+  const [allTags, setAllTags] = useState<TagProps[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({ cena: true, marka: true });
   const [filters, setFilters] = useState<Record<string, string[]>>({});
   const [sort, setSort] = useState<string>('popularność');
@@ -70,11 +67,45 @@ const AdminProductsTab = ({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
+  // Pobieranie kompletnego zestawu danych z API administratora przy montowaniu komponentu
   useEffect(() => {
-    setProducts(initialProducts);
-  }, [initialProducts]);
+    const fetchAdminData = async () => {
+      setLoading(true);
+      try {
+        const [resProducts, resCats, resGroups, resTags] = await Promise.all([
+          fetch('/api/products'),
+          fetch('/api/categories'),
+          fetch('/api/tag-groups'),
+          fetch('/api/tags')
+        ]);
 
+        if (!resProducts.ok || !resCats.ok || !resGroups.ok || !resTags.ok) {
+          throw new Error('Nie udało się pobrać danych konfiguracyjnych sklepu.');
+        }
+
+        const jsonProducts = await resProducts.json();
+        const jsonCats = await resCats.json();
+        const jsonGroups = await resGroups.json();
+        const jsonTags = await resTags.json();
+
+        setProducts(jsonProducts.data || jsonProducts || []);
+        setAllCategories(jsonCats.data || jsonCats || []);
+        setAllTagGroups(jsonGroups.data || jsonGroups || []);
+        setAllTags(jsonTags.data || jsonTags || []);
+      } catch (error) {
+        console.error("Błąd podczas inicjalizacji danych administratora:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminData();
+  }, []);
+
+  // Obsługa filtrów URL (reaguje również na zmianę stanu po pobraniu danych)
   useEffect(() => {
+    if (loading) return;
+
     const urlCategorySlug = searchParams.get('category');
     const urlTagName = searchParams.get('tag');
 
@@ -101,7 +132,7 @@ const AdminProductsTab = ({
       setPriceTo('');
       setOpenSections({ cena: true, marka: true });
     }
-  }, [currentType, searchParams, allCategories, allTags]);
+  }, [currentType, searchParams, allCategories, allTags, loading]);
 
   const getTypeLabel = (type: string) => {
     switch (type) {
@@ -286,43 +317,42 @@ const AdminProductsTab = ({
   // ── INTEGRACJA Z ENDPOINTAMI API ──────────────────────────────────────────
 
   const handleCreateOrUpdateProduct = async (payload: any, isEdit: boolean) => {
-  const url = isEdit ? `/api/products/${selectedProduct._id}` : '/api/products';
-  const method = isEdit ? 'PATCH' : 'POST';
+    const url = isEdit ? `/api/products/${selectedProduct._id}` : '/api/products';
+    const method = isEdit ? 'PATCH' : 'POST';
 
-  const response = await fetch(url, {
-    method,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
 
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Wystąpił problem z operacją zapisu.');
-  }
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Wystąpił problem z operacją zapisu.');
+    }
 
-  const updatedData = await response.json();
-  
-  // Wyciągamy czysty tekst dla widoku admina, identycznie jak w kafelkach sklepowych
-  const serverProduct = updatedData.data || updatedData;
-  let brandString = payload.company; 
-  if (serverProduct.company && typeof serverProduct.company === 'object') {
-    brandString = serverProduct.company.name;
-  }
+    const updatedData = await response.json();
+    
+    const serverProduct = updatedData.data || updatedData;
+    let brandString = payload.company; 
+    if (serverProduct.company && typeof serverProduct.company === 'object') {
+      brandString = serverProduct.company.name;
+    }
 
-  const normalizedProduct = {
-    ...serverProduct,
-    companyName: brandString, 
-    company: brandString,
-    petCategoryId: payload.category,
-    category: payload.category
+    const normalizedProduct = {
+      ...serverProduct,
+      companyName: brandString, 
+      company: brandString,
+      petCategoryId: payload.category,
+      category: payload.category
+    };
+
+    if (isEdit) {
+      setProducts(prev => prev.map(p => p._id === selectedProduct._id ? normalizedProduct : p));
+    } else {
+      setProducts(prev => [normalizedProduct, ...prev]);
+    }
   };
-
-  if (isEdit) {
-    setProducts(prev => prev.map(p => p._id === selectedProduct._id ? normalizedProduct : p));
-  } else {
-    setProducts(prev => [normalizedProduct, ...prev]);
-  }
-};
 
   const handleDeleteProduct = async (id: string, name: string) => {
     if (!window.confirm(`Czy na pewno chcesz bezpowrotnie usunąć produkt "${name}"?`)) {
@@ -353,6 +383,14 @@ const AdminProductsTab = ({
       </div>
     );
   };
+
+  if (loading) {
+    return (
+      <div style={{ width: '100%', padding: '100px 0', textAlign: 'center', fontWeight: 'bold', fontSize: '16px', opacity: 0.7 }}>
+        Ładowanie produktów i konfiguracji panelu admina...
+      </div>
+    );
+  }
 
   return (
     <div className={styles.kategorie}>
@@ -456,8 +494,7 @@ const AdminProductsTab = ({
                   background: '#fff', 
                   display: 'flex', 
                   flexDirection: 'column', 
-                  //justify: 'space-between',
-                  position: 'relative' // Potrzebne do pozycjonowania X
+                  position: 'relative'
                 }}
               >
                 {/* PRZYCISK USUNIĘCIA (X) */}

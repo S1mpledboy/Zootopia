@@ -6,7 +6,6 @@ import { useState } from "react";
 import styles from "./admin.module.css";
 import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
 
-import DaneIBezpieczenstwo from "./daneIBezpieczenstwo";
 import ZarzadzanieZamowieniami from "./Zamowienia/zarzadzanieZamowieniami";
 import Konta from "./Konta/konta";
 import Tags from "./Tags/tags";
@@ -15,59 +14,30 @@ import ZarzadzanieAdopcjami from "./Adopcje/zarzadzanieAdopcjami";
 
 type TabType = "dane" | "zamowienia" | "produkty" | "uzytkownicy" | "tags" | "adopcje";
 
-interface AdminClientProps {
-  ordersData: any[];
-  productsData: any[];
-  usersData: any[];
-  categoriesData: any[];
-  tagGroupsData: any[];
-  tagsData: any[];
-}
-
-const AdminClient: React.FC<AdminClientProps> = ({
-  ordersData,
-  productsData,
-  usersData,
-  categoriesData,
-  tagGroupsData,
-  tagsData,
-}) => {
-  const [activeTab, setActiveTab] = useState<TabType>("dane");
+// Komponent nie przyjmuje już żadnych danych z serwera przez props
+const AdminClient: React.FC = () => {
+  const [activeTab, setActiveTab] = useState<TabType>("zamowienia"); // Zmieniłem domyślny na "zamowienia", bo "dane" były zakomentowane
 
   const getMenuClass = (tabName: TabType) => {
     const baseClass = styles.listaUlubionychParent;
     return activeTab === tabName ? `${baseClass} ${styles.activeTab}` : baseClass;
   };
 
+  // Wszystkie komponenty-córki są teraz samodzielne i same dbają o swoje API
   const renderRightSection = () => {
     switch (activeTab) {
-      case "dane":
-        return <DaneIBezpieczenstwo />;
       case "zamowienia":
-        return <ZarzadzanieZamowieniami initialOrders={ordersData} />;
+        return <ZarzadzanieZamowieniami />;
       case "produkty":
-        return (
-          <AdminProductsTab
-            initialProducts={productsData}
-            allCategories={categoriesData}
-            allTagGroups={tagGroupsData}
-            allTags={tagsData}
-          />
-        );
+        return <AdminProductsTab />;
       case "uzytkownicy":
-        return <Konta initialUsers={usersData} />;
+        return <Konta />; // Nasz zaktualizowany komponent bez propsów
       case "tags":
-        return (
-          <Tags
-            initialCategories={categoriesData}
-            initialTagGroups={tagGroupsData}
-            initialTags={tagsData}
-          />
-        );
+        return <Tags />;
       case "adopcje":
         return <ZarzadzanieAdopcjami />;
       default:
-        return <DaneIBezpieczenstwo />;
+        return <ZarzadzanieZamowieniami />;
     }
   };
 
@@ -84,13 +54,6 @@ const AdminClient: React.FC<AdminClientProps> = ({
             </div>
 
             <div className={styles.frameContainer}>
-
-              <div className={getMenuClass("dane")} onClick={() => setActiveTab("dane")} style={{ cursor: "pointer" }}>
-                <div className={styles.mojeDane}>Dane i bezpieczeństwo</div>
-                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
-              </div>
-
-              <div className={styles.frameItem} />
 
               <div className={getMenuClass("zamowienia")} onClick={() => setActiveTab("zamowienia")} style={{ cursor: "pointer" }}>
                 <div className={styles.mojeDane}>Zarządzanie zamówieniami</div>
