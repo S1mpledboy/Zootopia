@@ -71,7 +71,7 @@ const statusAppLabel: Record<ApplicationStatus, string> = {
   rejected: "ODRZUCONY",
 };
 
-// ── Formularz wyciągnięty na zewnątrz, aby uniknąć utraty fokusu ──────────────────
+
 interface PetFormProps {
   onSubmit: (e: React.FormEvent) => void;
   submitLabel: string;
@@ -198,7 +198,7 @@ function PetForm({
   );
 }
 
-// ── Główny Komponent ─────────────────────────────────────────────────────────────
+// Główny Komponent
 export default function ZarzadzanieAdopcjami() {
   const [tab, setTab] = useState<AdoptionTab>("zwierzeta");
   const [pets, setPets] = useState<Pet[]>([]);
@@ -223,8 +223,7 @@ export default function ZarzadzanieAdopcjami() {
     fetchApplications();
   }, []);
 
-  // ── Fetch ──────────────────────────────────────────────────────────────────
-
+  // Fetch 
   async function fetchPets() {
     setLoading(true);
     try {
@@ -248,7 +247,7 @@ export default function ZarzadzanieAdopcjami() {
     }
   }
 
-  // ── Upload zdjęcia ────────────────────────────────────────────────────────
+  // Upload zdjęcia
 
   async function uploadImage(): Promise<string | null> {
     if (!imageFile) return null;
@@ -292,7 +291,7 @@ export default function ZarzadzanieAdopcjami() {
     setEditPet(pet);
   }
 
-  // ── Dodaj zwierzę ─────────────────────────────────────────────────────────
+  //  Dodaj zwierzę
 
   async function handleAddPet(e: React.FormEvent) {
     e.preventDefault();
@@ -331,7 +330,7 @@ export default function ZarzadzanieAdopcjami() {
     }
   }
 
-  // ── Edytuj zwierzę ────────────────────────────────────────────────────────
+  //  Edytuj zwierzę 
 
   async function handleEditPet(e: React.FormEvent) {
     e.preventDefault();
@@ -375,7 +374,7 @@ export default function ZarzadzanieAdopcjami() {
     }
   }
 
-  // ── Usuń zwierzę ──────────────────────────────────────────────────────────
+  // Usuń zwierzę 
 
   async function handleDeletePet() {
     if (!petToDelete) return;
@@ -403,7 +402,7 @@ export default function ZarzadzanieAdopcjami() {
     }
   }
 
-  // ── Wnioski ───────────────────────────────────────────────────────────────
+  //  Wnioski 
 
   async function handleChangeAppStatus(appId: string, newStatus: ApplicationStatus) {
     try {
@@ -423,7 +422,7 @@ export default function ZarzadzanieAdopcjami() {
     }
   }
 
-  // ── Filtrowanie ────────────────────────────────────────────────────────────
+  // Filtrowanie 
 
   const filteredPets = pets.filter((p) =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
@@ -436,7 +435,7 @@ export default function ZarzadzanieAdopcjami() {
     (a.petName || "").toLowerCase().includes(search.toLowerCase())
   );
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  //  Render
 
   return (
     <div className={styles.prawa}>

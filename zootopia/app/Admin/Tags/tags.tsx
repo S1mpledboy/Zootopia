@@ -42,7 +42,7 @@ const Tags: React.FC<TagsProps> = ({ initialCategories, initialTagGroups, initia
     onConfirm: (val: string) => {},
   });
 
-  // Stan Modalu Potwierdzenia Usunięcia (wzorowany na kontach użytkowników)
+  // Stan Modalu Potwierdzenia Usunięcia
   const [itemToDelete, setItemToDelete] = useState<DeleteTarget | null>(null);
 
   // Budowanie drzewa z danych wejściowych
@@ -99,9 +99,7 @@ const Tags: React.FC<TagsProps> = ({ initialCategories, initialTagGroups, initia
     setCollapsedState(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // =========================================================================
   // OBSŁUGA INTERFEJSU API (Zarządzanie bazą danych i stanem lokalnym)
-  // =========================================================================
 
   // --- DODAWANIE ---
   const handleAddMainCategory = async (name: string) => {
@@ -429,7 +427,7 @@ const Tags: React.FC<TagsProps> = ({ initialCategories, initialTagGroups, initia
         onConfirm={modalConfig.onConfirm} 
       />
 
-      {/* BEZPIECZNY MODAL POTWIERDZENIA USUNIĘCIA (ZGODNY Z KODEM KONTA.TSX) */}
+      {/* BEZPIECZNY MODAL POTWIERDZENIA USUNIĘCIA*/}
       {itemToDelete && (
         <div className={styles.overlay} onClick={() => setItemToDelete(null)}>
           <div className={styles.modalUsun} onClick={(e) => e.stopPropagation()}>

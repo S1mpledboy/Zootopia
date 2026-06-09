@@ -43,7 +43,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
   useEffect(() => {
     if (productData) {
-      // Bezpieczne wyciąganie nazwy marki, jeśli backend zwraca obiekt zamiast stringa
       let extractedBrand = '';
       if (productData.company && typeof productData.company === 'object') {
         extractedBrand = productData.company.name || '';
@@ -160,7 +159,6 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 <div className={styles.frameParent1}>
                   <div className={styles.tagParent2}>
                     <div className={styles.marka}>Marka</div>
-                    {/* NAPRAWIONO: zmiana name="brand" na name="company", aby pasowało do klucza w stanie formData */}
                     <input name="company" value={formData.company} onChange={handleChange} placeholder="Wpisz markę" />
                   </div>
                   <div className={styles.tagParent2}>

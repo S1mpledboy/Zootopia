@@ -264,10 +264,10 @@
 }
 
 .activeTab {
-  color: #FF0000; /* Twój pożądany odcień czerwonego */
+  color: #FF0000;
 }
 .fullWidthContainer {
   width: 100% !important;
   max-width: 100% !important;
-  flex: 1 !important; /* Pozwala na elastyczne wypełnienie pozostałej przestrzeni obok menu */
+  flex: 1 !important;
 }

@@ -256,7 +256,7 @@
   gap: 15px;
 }
 
-/* PRZYCISKI W MODALU (Na bazie .doKasy oraz .karmyWrapper) */
+/* PRZYCISKI W MODALU */
 .przyciskAnuluj {
   flex: 1;
   height: 45px;

@@ -308,17 +308,15 @@
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(0, 0, 0, 0.5); /* Przyciemnienie tła o 50% */
+  background-color: rgba(0, 0, 0, 0.5); 
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999; /* Wysoki indeks, aby był nad wszystkim innym */
+  z-index: 9999; 
 }
 
-/* Twoja klasa bazowa z Figmy musi mieć ustawione np. maksymalną wysokość lub przewijanie, jeśli kontent jest długi */
 .szczegyZamowienia1 {
   background-color: #fff;
   max-height: 90vh;
-  overflow-y: auto; /* Przewijanie zawartości, jeśli produkty nie mieszczą się na ekranie */
-  /* Pozostałe style wygenerowane z Twojego projektu (padding, border-radius itd.) */
+  overflow-y: auto; 
 }

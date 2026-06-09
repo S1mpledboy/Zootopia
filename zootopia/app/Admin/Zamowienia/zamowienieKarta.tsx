@@ -45,7 +45,7 @@ const ZamowienieKarta: React.FC<OrderCardProps> = ({ order, onOpenDetails }) => 
     }
   };
 
-  // 2. Mapowanie surowego statusu z bazy na ładny polski tekst wyświetlany użytkownikowi
+  // 2. Mapowanie surowego statusu z bazy na polski tekst wyświetlany użytkownikowi
   const getStatusLabel = (status: string) => {
     const normalizedStatus = status.toUpperCase();
     switch (normalizedStatus) {

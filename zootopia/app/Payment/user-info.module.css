@@ -1,6 +1,6 @@
-/* ==========================================================================
+/* 
    1. GŁÓWNY UKŁAD FORMULARZA (Dane płatności + Blok prawy)
-   ========================================================================== */
+*/
 
 .produktyWKoszyku {
   width: 100%;
@@ -54,9 +54,9 @@
   gap: 14px;
 }
 
-/* ==========================================================================
+/* 
    2. NAGŁÓWEK I LINIA ODDZIELAJĄCE
-   ========================================================================== */
+    */
 .metodyDostawyParent {
   width: 100%;
   display: flex;
@@ -80,15 +80,15 @@
   border: none;
 }
 
-/* ==========================================================================
+/* 
    3. STYLIZACJA INPUTÓW (ZAOKRĄGLONE RAMKI Z GRAFIKI)
-   ========================================================================== */
+    */
 .imiWrapper, .nazwiskoWrapper, .polskaWrapper, .kodPocztowyWrapper, 
 .telefonWrapper, .eMailWrapper, .nazwaFirmyWrapper, .nipWrapper {
   flex: 1;
   width: 100%;
-  border: 1.5px solid #a7acb1; /* Kolor ramki z rysunku */
-  border-radius: 14px;        /* Mocne zaokrąglenie rogów */
+  border: 1.5px solid #a7acb1; 
+  border-radius: 14px;        
   padding: 12px 20px;
   box-sizing: border-box;
   background-color: #ffffff;
@@ -113,9 +113,9 @@
   color: #a7acb1; /* Szary tekst zastępczy */
 }
 
-/* ==========================================================================
+/* 
    4. CHECKBOXY I ICH ETYKIETY
-   ========================================================================== */
+    */
 .rectangleParent, .rectangleGroup {
   display: flex;
   flex-direction: row;
@@ -140,14 +140,14 @@
   cursor: pointer;
 }
 
-/* ==========================================================================
-   5. BLOK PRAWEJ STRONY: LOGOWANIE ORAZ UWAGI (ZDJĘCIE 1:1)
-   ========================================================================== */
+/* 
+   5. BLOK PRAWEJ STRONY: LOGOWANIE ORAZ UWAGI
+    */
 
 /* Szary kontener "Masz już konto?" */
 .frameWrapper {
   width: 100%;
-  background-color: #eaf0f6; /* Jasnoszare tło panelu */
+  background-color: #eaf0f6; 
   border-radius: 14px;
   padding: 14px 20px;
   box-sizing: border-box;
@@ -171,7 +171,7 @@
   color: #fd798f;
   font-weight: 700;
   letter-spacing: 0.05em;
-  text-transform: uppercase; /* Wielkie litery */
+  text-transform: uppercase;
   cursor: pointer;
 }
 
