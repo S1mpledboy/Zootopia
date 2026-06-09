@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import styles from "./admin.module.css";
 import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
@@ -33,6 +33,12 @@ const AdminClient: React.FC<AdminClientProps> = ({
   tagsData,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("dane");
+  const [isClientReady, setIsClientReady] = useState(false); // Stan ładowania
+
+  // Czekamy na pełne zamontowanie komponentu z danymi
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   const getMenuClass = (tabName: TabType) => {
     const baseClass = styles.listaUlubionychParent;
@@ -70,6 +76,17 @@ const AdminClient: React.FC<AdminClientProps> = ({
         return <DaneIBezpieczenstwo />;
     }
   };
+
+  // EKRAN ŁADOWANIA - Wyświetlany dopóki dane i klient nie są w pełni gotowe
+  if (!isClientReady) {
+    return (
+      <div className={styles.produktyWKoszyku} style={{ justifyContent: 'center', padding: '100px 0' }}>
+        <div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold', opacity: 0.7 }}>
+          Wczytywanie panelu i danych z bazy...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.produktyWKoszyku}>
