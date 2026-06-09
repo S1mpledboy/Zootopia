@@ -19,19 +19,46 @@ const ZarzadzanieZamowieniami: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeOrder, setActiveOrder] = useState<any | null>(null);
 
-  // Pobieranie danych po wejściu w zakładkę
+  // Pobieranie danych i mapowanie ich dokładnie tak samo, jak wcześniej robił to admin/page.tsx
   useEffect(() => {
     const fetchOrders = async () => {
       setLoading(true);
       try {
-        const res = await fetch('/api/admin/orders');
-        if (!res.ok) throw new Error('Błąd podczas pobierania zamówień');
-        const data = await res.json();
+        // Upewnij się, że ścieżka do Twojego API jest poprawna. 
+        // Jeśli masz ją w '/api/orders', zmień to poniżej.
+        const res = await fetch('/api/admin/orders'); 
+        if (!res.ok) throw new Error('Błąd pobierania danych');
         
-        // Obsługa obiektu { orders: [...] } lub bezpośredniej tablicy [...]
-        setOrders(data.orders || data || []);
+        const data = await res.json();
+        const rawOrders = data.orders || data.data || data || [];
+
+        // Przeniesione mapowanie z admin/page.tsx
+        const sanitizedOrders = rawOrders.map((order: any) => {
+          let orderStatus = "w trakcie";
+          if (order.status) {
+            orderStatus = typeof order.status === "object" ? order.status.name || "w trakcie" : order.status;
+          }
+
+          let formattedDate = "";
+          if (order.createdAt) {
+            const dateObj = new Date(order.createdAt);
+            if (!isNaN(dateObj.getTime())) {
+              formattedDate = dateObj.toISOString().split('T')[0]; // Format: "YYYY-MM-DD"
+            }
+          }
+
+          return {
+            ...order,
+            id: order._id?.toString(), 
+            _id: order._id?.toString(), 
+            status: orderStatus.toLowerCase(), 
+            createdAt: formattedDate
+          };
+        });
+
+        setOrders(sanitizedOrders);
       } catch (error) {
-        console.error("Błąd pobierania zamówień:", error);
+        console.error("Błąd podczas ładowania zamówień:", error);
       } finally {
         setLoading(false);
       }
@@ -160,10 +187,10 @@ const ZarzadzanieZamowieniami: React.FC = () => {
           <Image src={line} className={styles.dividerChild} width={760} height={1} sizes="100vw" alt="" />
         </div>
 
-        {/* LISTA ZAMÓWIEŃ LUB INFORMACJA O ŁADOWANIU */}
+        {/* LISTA ZAMÓWIEŃ */}
         {loading ? (
           <div style={{ padding: '40px 0', textAlign: 'center', opacity: 0.8, fontWeight: 'bold' }}>
-            Analityka danych... Ładowanie zamówień...
+            Ładowanie zamówień...
           </div>
         ) : filteredOrders.length > 0 ? (
           filteredOrders.map((order, index) => (
