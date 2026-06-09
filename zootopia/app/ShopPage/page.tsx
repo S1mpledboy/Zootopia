@@ -26,9 +26,6 @@ const getCachedStructures = unstable_cache(
   async () => {
     await getDatabaseConnection();
     
-    // TYCH DWÓCH LINII BRAKOWAŁO:
-    // Wywołujemy modele, aby zmusić Mongoose do zarejestrowania ich schematów 
-    // w odizolowanym kontekście modułu unstable_cache.
     const _forceRegisterProduct = ProductModel.modelName;
     const _forceRegisterCompany = CompanyModel.modelName;
 

@@ -444,7 +444,7 @@ const KategorieClient = ({
         </div>
       </div>
 
-      {/* ================= RIGHT (LISTA PRODUKTÓW) ================= */}
+
       <div className={styles.frameParent25}>
         <div className={styles.sortowanieParent}>
           <div className={styles.sortowanie}>
