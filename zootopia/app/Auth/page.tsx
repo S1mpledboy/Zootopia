@@ -32,11 +32,18 @@ const ProduktyWKoszyku: NextPage = () => {
       return;
     }
 
+    // Zapisujemy token JWT do localStorage
     localStorage.setItem("token", data.token);
 
     alert("Zalogowano pomyślnie");
 
-    window.location.href = "/MojeKonto";
+    // SPRAWDZENIE ROLI UŻYTKOWNIKA
+    // Zakładamy, że API zwraca obiekt np. { token: "...", role: "admin" } lub w strukturze data.user.role
+    if (data.role === "admin" || data.user?.role === "admin") {
+      window.location.href = "/Admin";
+    } else {
+      window.location.href = "/MojeKonto";
+    }
   }, [loginEmail, loginPassword]);
 
  const onRegisterSubmit = useCallback(async () => {

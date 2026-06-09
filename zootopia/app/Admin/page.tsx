@@ -6,6 +6,7 @@ import TagGroupModel from "@/models/TagGroup";
 import TagModel from "@/models/Tag";
 import OrderModel from "@/models/Order"; 
 import UserModel from "@/models/User";   
+import CompanyModel from "@/models/Company"; 
 import AdminClient from "./adminClient";
 import { unstable_cache } from "next/cache";
 
@@ -28,6 +29,10 @@ async function getDatabaseConnection() {
 const getCachedStructures = unstable_cache(
   async () => {
     await getDatabaseConnection();
+
+    // Bezpieczne dla TypeScriptu wymuszenie rejestracji modeli w odizolowanym cache
+    const _forceProduct = ProductModel.modelName;
+    const _forceCompany = CompanyModel.modelName;
 
     const [categories, tagGroups, tags] = await Promise.all([
       CategoryModel.find({}).lean(),
