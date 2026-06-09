@@ -7,9 +7,7 @@ import CompanyModel from "@/models/Company";
 import KategorieClient from "./pageClient";
 import { unstable_cache } from "next/cache";
 
-
 export const dynamic = "force-dynamic"; 
-
 
 let cachedDb: any = null;
 async function getDatabaseConnection() {
@@ -28,6 +26,11 @@ const getCachedStructures = unstable_cache(
   async () => {
     await getDatabaseConnection();
     
+    // TYCH DWÓCH LINII BRAKOWAŁO:
+    // Wywołujemy modele, aby zmusić Mongoose do zarejestrowania ich schematów 
+    // w odizolowanym kontekście modułu unstable_cache.
+    const _forceRegisterProduct = ProductModel.modelName;
+    const _forceRegisterCompany = CompanyModel.modelName;
 
     const [categories, tagGroups, tags] = await Promise.all([
       CategoryModel.find({}).lean(),
@@ -80,7 +83,6 @@ export default async function KategoriePage({
     targetCategoryIds = childCategories.map(cat => cat._id);
   }
 
-
   let productQuery: any = { isActive: true };
   if (urlType === 'promocje') {
     productQuery.promoPrice = { $ne: null, $exists: true, $gt: 0 };
@@ -88,14 +90,13 @@ export default async function KategoriePage({
     productQuery.category = { $in: targetCategoryIds };
   }
 
-
   await getDatabaseConnection();
 
+  // Tutaj wykonywało się populate("company"), które wcześniej nie miało dostępu do schematu.
   const rawProducts = await ProductModel.find(productQuery)
     .populate("company")
     .sort({ updatedAt: -1 })
     .lean();
-
 
   const extractImage = (images: any[]): string => {
     if (!images || images.length === 0) return "/fallback-image.png";
@@ -104,7 +105,6 @@ export default async function KategoriePage({
     if (typeof first === "string") return first;
     return "/fallback-image.png";
   };
-
 
   const initialProducts = rawProducts.map((product: any) => {
     let catId = null;
