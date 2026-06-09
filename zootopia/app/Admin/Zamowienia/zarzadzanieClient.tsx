@@ -1,4 +1,4 @@
-'use client';
+/*'use client';
 
 import React from 'react';
 import ZarzadzanieZamowieniami from './zarzadzanieZamowieniami';
@@ -13,3 +13,4 @@ const ZarzadzanieZamowieniamiClient: React.FC<ZarzadzanieZamowieniamiClientProps
 };
 
 export default ZarzadzanieZamowieniamiClient;
+*/
