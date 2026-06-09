@@ -19,7 +19,7 @@ interface CartItemFromServer {
     price: number;
     promoPrice?: number | null;
     images: any[];
-    stock: number; // 🔥 DODANE: potrzebne do walidacji
+    stock: number;
     company: { name: string; };
   };
 }
