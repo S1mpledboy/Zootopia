@@ -1,12 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import styles from "./admin.module.css";
 import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
 
-import DaneIBezpieczenstwo from "./daneIBezpieczenstwo";
 import ZarzadzanieZamowieniami from "./Zamowienia/zarzadzanieZamowieniami";
 import Konta from "./Konta/konta";
 import Tags from "./Tags/tags";
@@ -33,6 +32,12 @@ const AdminClient: React.FC<AdminClientProps> = ({
   tagsData,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("dane");
+  const [isClientReady, setIsClientReady] = useState(false); // Stan ładowania
+
+  // Czekamy na pełne zamontowanie komponentu z danymi
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   const getMenuClass = (tabName: TabType) => {
     const baseClass = styles.listaUlubionychParent;
@@ -41,8 +46,6 @@ const AdminClient: React.FC<AdminClientProps> = ({
 
   const renderRightSection = () => {
     switch (activeTab) {
-      case "dane":
-        return <DaneIBezpieczenstwo />;
       case "zamowienia":
         return <ZarzadzanieZamowieniami initialOrders={ordersData} />;
       case "produkty":
@@ -67,9 +70,20 @@ const AdminClient: React.FC<AdminClientProps> = ({
       case "adopcje":
         return <ZarzadzanieAdopcjami />;
       default:
-        return <DaneIBezpieczenstwo />;
+        return <ZarzadzanieZamowieniami initialOrders={ordersData} />;
     }
   };
+
+  // EKRAN ŁADOWANIA - Wyświetlany dopóki dane i klient nie są w pełni gotowe
+  if (!isClientReady) {
+    return (
+      <div className={styles.produktyWKoszyku} style={{ justifyContent: 'center', padding: '100px 0' }}>
+        <div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold', opacity: 0.7 }}>
+          Wczytywanie panelu i danych z bazy...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={styles.produktyWKoszyku}>
@@ -84,13 +98,6 @@ const AdminClient: React.FC<AdminClientProps> = ({
             </div>
 
             <div className={styles.frameContainer}>
-
-              <div className={getMenuClass("dane")} onClick={() => setActiveTab("dane")} style={{ cursor: "pointer" }}>
-                <div className={styles.mojeDane}>Dane i bezpieczeństwo</div>
-                <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
-              </div>
-
-              <div className={styles.frameItem} />
 
               <div className={getMenuClass("zamowienia")} onClick={() => setActiveTab("zamowienia")} style={{ cursor: "pointer" }}>
                 <div className={styles.mojeDane}>Zarządzanie zamówieniami</div>
