@@ -16,7 +16,7 @@ export interface DbUser {
 
 interface UserKartaProps {
   user: DbUser;
-  onDelete?: (user: DbUser) => void; // ZMIANA: Przekazujemy cały obiekt użytkownika
+  onDelete?: (user: DbUser) => void; 
 }
 
 const UserKarta: React.FC<UserKartaProps> = ({ user, onDelete }) => {
@@ -47,7 +47,6 @@ const UserKarta: React.FC<UserKartaProps> = ({ user, onDelete }) => {
             sizes="100vw" 
             alt="Usuń" 
             style={{ cursor: 'pointer' }}
-            // ZMIANA: Przekazanie całego usera przy kliknięciu kosza
             onClick={() => onDelete && onDelete(user)}
           />
         </div>

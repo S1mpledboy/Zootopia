@@ -283,7 +283,7 @@ const AdminProductsTab = ({
   const openEditModal = (product: any) => { setSelectedProduct(product); setIsModalOpen(true); };
   const closeModal = () => { setIsModalOpen(false); setSelectedProduct(null); };
 
-  // ── INTEGRACJA Z ENDPOINTAMI API ──────────────────────────────────────────
+  // INTEGRACJA Z ENDPOINTAMI API
 
   const handleCreateOrUpdateProduct = async (payload: any, isEdit: boolean) => {
   const url = isEdit ? `/api/products/${selectedProduct._id}` : '/api/products';
@@ -456,8 +456,7 @@ const AdminProductsTab = ({
                   background: '#fff', 
                   display: 'flex', 
                   flexDirection: 'column', 
-                  //justify: 'space-between',
-                  position: 'relative' // Potrzebne do pozycjonowania X
+                  position: 'relative'
                 }}
               >
                 {/* PRZYCISK USUNIĘCIA (X) */}

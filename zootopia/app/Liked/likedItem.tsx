@@ -1,4 +1,4 @@
-// Ścieżka: app/Liked/likedItem.tsx
+
 "use client";
 
 import { FC, useState } from 'react';

@@ -45,7 +45,7 @@
     color: #565e64;
 }
 
-/* Wiersz dla Marki i Kategorii - spięty z siatką pozostałych sekcji */
+/* Wiersz dla Marki i Kategorii */
 .frameParent1 {
     align-self: stretch;
     display: grid;

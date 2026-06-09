@@ -89,7 +89,6 @@ export default async function KategoriePage({
 
   await getDatabaseConnection();
 
-  // Tutaj wykonywało się populate("company"), które wcześniej nie miało dostępu do schematu.
   const rawProducts = await ProductModel.find(productQuery)
     .populate("company")
     .sort({ updatedAt: -1 })

@@ -1,4 +1,4 @@
-// app/admin/page.tsx
+
 import mongoose from "mongoose";
 import ProductModel from "@/models/Product";
 import CategoryModel from "@/models/Category";
@@ -30,7 +30,6 @@ const getCachedStructures = unstable_cache(
   async () => {
     await getDatabaseConnection();
 
-    // Bezpieczne dla TypeScriptu wymuszenie rejestracji modeli w odizolowanym cache
     const _forceProduct = ProductModel.modelName;
     const _forceCompany = CompanyModel.modelName;
 

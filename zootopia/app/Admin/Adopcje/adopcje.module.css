@@ -7,7 +7,6 @@
   width: 100%;
 }
 
-/* Breadcrumb */
 .sortowanie {
   display: flex;
   align-items: center;
@@ -153,7 +152,6 @@
   letter-spacing: 0.04em;
 }
 
-/* Poprawione akcje - elementy układają się równo od prawej */
 .petActions {
   display: flex;
   align-items: center;
@@ -174,9 +172,6 @@
   color: #333;
 }
 
-/* Poprawione statusy - dodana stała szerokość (140px) i wyrównanie tekstu, 
-   dzięki czemu "ZAREZERWOWANY" nie rozpycha już pozostałych przycisków.
-*/
 .statusAvailable,
 .statusReserved,
 .statusAdopted,
@@ -529,5 +524,5 @@
   .statusAvailable,
   .statusReserved,
   .statusAdopted,
-  .statusPending { width: auto; } /* Na małych ekranach resetujemy stałą szerokość */
+  .statusPending { width: auto; }
 }

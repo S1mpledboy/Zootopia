@@ -37,7 +37,7 @@ const DaneIBezpieczenstwo: NextPage = () => {
   const handleSave = () => {
     const updatedFields: any = {};
 
-    // 2. Aktualizujemy pole TYLKO, jeśli użytkownik wpisał w nie jakąś wartość. 
+    // Aktualizujemy pole, jeśli użytkownik wpisał w nie jakąś wartość. 
     // Jeśli zostało puste, zmiana nie zachodzi.
 
     if (formData.imie.trim() !== "") {
@@ -88,7 +88,7 @@ const DaneIBezpieczenstwo: NextPage = () => {
 
     alert("Dane zostały zapisane");
 
-    // Opcjonalnie: Wyczyszczenie formularza po zapisie, aby zaktualizowane dane znów pojawiły się jako placeholdery
+    // Wyczyszczenie formularza po zapisie, aby zaktualizowane dane znów pojawiły się jako placeholdery
     setFormData({
       imie: "",
       nazwisko: "",
@@ -125,7 +125,7 @@ const DaneIBezpieczenstwo: NextPage = () => {
               {/* Imię + nazwisko */}
               <div className={styles.frameParent3}>
                 <div className={styles.imiWrapper}>
-                  {/* 3. Używamy placeholderów do pokazywania domyślnych danych */}
+                  {/* Placeholdery do pokazywania domyślnych danych */}
                   <input
                     type="text"
                     name="imie"
