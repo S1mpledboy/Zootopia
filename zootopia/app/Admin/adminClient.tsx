@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation"; // <-- Dodany import do nawigacji
 
 import styles from "./admin.module.css";
 import arrow from "@/app/Public/Images/tabler-icon-chevron-compact-right.svg";
@@ -12,7 +13,7 @@ import Tags from "./Tags/tags";
 import AdminProductsTab from "./Prosukty/zarzadzanieProduktami";
 import ZarzadzanieAdopcjami from "./Adopcje/zarzadzanieAdopcjami";
 
-type TabType = "dane" | "zamowienia" | "produkty" | "uzytkownicy" | "tags" | "adopcje";
+type TabType = "zamowienia" | "produkty" | "uzytkownicy" | "tags" | "adopcje"; // Usunięto nieużywaną zakładkę "dane"
 
 interface AdminClientProps {
   ordersData: any[];
@@ -31,8 +32,9 @@ const AdminClient: React.FC<AdminClientProps> = ({
   tagGroupsData,
   tagsData,
 }) => {
-  const [activeTab, setActiveTab] = useState<TabType>("dane");
-  const [isClientReady, setIsClientReady] = useState(false); // Stan ładowania
+  const [activeTab, setActiveTab] = useState<TabType>("zamowienia"); // Zmiana domyślnej zakładki na "zamowienia"
+  const [isClientReady, setIsClientReady] = useState(false);
+  const router = useRouter(); // <-- Inicjalizacja routera Next.js
 
   // Czekamy na pełne zamontowanie komponentu z danymi
   useEffect(() => {
@@ -43,6 +45,20 @@ const AdminClient: React.FC<AdminClientProps> = ({
     const baseClass = styles.listaUlubionychParent;
     return activeTab === tabName ? `${baseClass} ${styles.activeTab}` : baseClass;
   };
+
+  // AKCJA WYLOGOWANIA
+  const handleLogout = useCallback(() => {
+    // 1. Usunięcie tokenu autoryzacji z magazynu przeglądarki
+    localStorage.removeItem("token");
+    
+    // Opcjonalnie usuń wszystkie inne stany jeśli sesja przechowuje coś więcej:
+    // localStorage.clear();
+
+    alert("Wylogowano pomyślnie");
+
+    // 2. Przekierowanie użytkownika na stronę główną
+    router.push("/");
+  }, [router]);
 
   const renderRightSection = () => {
     switch (activeTab) {
@@ -134,7 +150,8 @@ const AdminClient: React.FC<AdminClientProps> = ({
 
               <div className={styles.frameItem} />
 
-              <div className={styles.listaUlubionychParent} onClick={() => alert("Wylogowywanie...")} style={{ cursor: "pointer" }}>
+              {/* POPRAWIONY ELEMENT WYLOGOWYWANIA */}
+              <div className={styles.listaUlubionychParent} onClick={handleLogout} style={{ cursor: "pointer" }}>
                 <div className={styles.mojeDane}>Wyloguj się</div>
                 <Image src={arrow} className={styles.tablerIconChevronCompactRi} width={24} height={24} sizes="100vw" alt="" />
               </div>
