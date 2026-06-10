@@ -48,7 +48,7 @@ interface ZamowienieModalProps {
 
 const ZamowienieModal: React.FC<ZamowienieModalProps> = ({ order, onClose }) => {
   
-  // 1. Uniwersalna normalizacja statusu (zbieżna z filtrami i kartami zamówień)
+  // 1. Uniwersalna normalizacja statusu
   const getNormalizedStatus = (status: string): string => {
     if (!status) return 'w trakcie';
     const s = status.toLowerCase().trim();

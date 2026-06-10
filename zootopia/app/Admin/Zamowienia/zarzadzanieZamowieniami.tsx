@@ -49,7 +49,7 @@ const ZarzadzanieZamowieniami: React.FC<ZarzadzanieZamowieniamiProps> = ({ initi
   const countShipped = searchedOrders.filter(o => normalizeStatus(o.status) === 'wysłane').length;
   const countCancelled = searchedOrders.filter(o => normalizeStatus(o.status) === 'anulowane').length;
 
-  // KROK 3: Główny filtr listy (Naprawiony błąd pustej listy)
+  // KROK 3: Główny filtr listy
   const filteredOrders = activeFilter === 'wszystkie'
     ? searchedOrders
     : searchedOrders.filter(order => normalizeStatus(order.status) === activeFilter);

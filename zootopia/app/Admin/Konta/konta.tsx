@@ -29,7 +29,6 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
   };
 
   // Funkcja ostatecznie usuwająca użytkownika po kliknięciu "TAK"
-  // Funkcja ostatecznie usuwająca użytkownika po kliknięciu "TAK"
   const confirmDelete = async () => {
     if (!userToDelete) return;
 
@@ -39,7 +38,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
         method: 'DELETE' 
       });
 
-      // Jeśli serwer zwrócił kod błędu (np. 404 lub 500), rzucamy błąd do bloku catch
+      // Jeśli serwer zwrócił kod błędu, rzucamy błąd do bloku catch
       if (!response.ok) {
         throw new Error('Błąd po stronie serwera');
       }
@@ -51,7 +50,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
       setUserToDelete(null);
     } catch (error) {
       console.error("Wystąpił błąd podczas usuwania użytkownika", error);
-      alert("Błąd podczas usuwania."); // Komunikat identyczny jak w handleDeletePet
+      alert("Błąd podczas usuwania.");
     }
   };
 
@@ -164,7 +163,7 @@ const Konta: React.FC<KontaProps> = ({ initialUsers }) => {
         )}
       </div>
 
-      {/* ZAKTUALIZOWANY MODAL POTWIERDZENIA USUNIĘCIA */}
+      {/* MODAL POTWIERDZENIA USUNIĘCIA */}
       {userToDelete && (
         <div className={styles.overlay} onClick={() => setUserToDelete(null)}>
           <div className={styles.modalUsun} onClick={(e) => e.stopPropagation()}>
